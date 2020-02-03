@@ -13,6 +13,8 @@ class StructureAgent:
         return str(self) < str(other)
 
     def __eq__(self, other: 'StructureAgent'):
+        if type(self) != type(other):
+            return False
         return self.name == other.name and self.composition == other.composition
 
     def __hash__(self):
@@ -26,6 +28,8 @@ class StructureAgent:
         :param other: another StructureAgent
         :return: True if they are compatible
         """
+        if type(self) != type(other):
+            return False
         if self == other:
             return True
         if other.name != self.name:

@@ -19,6 +19,7 @@ class TestState(unittest.TestCase):
     def test_eq(self):
         self.assertEqual(self.s1, self.s5)
         self.assertNotEqual(self.s1, self.s2)
+        self.assertNotEqual(self.s1, self.a2)  # comparing different classes
 
     def test_print(self):
         self.assertEqual(str(self.s1), "strA(S{a},T{s})")
@@ -28,3 +29,4 @@ class TestState(unittest.TestCase):
         self.assertTrue(self.s2.compatible(self.s1))
         self.assertFalse(self.s1.compatible(self.s2))
         self.assertTrue(self.s3.compatible(self.s1))
+        self.assertFalse(self.s1.compatible(self.a2))  # comparing different classes
