@@ -43,5 +43,31 @@ class StructureAgent:
                 return False
         return True
 
-    # def add_context(self, other, atomic_signature: dict, structure_signature: dict):
-    #     if other is not None:
+    def add_context(self, other, atomic_signature: dict, structure_signature: dict) -> set:
+        """
+        Fills missing context for given agent.
+
+        ...
+
+        Note: it is assumed this method is used only for well formed rules, which means
+         given structure agents have specified the same atomic agents and miss the same
+         atomic agents.
+
+        Moreover, agents which are not specified are completely omitted. TBD: this could be
+        somehow hacked.
+
+        :param other: possibly a structure agent, -1 if context is empty on left, 1 for right
+        :param atomic_signature: given mapping of atomic name to possible states
+        :param structure_signature: given mapping of structure name to possible atomics
+        :return: set of pairs
+        """
+        present_atomics = set(map(lambda a: a.name, self.composition))
+        if type(self) == type(other):
+
+
+        result = set()
+        if other == -1:
+            pass
+        else:
+            pass
+        return result

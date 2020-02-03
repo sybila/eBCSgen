@@ -33,3 +33,5 @@ class TestState(unittest.TestCase):
                          {(self.a6, self.a6), (self.a7, self.a7)})
         self.assertEqual(self.a6.add_context(self.a6, atomic_signature, structure_signature),
                          {(self.a6, self.a6)})
+        self.assertEqual(self.a4.add_context(-1, atomic_signature, structure_signature),
+                         {(None, self.a6), (None, self.a7)})
