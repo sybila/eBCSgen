@@ -19,6 +19,6 @@ class TestState(unittest.TestCase):
         self.assertEqual(str(self.a4), "T{_}")
 
     def test_compatibility(self):
-        self.assertFalse(self.a4.compatible(self.a1))
+        self.assertTrue(self.a4.compatible(self.a1))
         self.assertFalse(self.a2.compatible(self.a1))
-        self.assertTrue(self.a1.compatible(self.a4))
+        self.assertFalse(self.a1.compatible(self.a4))

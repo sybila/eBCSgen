@@ -19,4 +19,4 @@ class AtomicAgent:
         return hash(str(self))
 
     def compatible(self, other: 'AtomicAgent') -> bool:
-        return (self == other) or (self.name == other.name and other.state == "_")
+        return (self == other) or (self.name == other.name and self.state == "_")
