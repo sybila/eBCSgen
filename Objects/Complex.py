@@ -1,4 +1,5 @@
 import collections
+import itertools
 
 
 class Complex:
@@ -27,5 +28,9 @@ class Complex:
         if self == other:
             return True
         if self.compartment == other.compartment and sum(self.agents.values()) == sum(other.agents.values()):
-            pass
+            other_permutations = list(itertools.permutations(list(other.agents.elements())))
+            for self_perm in itertools.permutations(list(self.agents.elements())):
+                for other_perm in other_permutations:
+                    if all([self_perm[i].compatible(other_perm[i]) for i in range(len(self_perm))]):
+                        return True
         return False

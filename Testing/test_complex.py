@@ -24,7 +24,10 @@ class TestState(unittest.TestCase):
         self.c1 = Complex(collections.Counter({self.s1: 1, self.s2: 2}), "cyt")
         self.c2 = Complex(collections.Counter({self.s3: 1, self.s4: 1, self.s5: 1}), "cyt")
         self.c3 = Complex(collections.Counter({self.s2: 2, self.s1: 1}), "cyt")
-        self.c4 = Complex(collections.Counter({self.s2: 2, self.s1: 1, }), "cell")
+        self.c4 = Complex(collections.Counter({self.s2: 2, self.s1: 1}), "cell")
+
+        self.large_c1 = Complex(collections.Counter({self.s4: 6, self.s3: 5}), "cell")
+        self.large_c2 = Complex(collections.Counter({self.s5: 7, self.s3: 6}), "cell")
 
     def test_eq(self):
         self.assertEqual(self.c1, self.c3)
@@ -38,3 +41,4 @@ class TestState(unittest.TestCase):
         self.assertTrue(self.c2.compatible(self.c1))
         self.assertFalse(self.c1.compatible(self.c2))
         self.assertFalse(self.c2.compatible(self.c4))
+        self.assertFalse(self.large_c1.compatible(self.large_c2))
