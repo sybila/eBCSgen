@@ -6,6 +6,7 @@ from Objects.Atomic import AtomicAgent
 from Objects.Complex import Complex
 from Objects.Rule import Rule
 from Objects.Side import Side
+from Objects.Reaction import Reaction
 
 
 class TestState(unittest.TestCase):
@@ -45,6 +46,13 @@ class TestState(unittest.TestCase):
 
         self.r2 = Rule(sequence_2, mid_2, compartments_2, complexes_2, pairs_2, rate_2)
 
+        #  reactions
+
+        lhs = Side([self.c1])
+        rhs = Side([self.c2, self.c3, self.c4])
+
+        self.reaction1 = Reaction(lhs, rhs, rate_2)
+
     def test_eq(self):
         self.assertEqual(self.r1, self.r1)
 
@@ -57,3 +65,6 @@ class TestState(unittest.TestCase):
         lhs = Side([self.c1])
         rhs = Side([self.c2, self.c3, self.c4])
         self.assertEqual(self.r2.create_complexes(), (lhs, rhs))
+
+    def test_to_reaction(self):
+        self.assertEqual(self.r2.to_reaction(), self.reaction1)

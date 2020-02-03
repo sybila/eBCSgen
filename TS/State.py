@@ -2,7 +2,7 @@ import numpy as np
 
 
 class State:
-    def __init__(self, sequence):
+    def __init__(self, sequence: np.array):
         self.sequence = sequence
 
     def __eq__(self, other):
