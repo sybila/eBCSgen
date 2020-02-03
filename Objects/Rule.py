@@ -1,6 +1,7 @@
 import collections
 from Objects.Complex import Complex
 from Objects.Side import Side
+from Objects.Reaction import Reaction
 
 
 class Rule:
@@ -47,3 +48,18 @@ class Rule:
             c = Complex(collections.Counter(self.agents[f:t + 1]), self.compartments[f])
             lhs.append(c) if t < self.mid else rhs.append(c)
         return Side(lhs), Side(rhs)
+
+    def to_reaction(self) -> Reaction:
+        """
+        Converts Rule to Reactions -> complicated rule structure is simplified to multiset (resp. Side)
+        representation of both sides.
+
+        :return: created Reaction
+        """
+        lhs, rhs = self.create_complexes()
+        return Reaction(lhs, rhs, self.rate)
+
+    # def create_reactions(self, atomic_signature: dict, structure_signature: dict) -> set:
+        # results = []
+        # for pair in self.pairs:
+

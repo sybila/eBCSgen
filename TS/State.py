@@ -6,7 +6,7 @@ class State:
         self.sequence = sequence
 
     def __eq__(self, other):
-        return self.sequence == other.sequence
+        return (self.sequence == other.sequence).all()
 
     def __sub__(self, other):
         return State(self.sequence - other.sequence)

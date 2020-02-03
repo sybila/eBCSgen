@@ -5,6 +5,7 @@ from Objects.Structure import StructureAgent
 from Objects.Atomic import AtomicAgent
 from Objects.Complex import Complex
 from Objects.Rule import Rule
+from Objects.Side import Side
 
 
 class TestState(unittest.TestCase):
@@ -39,7 +40,7 @@ class TestState(unittest.TestCase):
         mid_2 = 2
         compartments_2 = ["cyt"] * 4 + ["cell"]
         complexes_2 = [(0, 1), (2, 2), (3, 3), (4, 4)]
-        pairs_2 = [(0, 2), (1, 3)]
+        pairs_2 = [(0, 2), (1, 3), (None, 4)]
         rate_2 = "3*[K()::cyt]/2*v_1"
 
         self.r2 = Rule(sequence_2, mid_2, compartments_2, complexes_2, pairs_2, rate_2)
@@ -53,6 +54,6 @@ class TestState(unittest.TestCase):
                          "B().K(S{u})::cyt => K(S{p})::cyt + B()::cyt + D(B{_})::cell @ 3*[K()::cyt]/2*v_1")
 
     def test_create_complexes(self):
-        lhs = [self.c1]
-        rhs = [self.c2, self.c3, self.c4]
+        lhs = Side([self.c1])
+        rhs = Side([self.c2, self.c3, self.c4])
         self.assertEqual(self.r2.create_complexes(), (lhs, rhs))

@@ -1,17 +1,13 @@
-import collections
-
-
-def convert_side(side):
-    return list(map(lambda item: "{} {}".format(item[0], item[1]), side.items()))
+from Objects.Side import Side
 
 
 class Reaction:
-    def __init__(self, lhs: collections.Counter, rhs: collections.Counter, rate: str):
+    def __init__(self, lhs: Side, rhs: Side, rate: str):
         """
         Class to represent BCSL rule
 
-        :param lhs: multiset of left-hand side representing substrates
-        :param rhs: multiset of left-hand side representing products
+        :param lhs: left-hand Side representing substrates
+        :param rhs: left-hand Side representing products
         :param rate: string representing expression (TBA shouldn't be string !!!)
         """
         self.lhs = lhs
