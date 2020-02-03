@@ -9,7 +9,7 @@ class State:
         return self.sequence == other.sequence
 
     def __sub__(self, other):
-        return State(tuple(np.subtract(self.sequence, other.sequence)))
+        return State(self.sequence - other.sequence)
 
     def check_negative(self):
         return all(value > 0 for value in self.sequence)

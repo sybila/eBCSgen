@@ -1,5 +1,6 @@
 import collections
 from Objects.Complex import Complex
+from Objects.Side import Side
 
 
 class Rule:
@@ -23,23 +24,26 @@ class Rule:
 
     def __eq__(self, other: 'Rule'):
         return self.agents == other.agents and self.mid == other.mid and self.compartments == other.compartments and \
-               self.complexes == other.complexes and self.pairs == other.pairs
+               self.complexes == other.complexes and self.pairs == other.pairs and self.rate == other.rate
 
     def __repr__(self):
         return str(self)
 
     def __str__(self):
         lhs, rhs = self.create_complexes()
-        lhs = list(map(str, lhs))
-        rhs = list(map(str, rhs))
-        return " + ".join(lhs) + " => " + " + ".join(rhs) + " @ " + self.rate
+        return " + ".join(lhs.to_list_of_strings()) + " => " + " + ".join(rhs.to_list_of_strings()) + " @ " + self.rate
 
     def __lt__(self, other):
         return str(self) < str(other)
 
     def create_complexes(self):
+        """
+        Creates left- and right-hand sides of rule as multisets of Complexes.
+
+        :return: two multisets of Complexes represented as object Side
+        """
         lhs, rhs = [], []
         for (f, t) in self.complexes:
             c = Complex(collections.Counter(self.agents[f:t + 1]), self.compartments[f])
             lhs.append(c) if t < self.mid else rhs.append(c)
-        return lhs, rhs
+        return Side(lhs), Side(rhs)
