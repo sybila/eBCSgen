@@ -4,6 +4,16 @@ from Objects.Complex import Complex
 
 class Rule:
     def __init__(self, agents: tuple, mid: int, compartments: list, complexes: list, pairs: list, rate: str):
+        """
+        Class to represent BCSL rule
+
+        :param agents: tuple of Atomic/Structure agents in the order as given by the rule
+        :param mid: index of first agent from right-hand side
+        :param compartments: list assigning to each position a compartment (for each agent)
+        :param complexes: list of pairs (from, to) indicating where the complex starts and ends
+        :param pairs: entangled agents from LHS to RHS
+        :param rate: string representing expression (TBA shouldn't be string !!!)
+        """
         self.agents = agents
         self.mid = mid
         self.compartments = compartments
