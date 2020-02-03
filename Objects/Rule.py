@@ -60,6 +60,7 @@ class Rule:
         return Reaction(lhs, rhs, self.rate)
 
     # def create_reactions(self, atomic_signature: dict, structure_signature: dict) -> set:
-        # results = []
-        # for pair in self.pairs:
+    #     results = []
+    #     for (l, r) in self.pairs:
+    #         results.append(self.agents[l].)
 

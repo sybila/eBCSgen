@@ -8,6 +8,9 @@ class TestState(unittest.TestCase):
         self.a2 = AtomicAgent("S", "a")
         self.a3 = AtomicAgent("T", "s")
         self.a4 = AtomicAgent("T", "_")
+        self.a5 = AtomicAgent("T", "_")
+        self.a6 = AtomicAgent("T", "p")
+        self.a7 = AtomicAgent("T", "u")
 
     def test_eq(self):
         self.assertEqual(self.a1, self.a3)
@@ -22,3 +25,11 @@ class TestState(unittest.TestCase):
         self.assertTrue(self.a4.compatible(self.a1))
         self.assertFalse(self.a2.compatible(self.a1))
         self.assertFalse(self.a1.compatible(self.a4))
+
+    def test_add_context(self):
+        atomic_signature = {"T": {"u", "p"}}
+        structure_signature = dict()
+        self.assertEqual(self.a4.add_context(self.a5, atomic_signature, structure_signature),
+                         {(self.a6, self.a6), (self.a7, self.a7)})
+        self.assertEqual(self.a6.add_context(self.a6, atomic_signature, structure_signature),
+                         {(self.a6, self.a6)})

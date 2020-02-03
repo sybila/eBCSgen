@@ -42,3 +42,6 @@ class StructureAgent:
             if not found_pair:
                 return False
         return True
+
+    # def add_context(self, other, atomic_signature: dict, structure_signature: dict):
+    #     if other is not None:
