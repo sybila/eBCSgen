@@ -1,8 +1,9 @@
+import collections
 from TS.State import State
 
 
 class Model:
-    def __init__(self, rules: set, init: State, atomic_signature: dict, structure_signature: dict):
+    def __init__(self, rules: set, init: collections.Counter, atomic_signature: dict, structure_signature: dict):
         self.rules = rules
         self.init = init
         self.atomic_signature = atomic_signature
