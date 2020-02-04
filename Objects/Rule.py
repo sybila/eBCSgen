@@ -1,7 +1,14 @@
 import collections
+
+import itertools
+
 from Objects.Complex import Complex
 from Objects.Side import Side
 from Objects.Reaction import Reaction
+
+
+def column(lst, index):
+    return tuple(map(lambda x: x[index], lst))
 
 
 class Rule:
@@ -59,8 +66,22 @@ class Rule:
         lhs, rhs = self.create_complexes()
         return Reaction(lhs, rhs, self.rate)
 
-    # def create_reactions(self, atomic_signature: dict, structure_signature: dict) -> set:
-    #     results = []
-    #     for (l, r) in self.pairs:
-    #         results.append(self.agents[l].)
-
+    def create_reactions(self, atomic_signature: dict, structure_signature: dict) -> set:
+        results = []
+        for (l, r) in self.pairs:
+            if l is None:
+                right = -1
+                left = self.agents[r]
+            elif r is None:
+                right = 1
+                left = self.agents[l]
+            else:
+                left = self.agents[l]
+                right = self.agents[r]
+            results.append(left.add_context(right, atomic_signature, structure_signature))
+        reactions = set()
+        for result in itertools.product(*results):
+            new_agents = tuple(filter(None, column(result, 0) + column(result, 1)))
+            new_rule = Rule(new_agents, self.mid, self.compartments, self.complexes, self.pairs, self.rate)
+            reactions.add(new_rule.to_reaction())
+        return reactions

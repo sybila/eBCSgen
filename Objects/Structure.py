@@ -85,32 +85,20 @@ class StructureAgent:
             else:
                 return {(self, other)}
 
-        if other == -1:
-            if structure_signature[self.name] - present_atomics != set():
-                result = []
-                for atomic_name in structure_signature[self.name] - present_atomics:
-                    possibilities = AtomicAgent(atomic_name, "_").add_context(1, atomic_signature, structure_signature)
-                    result.append(possibilities)
-                agents = set()
-                for options in itertools.product(*result):
-                    new_agent_self = StructureAgent(self.name, set(self.composition))
-                    for (left, right) in options:
-                        new_agent_self.composition.add(left)
-                    agents.add((None, new_agent_self))
-            else:
-                agents = {(None, self)}
+        if structure_signature[self.name] - present_atomics != set():
+            result = []
+            for atomic_name in structure_signature[self.name] - present_atomics:
+                possibilities = AtomicAgent(atomic_name, "_").add_context(1, atomic_signature, structure_signature)
+                result.append(possibilities)
+            agents = set()
+            for options in itertools.product(*result):
+                new_agent = StructureAgent(self.name, set(self.composition))
+                for (left, right) in options:
+                    new_agent.composition.add(left)
+                if other == -1:
+                    agents.add((None, new_agent))
+                else:
+                    agents.add((new_agent, None))
+            return agents
         else:
-            if structure_signature[self.name] - present_atomics != set():
-                result = []
-                for atomic_name in structure_signature[self.name] - present_atomics:
-                    possibilities = AtomicAgent(atomic_name, "_").add_context(1, atomic_signature, structure_signature)
-                    result.append(possibilities)
-                agents = set()
-                for options in itertools.product(*result):
-                    new_agent_self = StructureAgent(self.name, set(self.composition))
-                    for (left, right) in options:
-                        new_agent_self.composition.add(left)
-                    agents.add((new_agent_self, None))
-            else:
-                agents = {(self, None)}
-        return agents
+            return {(None, self)} if other == -1 else {(self, None)}

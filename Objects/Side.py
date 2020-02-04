@@ -19,7 +19,7 @@ class Side:
         return str(self)
 
     def __str__(self):
-        return " + ".join(list(map(lambda item: "{} {}".format(item[0], item[1]), sorted(self.to_counter().items()))))
+        return " + ".join(list(map(lambda item: "{} {}".format(item[1], item[0]), sorted(self.to_counter().items()))))
 
     def __lt__(self, other):
         return str(self) < str(other)
