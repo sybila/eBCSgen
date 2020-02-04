@@ -11,8 +11,8 @@ class State:
     def __sub__(self, other):
         return State(self.sequence - other.sequence)
 
-    def check_negative(self):
-        return all(value > 0 for value in self.sequence)
+    def check_negative(self, bound: int) -> bool:
+        return all(0 <= value <= bound for value in self.sequence)
 
     def filter_values(self, state: 'State') -> int:
         return sum(self.sequence * state)

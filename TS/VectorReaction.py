@@ -7,9 +7,9 @@ class VectorReaction:
         self.target = target
         self.rate = rate
 
-    def apply(self, state: State):
+    def apply(self, state: State, bound: int):
         new_state = state - self.source
-        if new_state.check_negative():
+        if new_state.check_negative(bound):
             return new_state + self.target, self.eval_rate(state)
 
     def eval_rate(self, state: State) -> float:
