@@ -13,3 +13,6 @@ class State:
 
     def check_negative(self):
         return all(value > 0 for value in self.sequence)
+
+    def filter_values(self, state: 'State') -> int:
+        return sum(self.sequence * state)

@@ -1,4 +1,5 @@
 from Objects.Side import Side
+from TS.VectorReaction import VectorReaction
 
 
 class Reaction:
@@ -28,3 +29,9 @@ class Reaction:
 
     def __hash__(self):
         return hash(str(self))
+
+    def to_vector(self, ordering: tuple) -> VectorReaction:
+        # + convert rate - probably a method of Complex
+        return VectorReaction(self.lhs.to_vector(ordering),
+                              self.rhs.to_vector(ordering),
+                              self.rate)
