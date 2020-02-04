@@ -1,3 +1,7 @@
+import itertools
+from Objects.Atomic import AtomicAgent
+
+
 class StructureAgent:
     def __init__(self, name: str, composition: set):
         self.name = name
@@ -63,11 +67,50 @@ class StructureAgent:
         """
         present_atomics = set(map(lambda a: a.name, self.composition))
         if type(self) == type(other):
+            if structure_signature[self.name] - present_atomics != set():
+                result = []
+                for atomic_name in structure_signature[self.name] - present_atomics:
+                    possibilities = AtomicAgent(atomic_name, "_").add_context(AtomicAgent(atomic_name, "_"),
+                                                                              atomic_signature, structure_signature)
+                    result.append(possibilities)
+                agents = set()
+                for options in itertools.product(*result):
+                    new_agent_self = StructureAgent(self.name, set(self.composition))
+                    new_agent_other = StructureAgent(other.name, set(other.composition))
+                    for (left, right) in options:
+                        new_agent_self.composition.add(left)
+                        new_agent_other.composition.add(right)
+                    agents.add((new_agent_self, new_agent_other))
+                return agents
+            else:
+                return {(self, other)}
 
-
-        result = set()
         if other == -1:
-            pass
+            if structure_signature[self.name] - present_atomics != set():
+                result = []
+                for atomic_name in structure_signature[self.name] - present_atomics:
+                    possibilities = AtomicAgent(atomic_name, "_").add_context(1, atomic_signature, structure_signature)
+                    result.append(possibilities)
+                agents = set()
+                for options in itertools.product(*result):
+                    new_agent_self = StructureAgent(self.name, set(self.composition))
+                    for (left, right) in options:
+                        new_agent_self.composition.add(left)
+                    agents.add((None, new_agent_self))
+            else:
+                agents = {(None, self)}
         else:
-            pass
-        return result
+            if structure_signature[self.name] - present_atomics != set():
+                result = []
+                for atomic_name in structure_signature[self.name] - present_atomics:
+                    possibilities = AtomicAgent(atomic_name, "_").add_context(1, atomic_signature, structure_signature)
+                    result.append(possibilities)
+                agents = set()
+                for options in itertools.product(*result):
+                    new_agent_self = StructureAgent(self.name, set(self.composition))
+                    for (left, right) in options:
+                        new_agent_self.composition.add(left)
+                    agents.add((new_agent_self, None))
+            else:
+                agents = {(self, None)}
+        return agents

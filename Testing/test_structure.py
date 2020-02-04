@@ -49,3 +49,5 @@ class TestState(unittest.TestCase):
                          {(self.s8, self.s9), (self.s10, self.s11)})
         self.assertEqual(self.s6.add_context(1, atomic_signature, structure_signature),
                          {(self.s8, None), (self.s10, None)})
+        self.assertEqual(self.s6.add_context(-1, atomic_signature, structure_signature),
+                         {(None, self.s8), (None, self.s10)})

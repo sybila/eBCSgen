@@ -50,11 +50,18 @@ class AtomicAgent:
                 return result
             else:
                 return {(self, other)}
+
         result = set()
         if other == -1:
-            for state in atomic_signature[self.name]:
-                result.add((None, AtomicAgent(str(self.name), state)))
+            if self.state == "_":
+                for state in atomic_signature[self.name]:
+                    result.add((None, AtomicAgent(str(self.name), state)))
+            else:
+                result = {(None, self)}
         else:
-            for state in atomic_signature[self.name]:
-                result.add((AtomicAgent(str(self.name), state), None))
+            if self.state == "_":
+                for state in atomic_signature[self.name]:
+                    result.add((AtomicAgent(str(self.name), state), None))
+            else:
+                result = {(self, None)}
         return result
