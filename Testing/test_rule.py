@@ -117,6 +117,11 @@ class TestState(unittest.TestCase):
         self.reactions_c1 = {self.reaction_c1_1, self.reaction_c1_2, self.reaction_c1_3, self.reaction_c1_4,
                              self.reaction_c1_5, self.reaction_c1_6, self.reaction_c1_7, self.reaction_c1_8}
 
+        # context no change
+
+        sequence_no_change = (self.s2_c1_u, self.s1_c1_a, self.s2_c1_u, self.s3_c1_a, self.s6_c1_p)
+        self.rule_no_change = Rule(sequence_no_change, mid_c1, compartments_c1, complexes_c1, pairs_c1, rate_c1)
+
     def test_eq(self):
         self.assertEqual(self.r1, self.r1)
 
@@ -138,3 +143,6 @@ class TestState(unittest.TestCase):
         structure_signature = {"K": {"T", "S"}, "B": {"U"}, "D": {"C"}}
         self.assertEqual(self.rule_c1.create_reactions(atomic_signature, structure_signature),
                          self.reactions_c1)
+
+        self.assertEqual(self.rule_no_change.create_reactions(atomic_signature, structure_signature),
+                         {self.reaction_c1_1})

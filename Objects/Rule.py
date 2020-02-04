@@ -67,6 +67,14 @@ class Rule:
         return Reaction(lhs, rhs, self.rate)
 
     def create_reactions(self, atomic_signature: dict, structure_signature: dict) -> set:
+        """
+        Adds context to all agents and generated all possible combinations.
+         Then, new rules with these enhances agents are generated and converted to Reactions.
+
+        :param atomic_signature: given mapping of atomic name to possible states
+        :param structure_signature: given mapping of structure name to possible atomics
+        :return:
+        """
         results = []
         for (l, r) in self.pairs:
             if l is None:

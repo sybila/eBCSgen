@@ -31,6 +31,12 @@ class Side:
         return collections.Counter(self.agents)
 
     def to_vector(self, ordering: tuple) -> State:
+        """
+        Convert the Side to a State accoring to given ordering.
+
+        :param ordering: sequence of complex agents
+        :return: State representing vector
+        """
         vector = np.zeros(len(ordering))
         multiset = self.to_counter()
         for agent in list(multiset):
