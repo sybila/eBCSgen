@@ -17,5 +17,6 @@ class TestState(unittest.TestCase):
             self.s2 - self.s3
 
     def test_check_negative(self):
-        self.assertFalse((self.s1 - self.s2).check_negative())
-        self.assertTrue((self.s3 - self.s4).check_negative())
+        bound = 5
+        self.assertFalse((self.s1 - self.s2).check_negative(bound))
+        self.assertTrue((self.s3 - self.s4).check_negative(bound))
