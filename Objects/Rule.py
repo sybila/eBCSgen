@@ -1,7 +1,7 @@
 import collections
-
 import itertools
 
+from Objects import Rate
 from Objects.Complex import Complex
 from Objects.Side import Side
 from Objects.Reaction import Reaction
@@ -12,7 +12,7 @@ def column(lst, index):
 
 
 class Rule:
-    def __init__(self, agents: tuple, mid: int, compartments: list, complexes: list, pairs: list, rate: str):
+    def __init__(self, agents: tuple, mid: int, compartments: list, complexes: list, pairs: list, rate: Rate):
         """
         Class to represent BCSL rule
 
@@ -39,7 +39,8 @@ class Rule:
 
     def __str__(self):
         lhs, rhs = self.create_complexes()
-        return " + ".join(lhs.to_list_of_strings()) + " => " + " + ".join(rhs.to_list_of_strings()) + " @ " + self.rate
+        return " + ".join(lhs.to_list_of_strings()) + " => " + " + ".join(rhs.to_list_of_strings()) \
+               + " @ " + str(self.rate)
 
     def __lt__(self, other):
         return str(self) < str(other)

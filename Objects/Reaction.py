@@ -1,9 +1,10 @@
+from Objects import Rate
 from Objects.Side import Side
 from TS.VectorReaction import VectorReaction
 
 
 class Reaction:
-    def __init__(self, lhs: Side, rhs: Side, rate: str):
+    def __init__(self, lhs: Side, rhs: Side, rate: Rate):
         """
         Class to represent BCSL rule
 
@@ -22,7 +23,7 @@ class Reaction:
         return str(self)
 
     def __str__(self):
-        return str(self.lhs) + " => " + str(self.rhs) + " @ " + self.rate
+        return str(self.lhs) + " => " + str(self.rhs) + " @ " + str(self.rate)
 
     def __lt__(self, other):
         return str(self) < str(other)
@@ -31,7 +32,7 @@ class Reaction:
         return hash(str(self))
 
     def to_vector(self, ordering: tuple) -> VectorReaction:
-        # + convert rate - probably a method of Complex
+        # + convert rate - probably a method of Rate.vectorize
         return VectorReaction(self.lhs.to_vector(ordering),
                               self.rhs.to_vector(ordering),
                               self.rate)

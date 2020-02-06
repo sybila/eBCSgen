@@ -1,6 +1,7 @@
 import unittest
 import collections
 
+from Objects.Rate import Rate
 from Objects.Structure import StructureAgent
 from Objects.Atomic import AtomicAgent
 from Objects.Complex import Complex
@@ -33,7 +34,7 @@ class TestState(unittest.TestCase):
         compartments_1 = ["cyt"] * 4
         complexes_1 = [(0, 1), (2, 2), (3, 3)]
         pairs_1 = [(0, 2), (1, 3)]
-        rate_1 = "3*[K()::cyt]/2*v_1"
+        rate_1 = Rate("3*[K()::cyt]/2*v_1")
 
         self.r1 = Rule(sequence_1, mid_1, compartments_1, complexes_1, pairs_1, rate_1)
 
@@ -42,7 +43,7 @@ class TestState(unittest.TestCase):
         compartments_2 = ["cyt"] * 4 + ["cell"]
         complexes_2 = [(0, 1), (2, 2), (3, 3), (4, 4)]
         pairs_2 = [(0, 2), (1, 3), (None, 4)]
-        rate_2 = "3*[K()::cyt]/2*v_1"
+        rate_2 = Rate("3*[K()::cyt]/2*v_1")
 
         self.r2 = Rule(sequence_2, mid_2, compartments_2, complexes_2, pairs_2, rate_2)
 
@@ -82,7 +83,7 @@ class TestState(unittest.TestCase):
         compartments_c1 = ["cyt"] * 5
         complexes_c1 = [(0, 0), (1, 1), (2, 3), (4, 4)]
         pairs_c1 = [(0, 2), (1, 3), (None, 4)]
-        rate_c1 = "3*[K()::cyt]/2*v_1"
+        rate_c1 = Rate("3*[K()::cyt]/2*v_1")
 
         self.c1_c1 = Complex(collections.Counter({self.s2_c1_u: 1}), "cyt")  # B(U{u})::cyt
         self.c1_c2 = Complex(collections.Counter({self.s2_c1_p: 1}), "cyt")  # B(U{p})::cyt
