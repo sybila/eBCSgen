@@ -3,7 +3,7 @@ from lark import Lark, Transformer, v_args
 from Objects.Atomic import AtomicAgent
 from Objects.Structure import StructureAgent
 
-json_grammar = r"""
+grammar = r"""
     start: rule
 
     rule: side "=>" side "@" rate
@@ -50,18 +50,14 @@ class TreeToObjects(Transformer):
         else:
             return StructureAgent(name, set())
 
-    # def sequence(self, matches):
-    #     print("**********", matches)
-    # #     return to_list_2(matches)
 
-
-json_parser = Lark(json_grammar, parser='lalr',
-                   lexer='standard',
-                   propagate_positions=False,
-                   maybe_placeholders=False,
-                   transformer=TreeToObjects()
-                   )
-parse = json_parser.parse
+parser = Lark(grammar,
+              parser='lalr',
+              lexer='standard',
+              propagate_positions=False,
+              maybe_placeholders=False,
+              transformer=TreeToObjects()
+              )
 
 
 def test():
@@ -69,7 +65,7 @@ def test():
         1 K(S{u3_m}, T{a_p}, S{p})::cyt + 1 B()::cyt => 1 B().K(S{p}).H()::cyt + 2 A{_}::cyt @ 3*[K()::cyt]/2*v_1
     '''
 
-    j = parse(test_atomic)
+    j = parser.parse(test_atomic)
     print(j.pretty())
 
 
