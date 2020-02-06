@@ -1,17 +1,18 @@
 from lark import Lark, Transformer, v_args
 
 from Objects.Atomic import AtomicAgent
+from Objects.Structure import StructureAgent
 
 json_grammar = r"""
     start: rule
 
     rule: side "=>" side "@" rate
-    side: side "+" const complex | const complex | "_"
+    side: (const? complex "+")* (const? complex)?
     complex: sequence "::" compartment
-    sequence: agent | agent "." sequence
+    sequence: (agent ".")* agent?
     agent: atomic | structure
     structure: s_name "()" | s_name "(" composition ")"
-    composition: atomic | atomic "," composition
+    composition: (atomic ",")* atomic?
     atomic : a_name "{" state "}" | a_name
 
     rate : fun "/" fun | fun
@@ -34,13 +35,25 @@ json_grammar = r"""
 
 
 class TreeToObjects(Transformer):
-    def atomic(self, items):
-        a_name, state = items[0], items[1]
-        print(a_name, state)
+    def atomic(self, matches):
+        name, state = str(matches[0].children[0]), matches[1]
         if state.children:
-            return AtomicAgent(str(a_name.children[0]), str(state.children[0]))
+            return AtomicAgent(name, str(state.children[0]))
         else:
-            return AtomicAgent(str(a_name.children[0]), "_")
+            return AtomicAgent(name, "_")
+
+    def structure(self, matches):
+        name = str(matches[0].children[0])
+        if len(matches) > 1:
+            composition = set(matches[1].children)
+            return StructureAgent(name, composition)
+        else:
+            return StructureAgent(name, set())
+
+    # def sequence(self, matches):
+    #     print("**********", matches)
+    # #     return to_list_2(matches)
+
 
 json_parser = Lark(json_grammar, parser='lalr',
                    lexer='standard',
@@ -53,7 +66,7 @@ parse = json_parser.parse
 
 def test():
     test_atomic = '''
-        1 K(S{u3_m}, T{a_p})::cyt + 1 B()::cyt => 1 B().K(S{p})::cyt + 2 A{_}::cyt @ 3*[K()::cyt]/2*v_1
+        1 K(S{u3_m}, T{a_p}, S{p})::cyt + 1 B()::cyt => 1 B().K(S{p}).H()::cyt + 2 A{_}::cyt @ 3*[K()::cyt]/2*v_1
     '''
 
     j = parse(test_atomic)
