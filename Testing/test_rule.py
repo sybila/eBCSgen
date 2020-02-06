@@ -8,6 +8,7 @@ from Objects.Complex import Complex
 from Objects.Rule import Rule
 from Objects.Side import Side
 from Objects.Reaction import Reaction
+from Parsing.ParseModel import RuleParser
 
 
 class TestRule(unittest.TestCase):
@@ -123,6 +124,10 @@ class TestRule(unittest.TestCase):
         sequence_no_change = (self.s2_c1_u, self.s1_c1_a, self.s2_c1_u, self.s3_c1_a, self.s6_c1_p)
         self.rule_no_change = Rule(sequence_no_change, mid_c1, compartments_c1, complexes_c1, pairs_c1, rate_c1)
 
+        # parsing
+
+        self.parser = RuleParser()
+
     def test_eq(self):
         self.assertEqual(self.r1, self.r1)
 
@@ -147,3 +152,7 @@ class TestRule(unittest.TestCase):
 
         self.assertEqual(self.rule_no_change.create_reactions(atomic_signature, structure_signature),
                          {self.reaction_c1_1})
+
+    # def test_parser(self):
+    #     rule_expr = "B().K(S{u})::cyt => K(S{p})::cyt + B()::cyt + D(B{_})::cell @ 3*[K()::cyt]/2*v_1"
+    #     self.assertEqual(self.parser.parse(rule_expr), self.r2)

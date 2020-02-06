@@ -113,24 +113,14 @@ class TreeToObjects(Transformer):
         return Rule(agents, mid, compartments, complexes, pairs, rate)
 
 
-parser = Lark(grammar, parser='lalr',
-              lexer='standard',
-              propagate_positions=False,
-              maybe_placeholders=False,
-              transformer=TreeToObjects()
-              )
+class RuleParser:
+    def __init__(self):
+        self.parser = Lark(grammar, parser='lalr',
+                           lexer='standard',
+                           propagate_positions=False,
+                           maybe_placeholders=False,
+                           transformer=TreeToObjects()
+                           )
 
-
-def test():
-    test_atomic = '''
-        1 K(S{u3_m}, T{a_p}, S{p})::cyt + B()::cyt => 1 B().K(S{p}).H()::cyt + 2 A{_}::cyt @ 3*[K()::cyt]/2*v_1
-    '''
-
-    j = parser.parse(test_atomic)
-    print(j.children[0])
-
-
-if __name__ == '__main__':
-    test()
-    # with open(sys.argv[1]) as f:
-    # print(parse(f.read()))
+    def parse(self, expression):
+        return self.parser.parse(expression).children[0]
