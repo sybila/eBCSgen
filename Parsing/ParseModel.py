@@ -109,7 +109,12 @@ class TreeToObjects(Transformer):
         compartments = lhs.comp + rhs.comp
         complexes = lhs.complexes + list(
             map(lambda item: (item[0] + lhs.counter, item[1] + lhs.counter), rhs.complexes))
-        pairs = [(i, i + lhs.counter) for i in range(lhs.counter - 1)]
+        pairs = [(i, i + lhs.counter) for i in range(min(lhs.counter, rhs.counter))]
+        if lhs.counter > rhs.counter:
+            pairs += [(i, None) for i in range()]
+        elif lhs.counter < rhs.counter:
+            pairs += [(None, i) for i in range()]
+
         return Rule(agents, mid, compartments, complexes, pairs, rate)
 
 
