@@ -32,7 +32,7 @@ class Rule:
 
     def __eq__(self, other: 'Rule'):
         return self.agents == other.agents and self.mid == other.mid and self.compartments == other.compartments and \
-               self.complexes == other.complexes and self.pairs == other.pairs and self.rate == other.rate
+               self.complexes == other.complexes and self.pairs == other.pairs # and self.rate == other.rate
 
     def __repr__(self):
         return str(self)
@@ -53,7 +53,7 @@ class Rule:
         """
         lhs, rhs = [], []
         for (f, t) in self.complexes:
-            c = Complex(collections.Counter(self.agents[f:t + 1]), self.compartments[f])
+            c = Complex(self.agents[f:t + 1], self.compartments[f])
             lhs.append(c) if t < self.mid else rhs.append(c)
         return Side(lhs), Side(rhs)
 

@@ -23,10 +23,10 @@ class TestRule(unittest.TestCase):
         self.s4 = StructureAgent("B", set())
         self.s5 = StructureAgent("D", {self.a3})
 
-        self.c1 = Complex(collections.Counter({self.s1: 1, self.s2: 1}), "cyt")
-        self.c2 = Complex(collections.Counter({self.s3: 1}), "cyt")
-        self.c3 = Complex(collections.Counter({self.s2: 1}), "cyt")
-        self.c4 = Complex(collections.Counter({self.s5: 1}), "cell")
+        self.c1 = Complex([self.s1, self.s2], "cyt")
+        self.c2 = Complex([self.s3], "cyt")
+        self.c3 = Complex([self.s2], "cyt")
+        self.c4 = Complex([self.s5], "cell")
 
         #  rules
 
@@ -86,16 +86,16 @@ class TestRule(unittest.TestCase):
         pairs_c1 = [(0, 2), (1, 3), (None, 4)]
         rate_c1 = Rate("3*[K()::cyt]/2*v_1")
 
-        self.c1_c1 = Complex(collections.Counter({self.s2_c1_u: 1}), "cyt")  # B(U{u})::cyt
-        self.c1_c2 = Complex(collections.Counter({self.s2_c1_p: 1}), "cyt")  # B(U{p})::cyt
-        self.c1_c3 = Complex(collections.Counter({self.s1_c1_a: 1}), "cyt")  # K(S{u},T{a})::cyt
-        self.c1_c4 = Complex(collections.Counter({self.s1_c1_i: 1}), "cyt")  # K(S{u},T{i})::cyt
-        self.c1_c5 = Complex(collections.Counter({self.s2_c1_u: 1, self.s3_c1_a: 1}), "cyt")  # B(U{u}).K(S{p},T{a})::c
-        self.c1_c6 = Complex(collections.Counter({self.s2_c1_u: 1, self.s3_c1_i: 1}), "cyt")  # B(U{u}).K(S{p},T{i})::c
-        self.c1_c7 = Complex(collections.Counter({self.s2_c1_p: 1, self.s3_c1_i: 1}), "cyt")  # B(U{p}).K(S{p},T{i})::c
-        self.c1_c8 = Complex(collections.Counter({self.s2_c1_p: 1, self.s3_c1_a: 1}), "cyt")  # B(U{p}).K(S{p},T{a})::c
-        self.c1_c9 = Complex(collections.Counter({self.s6_c1_p: 1}), "cyt")  # D(C{p})::cyt
-        self.c1_c10 = Complex(collections.Counter({self.s6_c1_u: 1}), "cyt")  # D(C{u})::cyt
+        self.c1_c1 = Complex([self.s2_c1_u], "cyt")  # B(U{u})::cyt
+        self.c1_c2 = Complex([self.s2_c1_p], "cyt")  # B(U{p})::cyt
+        self.c1_c3 = Complex([self.s1_c1_a], "cyt")  # K(S{u},T{a})::cyt
+        self.c1_c4 = Complex([self.s1_c1_i], "cyt")  # K(S{u},T{i})::cyt
+        self.c1_c5 = Complex([self.s3_c1_a, self.s2_c1_u], "cyt")  # K(S{p},T{a}).B(U{u})::c
+        self.c1_c6 = Complex([self.s3_c1_i, self.s2_c1_u], "cyt")  # K(S{p},T{i}).B(U{u})::c
+        self.c1_c7 = Complex([self.s3_c1_i, self.s2_c1_p], "cyt")  # K(S{p},T{i}).B(U{p})::c
+        self.c1_c8 = Complex([self.s3_c1_a, self.s2_c1_p], "cyt")  # K(S{p},T{a}).B(U{p})::c
+        self.c1_c9 = Complex([self.s6_c1_p], "cyt")  # D(C{p})::cyt
+        self.c1_c10 = Complex([self.s6_c1_u], "cyt")  # D(C{u})::cyt
 
         self.rule_c1 = Rule(sequence_c1, mid_c1, compartments_c1, complexes_c1, pairs_c1, rate_c1)
 
@@ -121,7 +121,7 @@ class TestRule(unittest.TestCase):
 
         # context no change
 
-        sequence_no_change = (self.s2_c1_u, self.s1_c1_a, self.s2_c1_u, self.s3_c1_a, self.s6_c1_p)
+        sequence_no_change = (self.s1_c1_a, self.s2_c1_u, self.s3_c1_a, self.s2_c1_u, self.s6_c1_p)
         self.rule_no_change = Rule(sequence_no_change, mid_c1, compartments_c1, complexes_c1, pairs_c1, rate_c1)
 
         # parsing
@@ -132,9 +132,9 @@ class TestRule(unittest.TestCase):
         self.assertEqual(self.r1, self.r1)
 
     def test_print(self):
-        self.assertEqual(str(self.r1), "B().K(S{u})::cyt => K(S{p})::cyt + B()::cyt @ 3*[K()::cyt]/2*v_1")
+        self.assertEqual(str(self.r1), "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt @ 3*[K()::cyt]/2*v_1")
         self.assertEqual(str(self.r2),
-                         "B().K(S{u})::cyt => K(S{p})::cyt + B()::cyt + D(B{_})::cell @ 3*[K()::cyt]/2*v_1")
+                         "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt + D(B{_})::cell @ 3*[K()::cyt]/2*v_1")
 
     def test_create_complexes(self):
         lhs = Side([self.c1])
@@ -153,6 +153,10 @@ class TestRule(unittest.TestCase):
         self.assertEqual(self.rule_no_change.create_reactions(atomic_signature, structure_signature),
                          {self.reaction_c1_1})
 
-    # def test_parser(self):
-    #     rule_expr = "B().K(S{u})::cyt => K(S{p})::cyt + B()::cyt + D(B{_})::cell @ 3*[K()::cyt]/2*v_1"
-    #     self.assertEqual(self.parser.parse(rule_expr), self.r2)
+    def test_parser(self):
+        rule_expr = "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt + D(B{_})::cell @ 3*[K()::cyt]/2*v_1"
+        new = self.parser.parse(rule_expr)
+        print("\n")
+        print(new.pairs)
+        print(self.r2.pairs)
+        self.assertEqual(self.parser.parse(rule_expr), self.r2)

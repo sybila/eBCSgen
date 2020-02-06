@@ -3,7 +3,7 @@ import itertools
 
 
 class Complex:
-    def __init__(self, agents: collections.Counter, compartment: str):
+    def __init__(self, agents: list, compartment: str):
         self.agents = agents
         self.compartment = compartment
 
@@ -11,13 +11,14 @@ class Complex:
         return str(self)
 
     def __str__(self):
-        return ".".join(list(map(str, sorted(list(self.agents.elements()))))) + "::" + self.compartment
+        return ".".join(list(map(str, self.agents))) + "::" + self.compartment
 
     def __lt__(self, other: 'Complex'):
         return str(self) < str(other)
 
     def __eq__(self, other: 'Complex'):
-        return self.compartment == other.compartment and self.agents == other.agents
+        return self.compartment == other.compartment and\
+               collections.Counter(self.agents) == collections.Counter(other.agents)
 
     def __hash__(self):
         return hash(str(self))
@@ -27,9 +28,11 @@ class Complex:
             return False
         if self == other:
             return True
-        if self.compartment == other.compartment and sum(self.agents.values()) == sum(other.agents.values()):
-            other_permutations = list(itertools.permutations(list(other.agents.elements())))
-            for self_perm in itertools.permutations(list(self.agents.elements())):
+        self_agents = collections.Counter(self.agents)
+        other_agents = collections.Counter(other.agents)
+        if self.compartment == other.compartment and sum(self_agents.values()) == sum(other_agents.values()):
+            other_permutations = list(itertools.permutations(list(other_agents.elements())))
+            for self_perm in itertools.permutations(list(self_agents.elements())):
                 for other_perm in other_permutations:
                     if all([self_perm[i].compatible(other_perm[i]) for i in range(len(self_perm))]):
                         return True
