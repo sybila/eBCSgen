@@ -3,7 +3,7 @@ from Objects.Structure import StructureAgent
 from Objects.Atomic import AtomicAgent
 
 
-class TestState(unittest.TestCase):
+class TestStructure(unittest.TestCase):
     def setUp(self):
         self.a1 = AtomicAgent("T", "s")
         self.a2 = AtomicAgent("S", "a")

@@ -7,6 +7,7 @@ from Objects.Complex import Complex
 from Objects.Rule import Rule
 from Objects.Structure import StructureAgent
 
+
 class SideHelper:
     def __init__(self):
         self.seq = []
@@ -19,6 +20,7 @@ class SideHelper:
 
     def __repr__(self):
         return str(self)
+
 
 grammar = r"""
     start: rule
@@ -94,7 +96,7 @@ class TreeToObjects(Transformer):
                 for i in range(stochio):
                     start = helper.counter
                     for agent in agents.children:
-                        helper.seq.append(agent.children[0])
+                        helper.seq.append(deepcopy(agent.children[0]))
                         helper.comp.append(compartment)
                         helper.counter += 1
                     helper.complexes.append((start, helper.counter - 1))
@@ -105,9 +107,11 @@ class TreeToObjects(Transformer):
         agents = tuple(lhs.seq + rhs.seq)
         mid = lhs.counter
         compartments = lhs.comp + rhs.comp
-        complexes = lhs.complexes + list(map(lambda item: (item[0] + lhs.counter, item[1] + lhs.counter), rhs.complexes))
-        pairs = [(i, i +lhs.counter) for i in range(lhs.counter - 1)]
+        complexes = lhs.complexes + list(
+            map(lambda item: (item[0] + lhs.counter, item[1] + lhs.counter), rhs.complexes))
+        pairs = [(i, i + lhs.counter) for i in range(lhs.counter - 1)]
         return Rule(agents, mid, compartments, complexes, pairs, rate)
+
 
 parser = Lark(grammar, parser='lalr',
               lexer='standard',

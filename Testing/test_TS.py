@@ -3,7 +3,7 @@ from TS.State import State
 import numpy as np
 
 
-class TestState(unittest.TestCase):
+class TestTS(unittest.TestCase):
     def setUp(self):
         self.s1 = State(np.array((1, 2, 3)))
         self.s2 = State(np.array((5, 4, 3)))

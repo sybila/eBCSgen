@@ -10,7 +10,7 @@ from Objects.Side import Side
 from Objects.Reaction import Reaction
 
 
-class TestState(unittest.TestCase):
+class TestRule(unittest.TestCase):
     def setUp(self):
         self.a1 = AtomicAgent("S", "u")
         self.a2 = AtomicAgent("S", "p")

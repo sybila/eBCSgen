@@ -2,7 +2,7 @@ import unittest
 from Objects.Atomic import AtomicAgent
 
 
-class TestState(unittest.TestCase):
+class TestAtomic(unittest.TestCase):
     def setUp(self):
         self.a1 = AtomicAgent("T", "s")
         self.a2 = AtomicAgent("S", "a")

@@ -9,7 +9,7 @@ from Objects.Side import Side
 from TS.State import State
 
 
-class TestState(unittest.TestCase):
+class TestSide(unittest.TestCase):
     def setUp(self):
         self.a1 = AtomicAgent("S", "u")
         self.a2 = AtomicAgent("S", "p")

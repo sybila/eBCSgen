@@ -6,7 +6,7 @@ from Objects.Atomic import AtomicAgent
 from Objects.Complex import Complex
 
 
-class TestState(unittest.TestCase):
+class TestComplex(unittest.TestCase):
     def setUp(self):
         self.a1 = AtomicAgent("T", "s")
         self.a2 = AtomicAgent("S", "i")
