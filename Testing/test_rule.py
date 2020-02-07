@@ -16,12 +16,16 @@ class TestRule(unittest.TestCase):
         self.a1 = AtomicAgent("S", "u")
         self.a2 = AtomicAgent("S", "p")
         self.a3 = AtomicAgent("B", "_")
+        self.a4 = AtomicAgent("B", "-")
+        self.a5 = AtomicAgent("B", "+")
 
         self.s1 = StructureAgent("K", {self.a1})
         self.s2 = StructureAgent("B", set())
         self.s3 = StructureAgent("K", {self.a2})
         self.s4 = StructureAgent("B", set())
         self.s5 = StructureAgent("D", {self.a3})
+        self.s6 = StructureAgent("K", {self.a4})
+        self.s7 = StructureAgent("K", {self.a5})
 
         self.c1 = Complex([self.s1, self.s2], "cyt")
         self.c2 = Complex([self.s3], "cyt")
@@ -48,12 +52,12 @@ class TestRule(unittest.TestCase):
 
         self.r2 = Rule(sequence_2, mid_2, compartments_2, complexes_2, pairs_2, rate_2)
 
-        sequence_3 = (self.s1, self.s2, self.s5, self.s3, self.s4)
+        sequence_3 = (self.s6, self.s2, self.s5, self.s7, self.s4)
         mid_3 = 3
         compartments_3 = ["cyt"] * 2 + ["cell"] + ["cyt"] * 2
         complexes_3 = [(0, 1), (2, 2), (3, 3), (4, 4)]
         pairs_3 = [(0, 3), (1, 4), (2, None)]
-        rate_3 = Rate("3*[K(T{i})::cyt]/2*v_1")
+        rate_3 = Rate("3*[K(T{3+})::cyt]/2*v_1")
 
         self.r3 = Rule(sequence_3, mid_3, compartments_3, complexes_3, pairs_3, rate_3)
 
@@ -166,6 +170,8 @@ class TestRule(unittest.TestCase):
         rule_expr = "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt + D(B{_})::cell @ 3*[K()::cyt]/2*v_1"
         self.assertEqual(self.parser.parse(rule_expr), self.r2)
 
-        rule_expr = "K(S{u}).B()::cyt + D(B{_})::cell => K(S{p})::cyt + B()::cyt @ 3*[K(T{i})::cyt]/2*v_1"
+        rule_expr = "K(B{-}).B()::cyt + D(B{_})::cell => K(B{+})::cyt + B()::cyt @ 3*[K(T{3+})::cyt]/2*v_1"
         self.assertEqual(self.parser.parse(rule_expr), self.r3)
+
+
 

@@ -40,7 +40,8 @@ grammar = r"""
 
     rate_complex: sequence "::" compartment
 
-    state: CNAME | "_"
+    !state: (DIGIT|LETTER|"+"|"-"|"*"|"_")+
+
     a_name: CNAME
     s_name: CNAME
     compartment: CNAME
@@ -57,12 +58,12 @@ grammar = r"""
 
 
 class TreeToObjects(Transformer):
+    def state(self, matches):
+        return "".join(map(str, matches))
+
     def atomic(self, matches):
         name, state = str(matches[0].children[0]), matches[1]
-        if state.children:
-            return AtomicAgent(name, str(state.children[0]))
-        else:
-            return AtomicAgent(name, "_")
+        return AtomicAgent(name, state)
 
     def structure(self, matches):
         name = str(matches[0].children[0])
@@ -122,7 +123,6 @@ class TreeToObjects(Transformer):
 class RuleParser:
     def __init__(self):
         self.parser = Lark(grammar, parser='lalr',
-                           lexer='standard',
                            propagate_positions=False,
                            maybe_placeholders=False,
                            transformer=TreeToObjects()

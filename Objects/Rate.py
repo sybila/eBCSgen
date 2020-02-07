@@ -12,9 +12,17 @@ class Rate:
         return self.expression == other.expression
 
     def __str__(self):
-        return self.expression
+        return str(self.expression)
 
-    def vectorize(self, ordering: tuple):
+    def vectorize(self, ordering: tuple) -> list:
+        """
+        Converts all occurrences of Complexes (resp. sub trees named agent)
+        with its vector representation. These are directly replaced within
+        the tree expression.
+
+        :param ordering: given tuple of Complexes
+        :return: list of transformed States (just for testing)
+        """
         vec = Vectorizer(ordering)
         vec.transform(self.expression)
         return vec.visited

@@ -6,7 +6,7 @@ from TS.VectorReaction import VectorReaction
 class Reaction:
     def __init__(self, lhs: Side, rhs: Side, rate: Rate):
         """
-        Class to represent BCSL rule
+        Class to represent BCSL reaction
 
         :param lhs: left-hand Side representing substrates
         :param rhs: left-hand Side representing products
@@ -32,7 +32,7 @@ class Reaction:
         return hash(str(self))
 
     def to_vector(self, ordering: tuple) -> VectorReaction:
-        # + convert rate - probably a method of Rate.vectorize
+        self.rate.vectorize(ordering)
         return VectorReaction(self.lhs.to_vector(ordering),
                               self.rhs.to_vector(ordering),
                               self.rate)
