@@ -48,6 +48,15 @@ class TestRule(unittest.TestCase):
 
         self.r2 = Rule(sequence_2, mid_2, compartments_2, complexes_2, pairs_2, rate_2)
 
+        sequence_3 = (self.s1, self.s2, self.s5, self.s3, self.s4)
+        mid_3 = 3
+        compartments_3 = ["cyt"] * 2 + ["cell"] + ["cyt"] * 2
+        complexes_3 = [(0, 1), (2, 2), (3, 3), (4, 4)]
+        pairs_3 = [(0, 3), (1, 4), (2, None)]
+        rate_3 = Rate("3*[K(T{i})::cyt]/2*v_1")
+
+        self.r3 = Rule(sequence_3, mid_3, compartments_3, complexes_3, pairs_3, rate_3)
+
         #  reactions
 
         lhs = Side([self.c1])
@@ -155,8 +164,8 @@ class TestRule(unittest.TestCase):
 
     def test_parser(self):
         rule_expr = "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt + D(B{_})::cell @ 3*[K()::cyt]/2*v_1"
-        new = self.parser.parse(rule_expr)
-        print("\n")
-        print(new.pairs)
-        print(self.r2.pairs)
         self.assertEqual(self.parser.parse(rule_expr), self.r2)
+
+        rule_expr = "K(S{u}).B()::cyt + D(B{_})::cell => K(S{p})::cyt + B()::cyt @ 3*[K(T{i})::cyt]/2*v_1"
+        self.assertEqual(self.parser.parse(rule_expr), self.r3)
+
