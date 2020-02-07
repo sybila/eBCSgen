@@ -1,9 +1,10 @@
 import collections
 from copy import deepcopy
-from lark import Lark, Transformer, v_args
+from lark import Lark, Transformer, Tree
 
 from Objects.Atomic import AtomicAgent
 from Objects.Complex import Complex
+from Objects.Rate import Rate
 from Objects.Rule import Rule
 from Objects.Structure import StructureAgent
 
@@ -76,7 +77,7 @@ class TreeToObjects(Transformer):
         for item in matches[0].children:
             sequence.append(item.children[0])
         compartment = matches[1]
-        return Complex(collections.Counter(sequence), compartment)
+        return Tree("agent", [Complex(collections.Counter(sequence), compartment)])
 
     def compartment(self, matches):
         return str(matches[0])
@@ -115,7 +116,7 @@ class TreeToObjects(Transformer):
         elif lhs.counter < rhs.counter:
             pairs += [(None, i + lhs.counter) for i in range(lhs.counter, rhs.counter)]
 
-        return Rule(agents, mid, compartments, complexes, pairs, rate)
+        return Rule(agents, mid, compartments, complexes, pairs, Rate(rate))
 
 
 class RuleParser:

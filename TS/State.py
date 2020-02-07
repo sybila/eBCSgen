@@ -11,6 +11,12 @@ class State:
     def __sub__(self, other):
         return State(self.sequence - other.sequence)
 
+    def __str__(self):
+        return str(self.sequence)
+
+    def __repr__(self):
+        return str(self)
+
     def check_negative(self, bound: int) -> bool:
         return all(0 <= value <= bound for value in self.sequence)
 
