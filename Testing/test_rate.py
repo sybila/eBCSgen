@@ -1,8 +1,10 @@
 import unittest
 import numpy as np
+import sympy
 
 from Objects.Atomic import AtomicAgent
 from Objects.Complex import Complex
+from Objects.Rate import Rate
 from Objects.Structure import StructureAgent
 from Parsing.ParseModel import Parser
 from TS.State import State
@@ -34,16 +36,22 @@ class TestRate(unittest.TestCase):
 
         # rates
 
-        self.parser = Parser("rule")
-        rule_expr = "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt + D(B{_})::cell @ 3*[K()::cyt]/2*v_1"
+        self.parser = Parser("rate")
+        rate_expr = "3*[K()::cyt]/2*v_1"
 
-        rule = self.parser.parse(rule_expr)
-        self.rate_1 = rule.rate
+        self.rate_1 = Rate(self.parser.parse(rate_expr))
 
-        rule_expr = "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt + D(B{_})::cell @ 3*[K(T{i}).X()::cyt] + [K()::cyt]"
+        rate_expr = "3*[K(T{i}).X()::cyt] + [K()::cyt]"
 
-        rule = self.parser.parse(rule_expr)
-        self.rate_2 = rule.rate
+        self.rate_2 = Rate(self.parser.parse(rate_expr))
+
+        # states
+
+        self.state_1 = State(np.array([2, 3]))
+        self.state_2 = State(np.array([2, 0, 3, 1, 6, 2]))
+
+    def test_to_str(self):
+        self.assertEqual(str(self.rate_1), "3*[K()::cyt]/2*v_1")
 
     def test_eq(self):
         self.assertEqual(self.rate_2, self.rate_2)
@@ -57,4 +65,10 @@ class TestRate(unittest.TestCase):
                                                            State(np.array([1, 1, 0, 0, 0, 0]))])
 
     def test_evaluate(self):
-        pass
+        ordering = (self.c2, self.c3)
+        self.rate_1.vectorize(ordering)
+        self.assertEqual(self.rate_1.evaluate(self.state_1), sympy.sympify("3*5.0/2*v_1"))
+
+        ordering = (self.c2, self.c3, self.c4, self.c5, self.c6, self.c7)
+        self.rate_2.vectorize(ordering)
+        self.assertEqual(self.rate_2.evaluate(self.state_2), sympy.sympify("3*4.0 + 2"))

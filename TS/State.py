@@ -11,6 +11,9 @@ class State:
     def __sub__(self, other):
         return State(self.sequence - other.sequence)
 
+    def __mul__(self, other) -> np.array:
+        return self.sequence * other.sequence
+
     def __str__(self):
         return str(self.sequence)
 

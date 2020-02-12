@@ -32,7 +32,7 @@ class Rule:
 
     def __eq__(self, other: 'Rule'):
         return self.agents == other.agents and self.mid == other.mid and self.compartments == other.compartments and \
-               self.complexes == other.complexes and self.pairs == other.pairs # and self.rate == other.rate
+               self.complexes == other.complexes and self.pairs == other.pairs and str(self.rate) == str(other.rate)
 
     def __repr__(self):
         return str(self)

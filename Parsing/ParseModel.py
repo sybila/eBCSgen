@@ -33,7 +33,7 @@ GRAMMAR = r"""
 
     init: const? rate_complex
     definition: param "=" number
-    rule: side "=>" side "@" rate
+    rule: side "=>" side ("@" rate)?
 
     side: (const? complex "+")* (const? complex)?
     complex: sequence "::" compartment
@@ -44,7 +44,9 @@ GRAMMAR = r"""
     atomic : a_name "{" state "}" | a_name
 
     !rate : fun "/" fun | fun
-    !fun: const | param | "[" rate_complex "]" | fun "+" fun | fun "*" fun | fun "^" const | "(" fun ")"
+    !fun: const | param | rate_agent | fun "+" fun | fun "*" fun | fun "^" const | "(" fun ")"
+
+    !rate_agent: "[" rate_complex "]"
 
     rate_complex: sequence "::" compartment
 
