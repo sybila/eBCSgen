@@ -37,7 +37,7 @@ GRAMMAR = r"""
 
     side: (const? complex "+")* (const? complex)?
     complex: sequence "::" compartment
-    sequence: (agent ".")* agent?
+    sequence: (agent ".")* agent
     agent: atomic | structure
     structure: s_name "()" | s_name "(" composition ")"
     composition: (atomic ",")* atomic?

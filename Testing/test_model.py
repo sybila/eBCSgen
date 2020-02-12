@@ -77,8 +77,6 @@ class TestModel(unittest.TestCase):
         """
 
         self.model_parser = Parser("model")
-    #
-    # def test_parser(self):
-    #     # doesnt work because sets use hash for comparision and it is Rule.hash is using str represenation where
-    #     # is included also Rate
-    #     self.assertEqual(self.model_parser.parse(self.model_str), self.model)
+
+    def test_parser(self):
+        self.assertEqual(self.model_parser.parse(self.model_str), self.model)
