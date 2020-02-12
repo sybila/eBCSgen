@@ -1,5 +1,6 @@
 import unittest
 import collections
+import numpy as np
 
 from Objects.Model import Model
 from Objects.Rate import Rate
@@ -7,6 +8,9 @@ from Objects.Structure import StructureAgent
 from Objects.Complex import Complex
 from Objects.Rule import Rule
 from Parsing.ParseModel import Parser
+from TS.State import State
+from TS.VectorModel import VectorModel
+from TS.VectorReaction import VectorReaction
 
 
 class TestModel(unittest.TestCase):
@@ -20,6 +24,7 @@ class TestModel(unittest.TestCase):
 
         self.c1 = Complex([self.s1], "rep")
         self.c2 = Complex([self.s2], "rep")
+        self.c3 = Complex([self.s3], "rep")
 
         #  rules
 
@@ -92,6 +97,27 @@ class TestModel(unittest.TestCase):
         k2 = 0.12
         """
 
+        # vectors
+
+        ordering = (self.c1, self.c2, self.c3)
+
+        self.rate_parser = Parser("rate")
+        rate_expr = "1/(1+([X()::rep])^4)"
+        rate_1 = Rate(self.rate_parser.parse(rate_expr))
+        rate_1.vectorize(ordering)
+
+        rate_expr = "k1*[X()::rep]"
+        rate_2 = Rate(self.rate_parser.parse(rate_expr))
+        rate_2.vectorize(ordering)
+
+        init = State(np.array([2.0, 1.0, 0.0]))
+
+        vector_reactions = {VectorReaction(State(np.array([0.0, 0.0, 0.0])), State(np.array([0.0, 1.0, 0.0])), rate_1),
+                            VectorReaction(State(np.array([1.0, 0.0, 0.0])), State(np.array([0.0, 0.0, 0.0])), rate_2),
+                            VectorReaction(State(np.array([0.0, 0.0, 1.0])), State(np.array([1.0, 0.0, 0.0])), None)}
+
+        self.vm_1 = VectorModel(vector_reactions, init, ordering, None)
+
     def test_parser(self):
         self.assertEqual(self.model_parser.parse(self.model_str_1), self.model)
 
@@ -103,5 +129,4 @@ class TestModel(unittest.TestCase):
 
     def test_to_vector_model(self):
         model = self.model_parser.parse(self.model_str_1)
-        print(model)
-        print(model.to_vector_model())
+        self.assertTrue(model.to_vector_model() == self.vm_1)

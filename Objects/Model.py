@@ -58,7 +58,7 @@ class Model:
         for reaction in reactions:
             unique_complexes |= set(reaction.lhs.to_counter()) | set(reaction.rhs.to_counter())
         unique_complexes |= set(self.init)
-        ordering = tuple(unique_complexes)
+        ordering = tuple(sorted(unique_complexes))
 
         init = Side(self.init.elements()).to_vector(ordering)
         vector_reactions = set()

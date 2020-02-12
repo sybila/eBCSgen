@@ -9,14 +9,18 @@ class VectorModel:
         self.bound = bound if bound else self.compute_bound()
 
     def __eq__(self, other: 'VectorModel') -> bool:
-        return self.vector_reactions == other.vector_reactions and self.init == other.init
+        return self.vector_reactions == other.vector_reactions #and\
+               #self.init == other.init and self.ordering == other.ordering
 
     def __str__(self):
-        return "Vector model:\n" + "\n".join(map(str, self.vector_reactions)) + "\n\n" \
+        return "Vector model:\n" + "\n".join(map(str, sorted(self.vector_reactions))) + "\n\n" \
                + str(self.init) + "\n\n" + str(self.ordering)
 
     def __repr__(self):
         return str(self)
+
+    def __hash__(self):
+        return hash(str(self))
 
     def compute_bound(self):
         # visit all reactions and inits
