@@ -165,6 +165,8 @@ class TestRule(unittest.TestCase):
 
         self.parser = Parser("rule")
 
+        self.rule_no_rate = Rule(sequence_1, mid_1, compartments_1, complexes_1, pairs_1, None)
+
     def test_eq(self):
         self.assertEqual(self.r1, self.r1)
 
@@ -203,4 +205,5 @@ class TestRule(unittest.TestCase):
         rule_expr = "=> Y()::rep @ 1/(1+([X()::rep])^4)"
         self.assertEqual(self.parser.parse(rule_expr), self.r5)
 
-
+        rule_expr = "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt"
+        self.assertEqual(self.parser.parse(rule_expr), self.rule_no_rate)

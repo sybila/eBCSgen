@@ -37,9 +37,8 @@ class TestModel(unittest.TestCase):
         compartments_2 = ["rep"] * 2
         complexes_2 = [(0, 0), (1, 1)]
         pairs_2 = [(0, 1)]
-        rate_2 = Rate("k2*[Z()::rep]")
 
-        self.r2 = Rule(sequence_2, mid_2, compartments_2, complexes_2, pairs_2, rate_2)
+        self.r2 = Rule(sequence_2, mid_2, compartments_2, complexes_2, pairs_2, None)
 
         sequence_3 = (self.s2, )
         mid_3 = 0
@@ -64,7 +63,7 @@ class TestModel(unittest.TestCase):
         self.model_str_1 = """
         #! rules
         X()::rep => @ k1*[X()::rep]
-        Z()::rep => X()::rep @ k2*[Z()::rep]
+        Z()::rep => X()::rep
         => Y()::rep @ 1/(1+([X()::rep])^4)
 
         #! inits

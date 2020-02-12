@@ -15,6 +15,7 @@ class VectorModel:
         pass
 
     def generate_TS(self) -> State:
+        # sympy.sympify(s).subs([('v', 5)]) can be used on evaluated rate to obtain evaluation by parameters
         pass
 
     def simulate(self, options) -> list:

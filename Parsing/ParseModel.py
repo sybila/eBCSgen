@@ -123,7 +123,11 @@ class TreeToObjects(Transformer):
         return helper
 
     def rule(self, matches):
-        lhs, rhs, rate = matches
+        if len(matches) > 2:
+            lhs, rhs, rate = matches
+        else:
+            lhs, rhs = matches
+            rate = None
         agents = tuple(lhs.seq + rhs.seq)
         mid = lhs.counter
         compartments = lhs.comp + rhs.comp
@@ -135,7 +139,7 @@ class TreeToObjects(Transformer):
         elif lhs.counter < rhs.counter:
             pairs += [(None, i + lhs.counter) for i in range(lhs.counter, rhs.counter)]
 
-        return Rule(agents, mid, compartments, complexes, pairs, Rate(rate))
+        return Rule(agents, mid, compartments, complexes, pairs, Rate(rate) if rate else None)
 
     def rules(self, matches):
         return matches
