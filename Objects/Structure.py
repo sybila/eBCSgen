@@ -47,6 +47,19 @@ class StructureAgent:
                 return False
         return True
 
+    def extend_signature(self, atomic_signature: dict, structure_signature: dict):
+        """
+        Extend given signatures by possibly new context.
+
+        :param atomic_signature: given atomic signature
+        :param structure_signature: given structure signature
+        :return: updated signatures
+        """
+        for atomic in self.composition:
+            structure_signature[self.name] = structure_signature.get(self.name, set()) | {atomic.name}
+            atomic_signature, structure_signature = atomic.extend_signature(atomic_signature, structure_signature)
+        return atomic_signature, structure_signature
+
     def add_context(self, other, atomic_signature: dict, structure_signature: dict) -> set:
         """
         Fills missing context for given agent.

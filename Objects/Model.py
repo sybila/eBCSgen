@@ -7,24 +7,28 @@ class Model:
         self.rules = rules
         self.init = init
         self.definitions = definitions
+        self.bound = bound
 
         # autocomplete
-        self.bound = bound if bound else self.compute_bound()
-        # self.atomic_signature, self.structure_signature = self.extract_signatures()
+        self.atomic_signature, self.structure_signature = self.extract_signatures()
 
     def __eq__(self, other: 'Model') -> bool:
         return self.rules == other.rules and self.init == other.init
 
     def extract_signatures(self):
-        pass
-
-    def compute_bound(self):
-        pass
+        atomic_signature, structure_signature = dict(), dict()
+        for rule in self.rules:
+            for agent in rule.agents:
+                atomic_signature, structure_signature = agent.extend_signature(atomic_signature, structure_signature)
+        for agent in list(self.init):
+            atomic_signature, structure_signature = agent.extend_signature(atomic_signature, structure_signature)
+        return atomic_signature, structure_signature
 
     def to_vector_model(self):
         pass
 
     def generate_TS(self) -> State:
+        # sympy.sympify(s).subs([('v', 5)]) can be used on evaluated rate to obtain evaluation by parameters
         pass
 
     def simulate(self, options) -> list:

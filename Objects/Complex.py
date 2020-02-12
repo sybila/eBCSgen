@@ -23,6 +23,18 @@ class Complex:
     def __hash__(self):
         return hash(str(self))
 
+    def extend_signature(self, atomic_signature: dict, structure_signature: dict):
+        """
+        Extend given signatures by possibly new context.
+
+        :param atomic_signature: given atomic signature
+        :param structure_signature: given structure signature
+        :return: updated signatures
+        """
+        for agent in self.agents:
+            atomic_signature, structure_signature = agent.extend_signature(atomic_signature, structure_signature)
+        return atomic_signature, structure_signature
+
     def compatible(self, other: 'Complex'):
         if type(self) != type(other):
             return False

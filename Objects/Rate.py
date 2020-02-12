@@ -32,6 +32,14 @@ class Rate:
         return vec.visited
 
     def evaluate(self, state: State):
+        """
+        Evaluates all occurrences of States to a float using Evaluater.
+        It is done as intersection of particular state with given state
+        and sum of resulting elements.
+
+        :param state: given state
+        :return: Sympy object for expression representation
+        """
         evaluater = Evaluater(state)
         result = evaluater.transform(self.expression)
         return sympy.sympify("".join(to_string(result)))

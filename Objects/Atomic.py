@@ -25,6 +25,17 @@ class AtomicAgent:
             return False
         return (self == other) or (self.name == other.name and self.state == "_")
 
+    def extend_signature(self, atomic_signature: dict, structure_signature: dict):
+        """
+        Extend given signatures by possibly new context.
+
+        :param atomic_signature: given atomic signature
+        :param structure_signature: given structure signature
+        :return: updated signatures
+        """
+        atomic_signature[self.name] = atomic_signature.get(self.name, set()) | {self.state}
+        return atomic_signature, structure_signature
+
     def add_context(self, other, atomic_signature: dict, structure_signature: dict) -> set:
         """
         Fills missing context for given agent.

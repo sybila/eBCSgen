@@ -61,7 +61,7 @@ class TestModel(unittest.TestCase):
         self.model = Model({self.r1, self.r2, self.r3}, self.inits, self.defs, None)
         # model
 
-        self.model_str = """
+        self.model_str_1 = """
         #! rules
         X()::rep => @ k1*[X()::rep]
         Z()::rep => X()::rep @ k2*[Z()::rep]
@@ -78,5 +78,26 @@ class TestModel(unittest.TestCase):
 
         self.model_parser = Parser("model")
 
+        self.model_str_2 = """
+        #! rules
+        X(K{i})::rep => X(K{p})::rep @ k1*[X()::rep]
+        X(T{a})::rep => X(T{o})::rep @ k2*[Z()::rep]
+        => Y(P{f})::rep @ 1/(1+([X()::rep])^4)
+
+        #! inits
+        2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+        Y(P{g}, N{l})::rep
+
+        #! definitions
+        k1 = 0.05
+        k2 = 0.12
+        """
+
     def test_parser(self):
-        self.assertEqual(self.model_parser.parse(self.model_str), self.model)
+        self.assertEqual(self.model_parser.parse(self.model_str_1), self.model)
+
+    def test_signatures(self):
+        model = self.model_parser.parse(self.model_str_2)
+        self.assertEqual(model.atomic_signature, {'K': {'c', 'i', 'p'}, 'T': {'e', 'a', 'o', 'j'},
+                                                  'P': {'g', 'f'}, 'N': {'l'}})
+        self.assertEqual(model.structure_signature, {'X': {'K', 'T'}, 'Y': {'P', 'N'}})
