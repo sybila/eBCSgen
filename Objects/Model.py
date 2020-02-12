@@ -21,6 +21,9 @@ class Model:
     def compute_bound(self):
         pass
 
+    def to_vector_model(self):
+        pass
+
     def generate_TS(self) -> State:
         pass
 

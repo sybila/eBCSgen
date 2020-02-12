@@ -61,6 +61,30 @@ class TestRule(unittest.TestCase):
 
         self.r3 = Rule(sequence_3, mid_3, compartments_3, complexes_3, pairs_3, rate_3)
 
+        # special cases
+
+        self.s1_s = StructureAgent("X", set())
+        self.s2_s = StructureAgent("Y", set())
+        self.s3_s = StructureAgent("Z", set())
+
+        sequence_4 = (self.s1_s, )
+        mid_4 = 1
+        compartments_4 = ["rep"]
+        complexes_4 = [(0, 0)]
+        pairs_4 = [(0, None)]
+        rate_4 = Rate("k1*[X()::rep]")
+
+        self.r4 = Rule(sequence_4, mid_4, compartments_4, complexes_4, pairs_4, rate_4)
+
+        sequence_5 = (self.s2_s, )
+        mid_5 = 0
+        compartments_5 = ["rep"]
+        complexes_5 = [(0, 0)]
+        pairs_5 = [(None, 0)]
+        rate_5 = Rate("1/(1+([X()::rep])^4)")
+
+        self.r5 = Rule(sequence_5, mid_5, compartments_5, complexes_5, pairs_5, rate_5)
+
         #  reactions
 
         lhs = Side([self.c1])
@@ -173,5 +197,10 @@ class TestRule(unittest.TestCase):
         rule_expr = "K(B{-}).B()::cyt + D(B{_})::cell => K(B{+})::cyt + B()::cyt @ 3*[K(T{3+})::cyt]/2*v_1"
         self.assertEqual(self.parser.parse(rule_expr), self.r3)
 
+        rule_expr = "X()::rep => @ k1*[X()::rep]"
+        self.assertEqual(self.parser.parse(rule_expr), self.r4)
+
+        rule_expr = "=> Y()::rep @ 1/(1+([X()::rep])^4)"
+        self.assertEqual(self.parser.parse(rule_expr), self.r5)
 
 
