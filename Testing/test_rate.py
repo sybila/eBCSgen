@@ -4,7 +4,7 @@ import numpy as np
 from Objects.Atomic import AtomicAgent
 from Objects.Complex import Complex
 from Objects.Structure import StructureAgent
-from Parsing.ParseModel import RuleParser
+from Parsing.ParseModel import Parser
 from TS.State import State
 
 
@@ -34,7 +34,7 @@ class TestRate(unittest.TestCase):
 
         # rates
 
-        self.parser = RuleParser()
+        self.parser = Parser("rule")
         rule_expr = "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt + D(B{_})::cell @ 3*[K()::cyt]/2*v_1"
 
         rule = self.parser.parse(rule_expr)

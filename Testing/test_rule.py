@@ -8,7 +8,7 @@ from Objects.Complex import Complex
 from Objects.Rule import Rule
 from Objects.Side import Side
 from Objects.Reaction import Reaction
-from Parsing.ParseModel import RuleParser
+from Parsing.ParseModel import Parser
 
 
 class TestRule(unittest.TestCase):
@@ -139,7 +139,7 @@ class TestRule(unittest.TestCase):
 
         # parsing
 
-        self.parser = RuleParser()
+        self.parser = Parser("rule")
 
     def test_eq(self):
         self.assertEqual(self.r1, self.r1)

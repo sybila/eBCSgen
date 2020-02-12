@@ -4,6 +4,7 @@ from lark import Lark, Transformer, Tree
 
 from Objects.Atomic import AtomicAgent
 from Objects.Complex import Complex
+from Objects.Model import Model
 from Objects.Rate import Rate
 from Objects.Rule import Rule
 from Objects.Structure import StructureAgent
@@ -23,10 +24,17 @@ class SideHelper:
         return str(self)
 
 
-grammar = r"""
-    start: rule
+GRAMMAR = r"""
+    model: rules inits definitions
 
+    rules: "#! rules" rule+
+    inits: "#! inits" init+
+    definitions: "#! definitions" definition+
+
+    init: const? rate_complex
+    definition: param "=" number
     rule: side "=>" side "@" rate
+
     side: (const? complex "+")* (const? complex)?
     complex: sequence "::" compartment
     sequence: (agent ".")* agent?
@@ -36,7 +44,7 @@ grammar = r"""
     atomic : a_name "{" state "}" | a_name
 
     !rate : fun "/" fun | fun
-    !fun: const | param | "[" rate_complex "]" | fun "+" fun | fun "*" fun | fun "^" const
+    !fun: const | param | "[" rate_complex "]" | fun "+" fun | fun "*" fun | fun "^" const | "(" fun ")"
 
     rate_complex: sequence "::" compartment
 
@@ -46,12 +54,14 @@ grammar = r"""
     s_name: CNAME
     compartment: CNAME
     param: CNAME
+    number: DECIMAL
 
     const: DIGIT
 
     %import common.LETTER
     %import common.DIGIT
     %import common.CNAME
+    %import common.DECIMAL
     %import common.WS
     %ignore WS
 """
@@ -86,6 +96,12 @@ class TreeToObjects(Transformer):
     def const(self, matches):
         return int(matches[0])
 
+    def param(self, matches):
+        return str(matches[0])
+
+    def number(self, matches):
+        return float(matches[0])
+
     def side(self, matches):
         helper = SideHelper()
         stochio = 1
@@ -119,9 +135,35 @@ class TreeToObjects(Transformer):
 
         return Rule(agents, mid, compartments, complexes, pairs, Rate(rate))
 
+    def rules(self, matches):
+        return matches
 
-class RuleParser:
-    def __init__(self):
+    def definitions(self, matches):
+        result = dict()
+        for definition in matches:
+            pair = definition.children
+            result[pair[0]] = pair[1]
+        return result
+
+    def init(self, matches):
+        return matches
+
+    def inits(self, matches):
+        result = collections.Counter()
+        for init in matches:
+            if len(init) > 1:
+                result[init[1].children[0]] = init[0]
+            else:
+                result[init[0].children[0]] = 1
+        return result
+
+    def model(self, matches):
+        return Model(set(matches[0]), matches[1], matches[2], None)
+
+
+class Parser:
+    def __init__(self, start):
+        grammar = "start: " + start + GRAMMAR
         self.parser = Lark(grammar, parser='lalr',
                            propagate_positions=False,
                            maybe_placeholders=False,
