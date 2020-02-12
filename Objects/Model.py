@@ -1,5 +1,8 @@
 import collections
+
+from Objects.Side import Side
 from TS.State import State
+from TS.VectorModel import VectorModel
 
 
 class Model:
@@ -15,6 +18,10 @@ class Model:
 
     def __eq__(self, other: 'Model') -> bool:
         return self.rules == other.rules and self.init == other.init and self.definitions == other.definitions
+
+    def __str__(self):
+        return "Model:\n" + "\n".join(map(str, self.rules)) + "\n\n" + str(self.init) + "\n\n" + str(self.definitions) \
+            + "\n\n" + str(self.atomic_signature) + "\n" + str(self.structure_signature)
 
     def extract_signatures(self):
         """
@@ -33,10 +40,32 @@ class Model:
             atomic_signature, structure_signature = agent.extend_signature(atomic_signature, structure_signature)
         return atomic_signature, structure_signature
 
-    def to_vector_model(self):
-        reactions = set()
+    def to_vector_model(self) -> VectorModel:
+        """
+        Creates vector representation of the model.
 
-        pass
+        First reactions are generated, then unique complexes are collected and finally both reactions and
+        initial state are transformed to vector representation.
+
+        THIS SHOULD BE DONE IN PARALLEL !!!
+
+        :return: VectorModel representation of the model
+        """
+        reactions = set()
+        unique_complexes = set()
+        for rule in self.rules:
+            reactions |= rule.create_reactions(self.atomic_signature, self.structure_signature)
+        for reaction in reactions:
+            unique_complexes |= set(reaction.lhs.to_counter()) | set(reaction.rhs.to_counter())
+        unique_complexes |= set(self.init)
+        ordering = tuple(unique_complexes)
+
+        init = Side(self.init.elements()).to_vector(ordering)
+        vector_reactions = set()
+        for reaction in reactions:
+            vector_reactions.add(reaction.to_vector(ordering))
+
+        return VectorModel(vector_reactions, init, ordering, self.bound)
 
     def generate_TS(self) -> State:
         pass

@@ -32,7 +32,14 @@ class Reaction:
         return hash(str(self))
 
     def to_vector(self, ordering: tuple) -> VectorReaction:
-        self.rate.vectorize(ordering)
+        """
+        Creates vector representation of the Reaction.
+
+        :param ordering: given fixed order of unique Complexes
+        :return: VectorReaction representation of Reaction
+        """
+        if self.rate is not None:
+            self.rate.vectorize(ordering)
         return VectorReaction(self.lhs.to_vector(ordering),
                               self.rhs.to_vector(ordering),
                               self.rate)

@@ -7,6 +7,12 @@ class VectorReaction:
         self.target = target
         self.rate = rate
 
+    def __str__(self):
+        return str(self.source) + " -> " + str(self.target) + " @ " + str(self.rate)
+
+    def __repr__(self):
+        return str(self)
+
     def apply(self, state: State, bound: int):
         new_state = state - self.source
         if new_state.check_negative(bound):

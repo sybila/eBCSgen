@@ -55,9 +55,12 @@ class StructureAgent:
         :param structure_signature: given structure signature
         :return: updated signatures
         """
-        for atomic in self.composition:
-            structure_signature[self.name] = structure_signature.get(self.name, set()) | {atomic.name}
-            atomic_signature, structure_signature = atomic.extend_signature(atomic_signature, structure_signature)
+        if not self.composition:
+            structure_signature[self.name] = structure_signature.get(self.name, set())
+        else:
+            for atomic in self.composition:
+                structure_signature[self.name] = structure_signature.get(self.name, set()) | {atomic.name}
+                atomic_signature, structure_signature = atomic.extend_signature(atomic_signature, structure_signature)
         return atomic_signature, structure_signature
 
     def add_context(self, other, atomic_signature: dict, structure_signature: dict) -> set:

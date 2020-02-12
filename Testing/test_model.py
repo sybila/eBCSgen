@@ -100,3 +100,8 @@ class TestModel(unittest.TestCase):
         self.assertEqual(model.atomic_signature, {'K': {'c', 'i', 'p'}, 'T': {'e', 'a', 'o', 'j'},
                                                   'P': {'g', 'f'}, 'N': {'l'}})
         self.assertEqual(model.structure_signature, {'X': {'K', 'T'}, 'Y': {'P', 'N'}})
+
+    def test_to_vector_model(self):
+        model = self.model_parser.parse(self.model_str_1)
+        print(model)
+        print(model.to_vector_model())
