@@ -59,16 +59,16 @@ class TestRate(unittest.TestCase):
 
     def test_vectorize(self):
         ordering = (self.c2, self.c3)
-        self.assertEqual(self.rate_1.vectorize(ordering), [State(np.array([1, 1]))])
+        self.assertEqual(self.rate_1.vectorize(ordering, dict()), [State(np.array([1, 1]))])
         ordering = (self.c2, self.c3, self.c4, self.c5, self.c6, self.c7)
-        self.assertEqual(self.rate_2.vectorize(ordering), [State(np.array([0, 0, 1, 1, 0, 0])),
-                                                           State(np.array([1, 1, 0, 0, 0, 0]))])
+        self.assertEqual(self.rate_2.vectorize(ordering, dict()), [State(np.array([0, 0, 1, 1, 0, 0])),
+                                                                   State(np.array([1, 1, 0, 0, 0, 0]))])
 
     def test_evaluate(self):
         ordering = (self.c2, self.c3)
-        self.rate_1.vectorize(ordering)
-        self.assertEqual(self.rate_1.evaluate(self.state_1), sympy.sympify("3*5.0/2*v_1"))
+        self.rate_1.vectorize(ordering, {"v_1": 5})
+        self.assertEqual(self.rate_1.evaluate(self.state_1), sympy.sympify("3*5.0/2*5"))
 
         ordering = (self.c2, self.c3, self.c4, self.c5, self.c6, self.c7)
-        self.rate_2.vectorize(ordering)
+        self.rate_2.vectorize(ordering, dict())
         self.assertEqual(self.rate_2.evaluate(self.state_2), sympy.sympify("3*4.0 + 2"))

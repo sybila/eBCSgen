@@ -18,16 +18,20 @@ class Rate:
     def __str__(self):
         return self.expression if type(self.expression) == str else "".join(to_string(self.expression))
 
-    def vectorize(self, ordering: tuple) -> list:
+    def vectorize(self, ordering: tuple, definitions: dict) -> list:
         """
         Converts all occurrences of Complexes (resp. sub trees named agent)
         with its vector representation. These are directly replaced within
         the tree expression.
 
+        Moreover, in the process parameters are replaces with their values
+        (if given).
+
         :param ordering: given tuple of Complexes
+        :param definitions: dict of (param_name, value)
         :return: list of transformed States (just for testing)
         """
-        vec = Vectorizer(ordering)
+        vec = Vectorizer(ordering, definitions)
         self.expression = vec.transform(self.expression)
         return vec.visited
 
@@ -46,9 +50,10 @@ class Rate:
 
 
 class Vectorizer(Transformer):
-    def __init__(self, ordering):
+    def __init__(self, ordering, definitions):
         super(Transformer, self).__init__()
         self.ordering = ordering
+        self.definitions = definitions
         self.visited = []
 
     def agent(self, complex):
@@ -64,6 +69,9 @@ class Vectorizer(Transformer):
 
     def rate_agent(self, matches):
         return matches[1]
+
+    def param(self, matches):
+        return self.definitions.get(str(matches[0]), str(matches[0]))
 
 
 class Evaluater(Transformer):

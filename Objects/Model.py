@@ -63,7 +63,7 @@ class Model:
         init = Side(self.init.elements()).to_vector(ordering)
         vector_reactions = set()
         for reaction in reactions:
-            vector_reactions.add(reaction.to_vector(ordering))
+            vector_reactions.add(reaction.to_vector(ordering, self.definitions))
 
         return VectorModel(vector_reactions, init, ordering, self.bound)
 

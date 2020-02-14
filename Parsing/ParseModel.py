@@ -32,7 +32,7 @@ GRAMMAR = r"""
     definitions: "#! definitions" definition+
 
     init: const? rate_complex
-    definition: param "=" number
+    definition: def_param "=" number
     rule: side "=>" side ("@" rate)?
 
     side: (const? complex "+")* (const? complex)?
@@ -56,6 +56,7 @@ GRAMMAR = r"""
     s_name: CNAME
     compartment: CNAME
     param: CNAME
+    def_param : CNAME
     number: DECIMAL
 
     const: DIGIT
@@ -98,7 +99,7 @@ class TreeToObjects(Transformer):
     def const(self, matches):
         return int(matches[0])
 
-    def param(self, matches):
+    def def_param(self, matches):
         return str(matches[0])
 
     def number(self, matches):
