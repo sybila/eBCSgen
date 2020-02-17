@@ -138,7 +138,7 @@ class TestModel(unittest.TestCase):
         self.model_wrong_2 = \
             """#! rules
             X(K{i})::rep => X(K{p})::rep @ k1*[X()::rep]
-            X(T{a})::rep == X(T{o})::rep @ k2*[Z()::rep]
+            X(T{a})::rep = X(T{o})::rep @ k2*[Z()::rep]
             => Y(P{f})::rep @ 1/(1+([X()::rep])^4)
 
             #! inits
@@ -165,8 +165,10 @@ class TestModel(unittest.TestCase):
 
     def test_parser_errors(self):
         self.model_parser.parse(self.model_wrong_1)
+        self.assertEqual(self.model_parser.parse(self.model_wrong_1).data,
+                         {"unexpected": ":", "expected": {'::', '.'}, "line": 3, "column": 36})
 
-        print("_"*20)
-
-        self.model_parser.parse(self.model_wrong_2)
+        self.assertEqual(self.model_parser.parse(self.model_wrong_2).data,
+                         {"unexpected": "=", "expected": {'#! inits', ']', '#! definitions', '=>', '@', 'DIGIT', '+'},
+                          "line": 3, "column": 26})
 

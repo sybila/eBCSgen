@@ -12,7 +12,19 @@ from Core.Rule import Rule
 from Core.Structure import StructureAgent
 
 
+class Result:
+    """
+    Class to represent output from the Parser.
+    """
+    def __init__(self, success, data):
+        self.success = success
+        self.data = data
+
+
 class SideHelper:
+    """
+    Class to represent side of a rule.
+    """
     def __init__(self):
         self.seq = []
         self.comp = []
@@ -29,16 +41,16 @@ class SideHelper:
 GRAMMAR = r"""
     model: rules inits definitions
 
-    rules: "#! rules" rule+
-    inits: "#! inits" init+
-    definitions: "#! definitions" definition+
+    rules: RULES_START rule+
+    inits: INITS_START init+
+    definitions: DEFNS_START definition+
 
     init: const? rate_complex
     definition: def_param "=" number
-    rule: side "=>" side ("@" rate)?
+    rule: side ARROW side ("@" rate)?
 
     side: (const? complex "+")* (const? complex)?
-    complex: sequence "::" compartment
+    complex: sequence DOUBLE_COLON compartment
     sequence: (agent ".")* agent
     agent: atomic | structure
     structure: s_name "()" | s_name "(" composition ")"
@@ -50,9 +62,15 @@ GRAMMAR = r"""
 
     !rate_agent: "[" rate_complex "]"
 
-    rate_complex: sequence "::" compartment
+    rate_complex: sequence DOUBLE_COLON compartment
 
     !state: (DIGIT|LETTER|"+"|"-"|"*"|"_")+
+
+    ARROW: "=>"
+    DOUBLE_COLON: "::"
+    RULES_START: "#! rules"
+    INITS_START: "#! inits"
+    DEFNS_START: "#! definitions"
 
     a_name: CNAME
     s_name: CNAME
@@ -73,6 +91,10 @@ GRAMMAR = r"""
 
 
 class TreeToObjects(Transformer):
+    """
+    A transformer which is called on a tree in a bottom-up manner and transforms all subtrees/tokens it encounters.
+    Note the defined methods have the same name as elements in the grammar above.
+    """
     def state(self, matches):
         return "".join(map(str, matches))
 
@@ -92,7 +114,7 @@ class TreeToObjects(Transformer):
         sequence = []
         for item in matches[0].children:
             sequence.append(item.children[0])
-        compartment = matches[1]
+        compartment = matches[2]
         return Tree("agent", [Complex(collections.Counter(sequence), compartment)])
 
     def compartment(self, matches):
@@ -115,7 +137,7 @@ class TreeToObjects(Transformer):
                 stochio = item
             else:
                 agents = item.children[0]
-                compartment = item.children[1]
+                compartment = item.children[2]
                 for i in range(stochio):
                     start = helper.counter
                     for agent in agents.children:
@@ -126,10 +148,10 @@ class TreeToObjects(Transformer):
         return helper
 
     def rule(self, matches):
-        if len(matches) > 2:
-            lhs, rhs, rate = matches
+        if len(matches) > 3:
+            lhs, arrow, rhs, rate = matches
         else:
-            lhs, rhs = matches
+            lhs, arrow, rhs = matches
             rate = None
         agents = tuple(lhs.seq + rhs.seq)
         mid = lhs.counter
@@ -145,11 +167,11 @@ class TreeToObjects(Transformer):
         return Rule(agents, mid, compartments, complexes, pairs, Rate(rate) if rate else None)
 
     def rules(self, matches):
-        return matches
+        return matches[1:]
 
     def definitions(self, matches):
         result = dict()
-        for definition in matches:
+        for definition in matches[1:]:
             pair = definition.children
             result[pair[0]] = pair[1]
         return result
@@ -159,7 +181,7 @@ class TreeToObjects(Transformer):
 
     def inits(self, matches):
         result = collections.Counter()
-        for init in matches:
+        for init in matches[1:]:
             if len(init) > 1:
                 result[init[1].children[0]] = init[0]
             else:
@@ -168,12 +190,6 @@ class TreeToObjects(Transformer):
 
     def model(self, matches):
         return Model(set(matches[0]), matches[1], matches[2], None)
-
-
-class Result:
-    def __init__(self, success, data):
-        self.success = success
-        self.data = data
 
 
 class Parser:
@@ -186,9 +202,15 @@ class Parser:
                            )
 
         self.terminals = dict((v, k) for k, v in _TERMINAL_NAMES.items())
+        self.terminals.update({"ARROW": "=>",
+                               "DOUBLE_COLON": "::",
+                               "RULES_START": "#! rules",
+                               "INITS_START": "#! inits",
+                               "DEFNS_START": "#! definitions"
+                               })
 
     def replace(self, expected: set) -> set:
-        return set([self.terminals.get(item, item) for item in expected])
+        return set([self.terminals.get(item, item) for item in filter(lambda item: item != 'CNAME', expected)])
 
     def parse(self, expression):
         try:
