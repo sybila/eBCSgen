@@ -24,11 +24,11 @@ class TestVectorModel(unittest.TestCase):
 
         self.rate_parser = Parser("rate")
         rate_expr = "1/(1+([X()::rep])^4)"
-        rate_1 = Rate(self.rate_parser.parse(rate_expr))
+        rate_1 = Rate(self.rate_parser.parse(rate_expr).data)
         rate_1.vectorize(ordering, dict())
 
         rate_expr = "k1*[X()::rep]"
-        rate_2 = Rate(self.rate_parser.parse(rate_expr))
+        rate_2 = Rate(self.rate_parser.parse(rate_expr).data)
         rate_2.vectorize(ordering, {"k1": 0.05})
 
         init = State(np.array([2.0, 1.0, 0.0]))

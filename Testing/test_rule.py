@@ -194,16 +194,16 @@ class TestRule(unittest.TestCase):
 
     def test_parser(self):
         rule_expr = "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt + D(B{_})::cell @ 3*[K()::cyt]/2*v_1"
-        self.assertEqual(self.parser.parse(rule_expr), self.r2)
+        self.assertEqual(self.parser.parse(rule_expr).data, self.r2)
 
         rule_expr = "K(B{-}).B()::cyt + D(B{_})::cell => K(B{+})::cyt + B()::cyt @ 3*[K(T{3+})::cyt]/2*v_1"
-        self.assertEqual(self.parser.parse(rule_expr), self.r3)
+        self.assertEqual(self.parser.parse(rule_expr).data, self.r3)
 
         rule_expr = "X()::rep => @ k1*[X()::rep]"
-        self.assertEqual(self.parser.parse(rule_expr), self.r4)
+        self.assertEqual(self.parser.parse(rule_expr).data, self.r4)
 
         rule_expr = "=> Y()::rep @ 1/(1+([X()::rep])^4)"
-        self.assertEqual(self.parser.parse(rule_expr), self.r5)
+        self.assertEqual(self.parser.parse(rule_expr).data, self.r5)
 
         rule_expr = "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt"
-        self.assertEqual(self.parser.parse(rule_expr), self.rule_no_rate)
+        self.assertEqual(self.parser.parse(rule_expr).data, self.rule_no_rate)

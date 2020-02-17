@@ -39,11 +39,11 @@ class TestRate(unittest.TestCase):
         self.parser = Parser("rate")
         rate_expr = "3*[K()::cyt]/2*v_1"
 
-        self.rate_1 = Rate(self.parser.parse(rate_expr))
+        self.rate_1 = Rate(self.parser.parse(rate_expr).data)
 
         rate_expr = "3*[K(T{i}).X()::cyt] + [K()::cyt]"
 
-        self.rate_2 = Rate(self.parser.parse(rate_expr))
+        self.rate_2 = Rate(self.parser.parse(rate_expr).data)
 
         # states
 

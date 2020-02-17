@@ -103,11 +103,11 @@ class TestModel(unittest.TestCase):
 
         self.rate_parser = Parser("rate")
         rate_expr = "1/(1+([X()::rep])^4)"
-        rate_1 = Rate(self.rate_parser.parse(rate_expr))
+        rate_1 = Rate(self.rate_parser.parse(rate_expr).data)
         rate_1.vectorize(ordering, dict())
 
         rate_expr = "k1*[X()::rep]"
-        rate_2 = Rate(self.rate_parser.parse(rate_expr))
+        rate_2 = Rate(self.rate_parser.parse(rate_expr).data)
         rate_2.vectorize(ordering, {"k1": 0.05})
 
         init = State(np.array([2.0, 1.0, 0.0]))
@@ -118,15 +118,55 @@ class TestModel(unittest.TestCase):
 
         self.vm_1 = VectorModel(vector_reactions, init, ordering, None)
 
+        # wrong models
+
+        self.model_wrong_1 = \
+            """#! rules
+            X(K{i})::rep => X(K{p})::rep @ k1*[X()::rep]
+            X(T{a})::rep => X(T{o}):rep @ k2*[Z()::rep]
+            => Y(P{f})::rep @ 1/(1+([X()::rep])^4)
+
+            #! inits
+            2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+            Y(P{g}, N{l})::rep
+
+            #! definitions
+            k1 = 0.05
+            k2 = 0.12
+            """
+
+        self.model_wrong_2 = \
+            """#! rules
+            X(K{i})::rep => X(K{p})::rep @ k1*[X()::rep]
+            X(T{a})::rep == X(T{o})::rep @ k2*[Z()::rep]
+            => Y(P{f})::rep @ 1/(1+([X()::rep])^4)
+
+            #! inits
+            2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+            Y(P{g}, N{l})::rep
+
+            #! definitions
+            k1 = 0.05
+            k2 = 0.12
+            """
+
     def test_parser(self):
-        self.assertEqual(self.model_parser.parse(self.model_str_1), self.model)
+        self.assertEqual(self.model_parser.parse(self.model_str_1).data, self.model)
 
     def test_signatures(self):
-        model = self.model_parser.parse(self.model_str_2)
+        model = self.model_parser.parse(self.model_str_2).data
         self.assertEqual(model.atomic_signature, {'K': {'c', 'i', 'p'}, 'T': {'e', 'a', 'o', 'j'},
                                                   'P': {'g', 'f'}, 'N': {'l'}})
         self.assertEqual(model.structure_signature, {'X': {'K', 'T'}, 'Y': {'P', 'N'}})
 
     def test_to_vector_model(self):
-        model = self.model_parser.parse(self.model_str_1)
+        model = self.model_parser.parse(self.model_str_1).data
         self.assertTrue(model.to_vector_model() == self.vm_1)
+
+    def test_parser_errors(self):
+        self.model_parser.parse(self.model_wrong_1)
+
+        print("_"*20)
+
+        self.model_parser.parse(self.model_wrong_2)
+

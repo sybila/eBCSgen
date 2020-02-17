@@ -23,6 +23,11 @@ class VectorModel:
         return hash(str(self))
 
     def compute_bound(self):
+        """
+        Computes maximal bound from all reactions and initial state.
+
+        :return: maximal bound
+        """
         reation_max = max(map(lambda r: max(max(r.source.sequence), max(r.target.sequence)), self.vector_reactions))
         return max(reation_max, max(self.init.sequence))
 

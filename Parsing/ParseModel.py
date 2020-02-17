@@ -1,6 +1,7 @@
 import collections
 from copy import deepcopy
 from lark import Lark, Transformer, Tree
+from lark import UnexpectedCharacters, UnexpectedToken
 
 from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
@@ -168,6 +169,12 @@ class TreeToObjects(Transformer):
         return Model(set(matches[0]), matches[1], matches[2], None)
 
 
+class Result:
+    def __init__(self, success, data):
+        self.success = success
+        self.data = data
+
+
 class Parser:
     def __init__(self, start):
         grammar = "start: " + start + GRAMMAR
@@ -178,4 +185,13 @@ class Parser:
                            )
 
     def parse(self, expression):
-        return self.parser.parse(expression).children[0]
+        try:
+            return Result(True, self.parser.parse(expression).children[0])
+        except UnexpectedCharacters as u:
+            print("Wrong '", expression[u.pos_in_stream], "'")
+            print("Expected: ", u.allowed)
+            print("At: ", u.line, u.column)
+        except UnexpectedToken as u:
+            print("Wrong '", u.token, "'")
+            print("Expected: ", u.expected)
+            print("At: ", u.line, u.column)
