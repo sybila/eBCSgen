@@ -1,4 +1,4 @@
-from Objects.Rate import Rate
+from Core.Rate import Rate
 from TS.State import State
 
 

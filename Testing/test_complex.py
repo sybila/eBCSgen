@@ -1,8 +1,8 @@
 import unittest
 
-from Objects.Structure import StructureAgent
-from Objects.Atomic import AtomicAgent
-from Objects.Complex import Complex
+from Core.Structure import StructureAgent
+from Core.Atomic import AtomicAgent
+from Core.Complex import Complex
 
 
 class TestComplex(unittest.TestCase):

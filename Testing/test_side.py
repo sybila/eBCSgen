@@ -2,10 +2,10 @@ import unittest
 import collections
 import numpy as np
 
-from Objects.Structure import StructureAgent
-from Objects.Atomic import AtomicAgent
-from Objects.Complex import Complex
-from Objects.Side import Side
+from Core.Structure import StructureAgent
+from Core.Atomic import AtomicAgent
+from Core.Complex import Complex
+from Core.Side import Side
 from TS.State import State
 
 

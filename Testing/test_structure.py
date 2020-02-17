@@ -1,6 +1,6 @@
 import unittest
-from Objects.Structure import StructureAgent
-from Objects.Atomic import AtomicAgent
+from Core.Structure import StructureAgent
+from Core.Atomic import AtomicAgent
 
 
 class TestStructure(unittest.TestCase):

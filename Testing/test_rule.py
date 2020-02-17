@@ -1,13 +1,13 @@
 import unittest
 import collections
 
-from Objects.Rate import Rate
-from Objects.Structure import StructureAgent
-from Objects.Atomic import AtomicAgent
-from Objects.Complex import Complex
-from Objects.Rule import Rule
-from Objects.Side import Side
-from Objects.Reaction import Reaction
+from Core.Rate import Rate
+from Core.Structure import StructureAgent
+from Core.Atomic import AtomicAgent
+from Core.Complex import Complex
+from Core.Rule import Rule
+from Core.Side import Side
+from Core.Reaction import Reaction
 from Parsing.ParseModel import Parser
 
 

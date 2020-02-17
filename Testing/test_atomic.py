@@ -1,5 +1,5 @@
 import unittest
-from Objects.Atomic import AtomicAgent
+from Core.Atomic import AtomicAgent
 
 
 class TestAtomic(unittest.TestCase):

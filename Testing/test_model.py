@@ -2,11 +2,11 @@ import unittest
 import collections
 import numpy as np
 
-from Objects.Model import Model
-from Objects.Rate import Rate
-from Objects.Structure import StructureAgent
-from Objects.Complex import Complex
-from Objects.Rule import Rule
+from Core.Model import Model
+from Core.Rate import Rate
+from Core.Structure import StructureAgent
+from Core.Complex import Complex
+from Core.Rule import Rule
 from Parsing.ParseModel import Parser
 from TS.State import State
 from TS.VectorModel import VectorModel

@@ -2,12 +2,12 @@ import collections
 from copy import deepcopy
 from lark import Lark, Transformer, Tree
 
-from Objects.Atomic import AtomicAgent
-from Objects.Complex import Complex
-from Objects.Model import Model
-from Objects.Rate import Rate
-from Objects.Rule import Rule
-from Objects.Structure import StructureAgent
+from Core.Atomic import AtomicAgent
+from Core.Complex import Complex
+from Core.Model import Model
+from Core.Rate import Rate
+from Core.Rule import Rule
+from Core.Structure import StructureAgent
 
 
 class SideHelper:

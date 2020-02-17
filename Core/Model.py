@@ -1,6 +1,6 @@
 import collections
 
-from Objects.Side import Side
+from Core.Side import Side
 from TS.State import State
 from TS.VectorModel import VectorModel
 

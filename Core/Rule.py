@@ -1,10 +1,10 @@
 import collections
 import itertools
 
-from Objects import Rate
-from Objects.Complex import Complex
-from Objects.Side import Side
-from Objects.Reaction import Reaction
+from Core import Rate
+from Core.Complex import Complex
+from Core.Side import Side
+from Core.Reaction import Reaction
 
 
 def column(lst, index):

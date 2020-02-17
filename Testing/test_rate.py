@@ -2,10 +2,10 @@ import unittest
 import numpy as np
 import sympy
 
-from Objects.Atomic import AtomicAgent
-from Objects.Complex import Complex
-from Objects.Rate import Rate
-from Objects.Structure import StructureAgent
+from Core.Atomic import AtomicAgent
+from Core.Complex import Complex
+from Core.Rate import Rate
+from Core.Structure import StructureAgent
 from Parsing.ParseModel import Parser
 from TS.State import State
 

@@ -1,5 +1,5 @@
-from Objects import Rate
-from Objects.Side import Side
+from Core import Rate
+from Core.Side import Side
 from TS.VectorReaction import VectorReaction
 
 
