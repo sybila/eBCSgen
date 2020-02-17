@@ -2,6 +2,7 @@ import collections
 from copy import deepcopy
 from lark import Lark, Transformer, Tree
 from lark import UnexpectedCharacters, UnexpectedToken
+from lark.load_grammar import _TERMINAL_NAMES
 
 from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
@@ -184,14 +185,19 @@ class Parser:
                            transformer=TreeToObjects()
                            )
 
+        self.terminals = dict((v, k) for k, v in _TERMINAL_NAMES.items())
+
+    def replace(self, expected: set) -> set:
+        return set([self.terminals.get(item, item) for item in expected])
+
     def parse(self, expression):
         try:
             return Result(True, self.parser.parse(expression).children[0])
         except UnexpectedCharacters as u:
-            print("Wrong '", expression[u.pos_in_stream], "'")
-            print("Expected: ", u.allowed)
-            print("At: ", u.line, u.column)
+            return Result(False, {"unexpected": expression[u.pos_in_stream],
+                                  "expected": self.replace(u.allowed),
+                                  "line": u.line, "column": u.column})
         except UnexpectedToken as u:
-            print("Wrong '", u.token, "'")
-            print("Expected: ", u.expected)
-            print("At: ", u.line, u.column)
+            return Result(False, {"unexpected": str(u.token),
+                                  "expected": self.replace(u.expected),
+                                  "line": u.line, "column": u.column})
