@@ -9,8 +9,8 @@ class VectorModel:
         self.bound = bound if bound else self.compute_bound()
 
     def __eq__(self, other: 'VectorModel') -> bool:
-        return self.vector_reactions == other.vector_reactions #and\
-               #self.init == other.init and self.ordering == other.ordering
+        return self.vector_reactions == other.vector_reactions and\
+               self.init == other.init and self.ordering == other.ordering
 
     def __str__(self):
         return "Vector model:\n" + "\n".join(map(str, sorted(self.vector_reactions))) + "\n\n" \
@@ -23,12 +23,18 @@ class VectorModel:
         return hash(str(self))
 
     def compute_bound(self):
-        # visit all reactions and inits
+        reation_max = max(map(lambda r: max(max(r.source.sequence), max(r.target.sequence)), self.vector_reactions))
+        return max(reation_max, max(self.init.sequence))
+
+    def generate_transition_system(self) -> State:
+        # reaction vectors have already replaced known parameters by their values
+        # should be done in parallel
         pass
 
-    def generate_TS(self) -> State:
-        # sympy.sympify(s).subs([('v', 5)]) can be used on evaluated rate to obtain evaluation by parameters
+    def deterministic_simulation(self, options) -> list:
+        # generate ODEs
         pass
 
-    def simulate(self, options) -> list:
+    def stochastic_simulation(self, options) -> list:
+        # Gillespie algorithm
         pass

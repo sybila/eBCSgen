@@ -67,14 +67,16 @@ class Model:
 
         return VectorModel(vector_reactions, init, ordering, self.bound)
 
-    def generate_TS(self) -> State:
+    def network_free_simulation(self, options) -> list:
+        # for this we need to be able to apply Rule on State
         pass
 
-    def simulate(self, options) -> list:
+    def PCTL_model_checking(self, PCTL_formula) -> bool:
+        # check whether rate are "linear" -> create directly PRISM file
+        # otherwise generate TS and use its explicit representation for Storm
         pass
 
-    def check_PCTL(self, PCTL_formula) -> bool:
-        pass
-
-    def parameter_synthesis(self, PCTL_formula) -> list:
+    def PCTL_synthesis(self, PCTL_formula) -> bool:
+        # check whether rate are "linear" -> create directly PRISM file
+        # otherwise generate TS and use its explicit representation for Storm
         pass
