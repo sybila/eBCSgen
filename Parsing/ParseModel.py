@@ -80,8 +80,9 @@ GRAMMAR = r"""
     def_param : CNAME
     number: DECIMAL
 
-    const: DIGIT
+    const: INT
 
+    %import common.INT
     %import common.LETTER
     %import common.DIGIT
     %import common.CNAME
