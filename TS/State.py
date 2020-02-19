@@ -25,3 +25,7 @@ class State:
 
     def filter_values(self, state: 'State') -> int:
         return sum(self.sequence * state)
+
+    def to_ODE_string(self):
+        return " + ".join(filter(None, ["x_" + str(i)
+                                        if self.sequence[i] == 1 else None for i in range(len(self.sequence))]))

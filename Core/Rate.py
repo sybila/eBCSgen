@@ -48,6 +48,21 @@ class Rate:
         result = evaluater.transform(self.expression)
         return sympy.sympify("".join(to_string(result)))
 
+    def to_symbolic(self):
+        """
+        Translates rate from vector representation to symbolic one
+        as a sum of particular components.
+        e.g. [1, 0, 1] -> (x_0 + x_2)
+        """
+        transformer = SymbolicAgents()
+        self.expression = transformer.transform(self.expression)
+
+
+class SymbolicAgents(Transformer):
+    def agent(self, vector):
+        vector = "(" + vector[0].to_ODE_string() + ")"
+        return Tree("agent", [vector])
+
 
 class Vectorizer(Transformer):
     def __init__(self, ordering, definitions):
