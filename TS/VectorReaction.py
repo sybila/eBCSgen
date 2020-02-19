@@ -27,3 +27,6 @@ class VectorReaction:
         new_state = state - self.source
         if new_state.check_negative(bound):
             return new_state + self.target, self.rate.evaluate(state)
+
+    def to_symbolic(self):
+        self.rate.to_symbolic()

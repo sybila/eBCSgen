@@ -27,5 +27,5 @@ class State:
         return sum(self.sequence * state)
 
     def to_ODE_string(self):
-        return " + ".join(filter(None, ["x_" + str(i)
+        return " + ".join(filter(None, ["y[" + str(i) + "]"
                                         if self.sequence[i] == 1 else None for i in range(len(self.sequence))]))

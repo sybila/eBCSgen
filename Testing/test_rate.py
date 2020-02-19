@@ -77,9 +77,9 @@ class TestRate(unittest.TestCase):
         ordering = (self.c2, self.c3)
         self.rate_1.vectorize(ordering, dict())
         self.rate_1.to_symbolic()
-        self.assertEqual(str(self.rate_1), "3*(x_0 + x_1)/2*v_1")
+        self.assertEqual(str(self.rate_1), "3*(y[0] + y[1])/2*v_1")
 
         ordering = (self.c2, self.c3, self.c4, self.c5, self.c6, self.c7)
         self.rate_2.vectorize(ordering, dict())
         self.rate_2.to_symbolic()
-        self.assertEqual(str(self.rate_2), "3*(x_2 + x_3)+(x_0 + x_1)")
+        self.assertEqual(str(self.rate_2), "3*(y[2] + y[3])+(y[0] + y[1])")
