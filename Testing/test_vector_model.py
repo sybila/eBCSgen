@@ -1,5 +1,6 @@
 import unittest
 import numpy as np
+import pandas as pd
 
 from Core.Rate import Rate
 from Core.Structure import StructureAgent
@@ -21,19 +22,20 @@ class TestVectorModel(unittest.TestCase):
         self.c3 = Complex([self.s3], "rep")
 
         ordering = (self.c1, self.c2, self.c3)
+        params = {"k1": 0.05, "k2": 0.1}
 
         self.rate_parser = Parser("rate")
         rate_expr = "1/(1+([X()::rep])**2)"
         rate_1 = Rate(self.rate_parser.parse(rate_expr).data)
-        rate_1.vectorize(ordering, {"k1": 0.05, "k2": 0.1})
+        rate_1.vectorize(ordering, params)
 
         rate_expr = "k1*[X()::rep]"
         rate_2 = Rate(self.rate_parser.parse(rate_expr).data)
-        rate_2.vectorize(ordering, {"k1": 0.05, "k2": 0.1})
+        rate_2.vectorize(ordering, params)
 
         rate_expr = "k2*[Z()::rep]"
         rate_3 = Rate(self.rate_parser.parse(rate_expr).data)
-        rate_3.vectorize(ordering, {"k1": 0.05, "k2": 0.1})
+        rate_3.vectorize(ordering, params)
 
         init = State(np.array([2.0, 1.0, 1.0]))
 
@@ -53,7 +55,7 @@ class TestVectorModel(unittest.TestCase):
         self.assertEqual(self.vm_1.bound, 2)
 
     def test_deterministic_simulation(self):
-        self.vm_2.deterministic_simulation(4, 100)
-        print(self.vm_2)
+        data_simulated = self.vm_2.deterministic_simulation(3, 100)
+        data_loaded = pd.read_csv("Testing/out.csv")
 
-        # another example with more abstract agents is needed !
+        pd.testing.assert_frame_equal(data_simulated, data_loaded)

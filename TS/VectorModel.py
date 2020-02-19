@@ -1,3 +1,7 @@
+from scipy.integrate import odeint
+import numpy as np
+import pandas as pd
+
 from TS.State import State
 
 
@@ -36,10 +40,50 @@ class VectorModel:
         # should be done in parallel
         pass
 
-    def deterministic_simulation(self, options) -> list:
-        # generate ODEs
-        pass
+    def deterministic_simulation(self, max_time: float, volume: float) -> pd.DataFrame:
+        """
+        Translates model to ODE and runs odeint solver for given max_time.
+
+        :param max_time: end time of simulation
+        :param volume: volume of the system
+        :param output_file: name of output file
+        """
+
+        def fun(y, t):
+            """
+            Function used in odeint solver. See its docs for more info.
+            It uses global variable ODEs in local scope of the method.
+
+            :param y: data points
+            :param t: time points
+            """
+            return list(map(eval, ODEs))
+
+        ODEs = [""] * len(self.init)
+        for reaction in self.vector_reactions:
+            reaction.to_symbolic()
+            for i in range(len(self.init)):
+                # negative effect
+                if reaction.source.sequence[i] == 1:
+                    ODEs[i] += " - " + str(reaction.rate)
+                # positive effect
+                if reaction.target.sequence[i] == 1:
+                    ODEs[i] += " + " + str(reaction.rate)
+        t = np.arange(0, max_time, 0.01)
+        y_0 = list(self.init.sequence)
+        y = odeint(fun, y_0, t)
+        df = pd.DataFrame(data=y, columns=list(map(str, self.ordering)))
+        df.insert(0, "times", t)
+        return df
 
     def stochastic_simulation(self, options) -> list:
         # Gillespie algorithm
         pass
+
+    def write_output(self, data, times, output_file):
+        output = open(output_file, "w")
+        header = ["times"] + list(map(str, self.ordering))
+        output.write(",".join(header) + "\n")
+        for i in range(len(data)):
+            output.write(str(times[i]) + "," + ",".join(list(map(str, data[i]))) + "\n")
+        output.close()
