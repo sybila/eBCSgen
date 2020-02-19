@@ -58,7 +58,7 @@ GRAMMAR = r"""
     atomic : a_name "{" state "}" | a_name
 
     !rate : fun "/" fun | fun
-    !fun: const | param | rate_agent | fun "+" fun | fun "*" fun | fun "^" const | "(" fun ")"
+    !fun: const | param | rate_agent | fun "+" fun | fun "*" fun | fun POW const | "(" fun ")"
 
     !rate_agent: "[" rate_complex "]"
 
@@ -66,6 +66,7 @@ GRAMMAR = r"""
 
     !state: (DIGIT|LETTER|"+"|"-"|"*"|"_")+
 
+    POW: "**"
     ARROW: "=>"
     DOUBLE_COLON: "::"
     RULES_START: "#! rules"
@@ -203,6 +204,7 @@ class Parser:
 
         self.terminals = dict((v, k) for k, v in _TERMINAL_NAMES.items())
         self.terminals.update({"ARROW": "=>",
+                               "POW": "**",
                                "DOUBLE_COLON": "::",
                                "RULES_START": "#! rules",
                                "INITS_START": "#! inits",

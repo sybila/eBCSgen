@@ -81,7 +81,7 @@ class TestRule(unittest.TestCase):
         compartments_5 = ["rep"]
         complexes_5 = [(0, 0)]
         pairs_5 = [(None, 0)]
-        rate_5 = Rate("1/(1+([X()::rep])^4)")
+        rate_5 = Rate("1/(1+([X()::rep])**4)")
 
         self.r5 = Rule(sequence_5, mid_5, compartments_5, complexes_5, pairs_5, rate_5)
 
@@ -202,7 +202,7 @@ class TestRule(unittest.TestCase):
         rule_expr = "X()::rep => @ k1*[X()::rep]"
         self.assertEqual(self.parser.parse(rule_expr).data, self.r4)
 
-        rule_expr = "=> Y()::rep @ 1/(1+([X()::rep])^4)"
+        rule_expr = "=> Y()::rep @ 1/(1+([X()::rep])**4)"
         self.assertEqual(self.parser.parse(rule_expr).data, self.r5)
 
         rule_expr = "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt"

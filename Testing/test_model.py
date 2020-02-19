@@ -50,7 +50,7 @@ class TestModel(unittest.TestCase):
         compartments_3 = ["rep"]
         complexes_3 = [(0, 0)]
         pairs_3 = [(None, 0)]
-        rate_3 = Rate("1/(1+([X()::rep])^4)")
+        rate_3 = Rate("1/(1+([X()::rep])**4)")
 
         self.r3 = Rule(sequence_3, mid_3, compartments_3, complexes_3, pairs_3, rate_3)
 
@@ -69,7 +69,7 @@ class TestModel(unittest.TestCase):
         #! rules
         X()::rep => @ k1*[X()::rep]
         Z()::rep => X()::rep
-        => Y()::rep @ 1/(1+([X()::rep])^4)
+        => Y()::rep @ 1/(1+([X()::rep])**4)
 
         #! inits
         2 X()::rep
@@ -86,7 +86,7 @@ class TestModel(unittest.TestCase):
         #! rules
         X(K{i})::rep => X(K{p})::rep @ k1*[X()::rep]
         X(T{a})::rep => X(T{o})::rep @ k2*[Z()::rep]
-        => Y(P{f})::rep @ 1/(1+([X()::rep])^4)
+        => Y(P{f})::rep @ 1/(1+([X()::rep])**4)
 
         #! inits
         2 X(K{c}, T{e}).X(K{c}, T{j})::rep
@@ -102,7 +102,7 @@ class TestModel(unittest.TestCase):
         ordering = (self.c1, self.c2, self.c3)
 
         self.rate_parser = Parser("rate")
-        rate_expr = "1/(1+([X()::rep])^4)"
+        rate_expr = "1/(1+([X()::rep])**4)"
         rate_1 = Rate(self.rate_parser.parse(rate_expr).data)
         rate_1.vectorize(ordering, dict())
 
@@ -124,7 +124,7 @@ class TestModel(unittest.TestCase):
             """#! rules
             X(K{i})::rep => X(K{p})::rep @ k1*[X()::rep]
             X(T{a})::rep => X(T{o}):rep @ k2*[Z()::rep]
-            => Y(P{f})::rep @ 1/(1+([X()::rep])^4)
+            => Y(P{f})::rep @ 1/(1+([X()::rep])**4)
 
             #! inits
             2 X(K{c}, T{e}).X(K{c}, T{j})::rep
@@ -139,7 +139,7 @@ class TestModel(unittest.TestCase):
             """#! rules
             X(K{i})::rep => X(K{p})::rep @ k1*[X()::rep]
             X(T{a})::rep = X(T{o})::rep @ k2*[Z()::rep]
-            => Y(P{f})::rep @ 1/(1+([X()::rep])^4)
+            => Y(P{f})::rep @ 1/(1+([X()::rep])**4)
 
             #! inits
             2 X(K{c}, T{e}).X(K{c}, T{j})::rep

@@ -20,6 +20,9 @@ class State:
     def __repr__(self):
         return str(self)
 
+    def __len__(self):
+        return len(self.sequence)
+
     def check_negative(self, bound: int) -> bool:
         return all(0 <= value <= bound for value in self.sequence)
 

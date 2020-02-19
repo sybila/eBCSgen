@@ -23,15 +23,19 @@ class TestVectorModel(unittest.TestCase):
         ordering = (self.c1, self.c2, self.c3)
 
         self.rate_parser = Parser("rate")
-        rate_expr = "1/(1+([X()::rep])^4)"
+        rate_expr = "1/(1+([X()::rep])**2)"
         rate_1 = Rate(self.rate_parser.parse(rate_expr).data)
-        rate_1.vectorize(ordering, dict())
+        rate_1.vectorize(ordering, {"k1": 0.05, "k2": 0.1})
 
         rate_expr = "k1*[X()::rep]"
         rate_2 = Rate(self.rate_parser.parse(rate_expr).data)
-        rate_2.vectorize(ordering, {"k1": 0.05})
+        rate_2.vectorize(ordering, {"k1": 0.05, "k2": 0.1})
 
-        init = State(np.array([2.0, 1.0, 0.0]))
+        rate_expr = "k2*[Z()::rep]"
+        rate_3 = Rate(self.rate_parser.parse(rate_expr).data)
+        rate_3.vectorize(ordering, {"k1": 0.05, "k2": 0.1})
+
+        init = State(np.array([2.0, 1.0, 1.0]))
 
         vector_reactions = {VectorReaction(State(np.array([0.0, 0.0, 0.0])), State(np.array([0.0, 1.0, 0.0])), rate_1),
                             VectorReaction(State(np.array([1.0, 0.0, 0.0])), State(np.array([0.0, 0.0, 0.0])), rate_2),
@@ -39,5 +43,17 @@ class TestVectorModel(unittest.TestCase):
 
         self.vm_1 = VectorModel(vector_reactions, init, ordering, None)
 
+        vector_reactions = {VectorReaction(State(np.array([0.0, 0.0, 0.0])), State(np.array([0.0, 1.0, 0.0])), rate_1),
+                            VectorReaction(State(np.array([1.0, 0.0, 0.0])), State(np.array([0.0, 0.0, 0.0])), rate_2),
+                            VectorReaction(State(np.array([0.0, 0.0, 1.0])), State(np.array([1.0, 0.0, 0.0])), rate_3)}
+
+        self.vm_2 = VectorModel(vector_reactions, init, ordering, None)
+
     def test_compute_bound(self):
         self.assertEqual(self.vm_1.bound, 2)
+
+    def test_deterministic_simulation(self):
+        self.vm_2.deterministic_simulation(4, 100)
+        print(self.vm_2)
+
+        # another example with more abstract agents is needed !
