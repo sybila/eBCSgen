@@ -4,6 +4,8 @@ import pandas as pd
 
 from TS.State import State
 
+AVOGADRO = 6.022 * 10**23
+
 
 class VectorModel:
     def __init__(self, vector_reactions: set, init: State, ordering: tuple, bound: int):
@@ -70,7 +72,7 @@ class VectorModel:
                 if reaction.target.sequence[i] == 1:
                     ODEs[i] += " + " + str(reaction.rate)
         t = np.arange(0, max_time, 0.01)
-        y_0 = list(self.init.sequence)
+        y_0 = list(map(lambda x: x/(AVOGADRO * volume), self.init.sequence))
         y = odeint(fun, y_0, t)
         df = pd.DataFrame(data=y, columns=list(map(str, self.ordering)))
         df.insert(0, "times", t)

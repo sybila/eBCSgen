@@ -55,7 +55,9 @@ class TestVectorModel(unittest.TestCase):
         self.assertEqual(self.vm_1.bound, 2)
 
     def test_deterministic_simulation(self):
-        data_simulated = self.vm_2.deterministic_simulation(3, 100)
+        data_simulated = self.vm_2.deterministic_simulation(3, 1/(6.022 * 10**23))
         data_loaded = pd.read_csv("Testing/out.csv")
 
         pd.testing.assert_frame_equal(data_simulated, data_loaded)
+
+        # another model with more abstract agents is needed
