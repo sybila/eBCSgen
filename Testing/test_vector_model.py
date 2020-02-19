@@ -51,13 +51,41 @@ class TestVectorModel(unittest.TestCase):
 
         self.vm_2 = VectorModel(vector_reactions, init, ordering, None)
 
+        # test abstract model
+
+        self.model_parser = Parser("model")
+
+        self.model_abstract = \
+            """#! rules
+            => X()::rep @ k2*[T{_}::rep]
+            T{a}::rep => T{i}::rep @ k1*[T{_}::rep]
+
+            #! inits
+            10 T{a}::rep
+
+            #! definitions
+            k1 = 0.05
+            k2 = 0.12
+            """
+
     def test_compute_bound(self):
         self.assertEqual(self.vm_1.bound, 2)
 
     def test_deterministic_simulation(self):
+        # simple rates
         data_simulated = self.vm_2.deterministic_simulation(3, 1/(6.022 * 10**23))
-        data_loaded = pd.read_csv("Testing/out.csv")
+        data_loaded = pd.read_csv("Testing/simple_out.csv")
 
         pd.testing.assert_frame_equal(data_simulated, data_loaded)
 
-        # another model with more abstract agents is needed
+        # more abstract rates
+
+        model = self.model_parser.parse(self.model_abstract).data
+        vector_model = model.to_vector_model()
+        data_simulated = vector_model.deterministic_simulation(3, 1/(6.022 * 10**23))
+        data_loaded = pd.read_csv("Testing/abstract_out.csv")
+
+        pd.testing.assert_frame_equal(data_simulated, data_loaded)
+
+        # to save datafram to csv file
+        # data_simulated.to_csv("Testing/abstract_out.csv", index = None, header=True)
