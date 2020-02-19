@@ -23,10 +23,24 @@ class VectorReaction:
     def __hash__(self):
         return hash(str(self))
 
-    def apply(self, state: State, bound: int):
+    def apply(self, state: State, bound: float):
+        """
+        Applies the reaction on a given State.
+
+        First, source is subtracted from the given State, then it is checked if all
+        values are greater then 0 and smaller than given bound (possibly inf).
+        If OK, new State is create as sum with target and rate is evaluated
+
+        :param state: given State
+        :param bound: allow bound on particular values
+        :return: new State and evaluated rate
+        """
         new_state = state - self.source
         if new_state.check_negative(bound):
             return new_state + self.target, self.rate.evaluate(state)
 
     def to_symbolic(self):
+        """
+        Transforms rate of the reaction to symbolic representation (used in ODEs).
+        """
         self.rate.to_symbolic()

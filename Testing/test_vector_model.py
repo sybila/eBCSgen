@@ -89,3 +89,10 @@ class TestVectorModel(unittest.TestCase):
 
         # to save datafram to csv file
         # data_simulated.to_csv("Testing/abstract_out.csv", index = None, header=True)
+
+    def test_stochastic_simulation(self):
+        model = self.model_parser.parse(self.model_abstract).data
+        vector_model = model.to_vector_model()
+
+        data_simulated = vector_model.stochastic_simulation(5, 4)
+        # print("\n", data_simulated)

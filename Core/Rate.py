@@ -57,6 +57,8 @@ class Rate:
         transformer = SymbolicAgents()
         self.expression = transformer.transform(self.expression)
 
+# Transformers for Tree
+
 
 class SymbolicAgents(Transformer):
     def agent(self, vector):

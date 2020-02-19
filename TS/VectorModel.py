@@ -1,6 +1,7 @@
 from scipy.integrate import odeint
 import numpy as np
 import pandas as pd
+import random
 
 from TS.State import State
 
@@ -48,7 +49,7 @@ class VectorModel:
 
         :param max_time: end time of simulation
         :param volume: volume of the system
-        :param output_file: name of output file
+        :return: simulated data
         """
 
         def fun(y, t):
@@ -78,14 +79,49 @@ class VectorModel:
         df.insert(0, "times", t)
         return df
 
-    def stochastic_simulation(self, options) -> list:
-        # Gillespie algorithm
-        pass
+    def stochastic_simulation(self, max_time: float, runs: int) -> pd.DataFrame:
+        """
+        Gillespie algorithm implementation.
 
-    def write_output(self, data, times, output_file):
-        output = open(output_file, "w")
+        Each step a random reaction is chosen by exponential distribution with density given as a sum
+        of all possible rates in particular State.
+        Then such reaction is applied and next time is computed using Poisson distribution (random.expovariate).
+
+        :param max_time: time when simulation ends
+        :param runs: how many time the process should be repeated (then average behaviour is taken)
+        :return: simulated data
+        """
         header = ["times"] + list(map(str, self.ordering))
-        output.write(",".join(header) + "\n")
-        for i in range(len(data)):
-            output.write(str(times[i]) + "," + ",".join(list(map(str, data[i]))) + "\n")
-        output.close()
+        result_df = pd.DataFrame(columns=header)
+
+        for run in range(runs):
+            df = pd.DataFrame(columns=header)
+            solution = self.init
+            time = 0.0
+            while time < max_time:
+                # enumerate all rates
+                applied_reactions = pd.DataFrame(data=[reaction.apply(solution, np.math.inf)
+                                                       for reaction in self.vector_reactions],
+                                                 columns=["state", "rate"])
+                rates_sum = applied_reactions.sum()["rate"]
+                sorted_applied = applied_reactions.sort_values(by=["rate"])
+                sorted_applied["cumsum"] = sorted_applied.cumsum(axis=0)["rate"]
+
+                # pick random reaction based on rates
+                rand_number = rates_sum * random.random()
+                sorted_applied.drop(sorted_applied[sorted_applied["cumsum"] < rand_number].index, inplace=True)
+                solution = sorted_applied.iloc[0]["state"]
+
+                # add to data
+                df.loc[len(df)] = [time] + list(solution.sequence)
+
+                # update time
+                time += random.expovariate(rates_sum)
+
+            if run != 0:
+                averages = (df.stack() + result_df.stack()) / 2
+                averages = averages.unstack()
+                result_df = averages.dropna()[header]
+            else:
+                result_df = df
+        return result_df
