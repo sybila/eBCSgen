@@ -26,6 +26,9 @@ class State:
     def __len__(self):
         return len(self.sequence)
 
+    def __hash__(self):
+        return hash(self.sequence)
+
     def check_negative(self, bound: float) -> bool:
         """
         Checks whether all values of State are are greater then 0 and smaller than given bound.

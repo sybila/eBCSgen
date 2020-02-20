@@ -4,6 +4,7 @@ import pandas as pd
 import random
 
 from TS.State import State
+from TS.TransitionSystem import TransitionSystem
 
 AVOGADRO = 6.022 * 10**23
 
@@ -37,11 +38,6 @@ class VectorModel:
         """
         reation_max = max(map(lambda r: max(max(r.source.sequence), max(r.target.sequence)), self.vector_reactions))
         return max(reation_max, max(self.init.sequence))
-
-    def generate_transition_system(self) -> State:
-        # reaction vectors have already replaced known parameters by their values
-        # should be done in parallel
-        pass
 
     def deterministic_simulation(self, max_time: float, volume: float) -> pd.DataFrame:
         """
@@ -125,3 +121,12 @@ class VectorModel:
             else:
                 result_df = df
         return result_df
+
+    def generate_transition_system(self) -> TransitionSystem:
+        # reaction vectors have already replaced known parameters by their values
+        # should be done in parallel
+
+        # each time we encounter a new state (not present in encoding), add its new code and create edge between codes
+        # -> a better version would be to use hash of State, but the numbers would be probably too huge for Storm
+        # problem of checking whether State exists should be O(1) if State has good hash function
+        pass
