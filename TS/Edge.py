@@ -15,3 +15,15 @@ class Edge:
 
     def __str__(self):
         return " ".join(list(map(str, [self.source, self.target, self.probability])))
+
+    def recode(self, encoding_old: dict, encoding_new: dict) -> 'Edge':
+        """
+        Recodes the edge to new encoding
+
+        :param encoding_old: the old encoding
+        :param encoding_new: the new encoding
+        :return: new Edge in new encoding
+        """
+        return Edge(encoding_new[encoding_old[self.source]],
+                    encoding_new[encoding_old[self.target]],
+                    self.probability)
