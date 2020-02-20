@@ -27,7 +27,7 @@ class State:
         return len(self.sequence)
 
     def __hash__(self):
-        return hash(self.sequence)
+        return hash(tuple(self.sequence))
 
     def check_negative(self, bound: float) -> bool:
         """

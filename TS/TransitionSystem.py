@@ -1,4 +1,5 @@
 from TS.Edge import Edge
+from TS.State import State
 
 
 class TransitionSystem:
@@ -23,14 +24,24 @@ class TransitionSystem:
         if state in self.states_encoding:
             return self.states_encoding[state]
         else:
-            length = len(self.states_encoding) + 1
+            length = len(self.states_encoding)
             self.states_encoding[state] = length
         return length
 
-    def add_edge(self, source, target, probability):
-        self.edges.add(Edge(self.states_encoding[source],
-                            self.states_encoding[target],
-                            probability))
+    def add_edge(self, source: State, target: State, probability: float) -> Edge:
+        """
+        Added a new edge with code representations of given States.
 
-    def save_to_file(self, output_file):
+        :param source: origin state
+        :param target: target state
+        :param probability: probability of transition
+        :return: created Edge
+        """
+        edge = Edge(self.states_encoding[source],
+                    self.states_encoding[target],
+                    probability)
+        self.edges.add(edge)
+        return edge
+
+    def save_to_json(self, output_file):
         pass
