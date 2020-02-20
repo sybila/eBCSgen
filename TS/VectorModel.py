@@ -129,4 +129,6 @@ class VectorModel:
         # each time we encounter a new state (not present in encoding), add its new code and create edge between codes
         # -> a better version would be to use hash of State, but the numbers would be probably too huge for Storm
         # problem of checking whether State exists should be O(1) if State has good hash function
+
+        # if case of getting above the bound, we should create special state with all element mth.inf
         pass

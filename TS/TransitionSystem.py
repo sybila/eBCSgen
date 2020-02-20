@@ -3,7 +3,7 @@ from TS.State import State
 
 
 class TransitionSystem:
-    def __init__(self, ordering):
+    def __init__(self, ordering: tuple):
         self.states_encoding = dict()  # State -> int
         self.edges = set()  # Edge objects: (int from, int to, probability), can be used for explicit Storm format
         self.ordering = ordering  # used to decode State to actual agents
