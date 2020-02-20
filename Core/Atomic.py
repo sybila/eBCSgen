@@ -33,7 +33,8 @@ class AtomicAgent:
         :param structure_signature: given structure signature
         :return: updated signatures
         """
-        atomic_signature[self.name] = atomic_signature.get(self.name, set()) | {self.state}
+        if self.state != "_":
+            atomic_signature[self.name] = atomic_signature.get(self.name, set()) | {self.state}
         return atomic_signature, structure_signature
 
     def add_context(self, other, atomic_signature: dict, structure_signature: dict) -> set:

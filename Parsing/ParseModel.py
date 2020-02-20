@@ -78,10 +78,11 @@ GRAMMAR = r"""
     compartment: CNAME
     param: CNAME
     def_param : CNAME
-    number: DECIMAL
+    number: NUMBER
 
     const: INT
 
+    %import common.NUMBER
     %import common.INT
     %import common.LETTER
     %import common.DIGIT
