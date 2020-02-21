@@ -29,14 +29,28 @@ class State:
     def __hash__(self):
         return hash(tuple(self.sequence))
 
-    def check_negative(self, bound: float) -> bool:
+    def check_negative(self) -> bool:
         """
-        Checks whether all values of State are are greater then 0 and smaller than given bound.
+        Checks whether all values of State are are greater then 0.
 
-        :param bound: given bound
         :return: True if check was successful
         """
-        return all(0 <= value <= bound for value in self.sequence)
+        return all(0 <= value for value in self.sequence)
+
+    def add_with_bound(self, target: 'State', bound: int) -> 'State':
+        """
+        Creates a new state as a sum with the target. If resulting state is smaller than given bound,
+        it is returned, otherwise special infinite state is returned instead.
+
+        :param target: given state to be added
+        :param bound: maximal allowed bound on individual values
+        :return: resulting State
+        """
+        new_state = self + target
+        if all(value <= bound for value in new_state.sequence):
+            return new_state
+        else:
+            return State(np.array([np.inf] * len(new_state)))
 
     def filter_values(self, state: 'State') -> int:
         """

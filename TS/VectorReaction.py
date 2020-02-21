@@ -28,16 +28,17 @@ class VectorReaction:
         Applies the reaction on a given State.
 
         First, source is subtracted from the given State, then it is checked if all
-        values are greater then 0 and smaller than given bound (possibly inf).
-        If OK, new State is create as sum with target and rate is evaluated
+        values are greater then 0. If so, new State is create as sum with target
+        and rate is evaluated. Moreover, it is possible that the resulting state is greater
+        than allowed bound, then infinite State is returned instead.
 
         :param state: given State
         :param bound: allow bound on particular values
         :return: new State and evaluated rate
         """
         new_state = state - self.source
-        if new_state.check_negative(bound):
-            return new_state + self.target, self.rate.evaluate(state)
+        if new_state.check_negative():
+            return new_state.add_with_bound(self.target, bound), self.rate.evaluate(state)
 
     def to_symbolic(self):
         """
