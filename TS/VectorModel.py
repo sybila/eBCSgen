@@ -131,4 +131,8 @@ class VectorModel:
         # problem of checking whether State exists should be O(1) if State has good hash function
 
         # if case of getting above the bound, we should create special state with all element mth.inf
+
+        # TSworker does all the work, we just need to initialise them and then somehow check when no new state are being
+        # created and no worked is working to end it all
+        # how ?
         pass
