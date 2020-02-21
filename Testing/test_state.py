@@ -10,6 +10,7 @@ class TestState(unittest.TestCase):
         self.s3 = State(np.array((5, 4, 3, 2)))
         self.s4 = State(np.array((2, 2, 2, 1)))
         self.s5 = State(np.array((7, 6, 5, 3)))
+        self.s6 = State(np.array((1, 0, 0, 1, 0)))
         self.s_inf = State(np.array((np.inf, np.inf, np.inf)))
 
     def test_sub(self):
@@ -29,7 +30,7 @@ class TestState(unittest.TestCase):
         self.assertEqual(self.s3.add_with_bound(self.s4, bound), self.s5)
 
     def test_to_ODE_string(self):
-        pass
+        self.assertEqual(self.s6.to_ODE_string(), "y[0] + y[3]")
 
     def test_reorder(self):
         order = np.array([2, 0, 1])
