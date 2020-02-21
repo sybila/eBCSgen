@@ -57,3 +57,12 @@ class State:
         """
         return " + ".join(filter(None, ["y[" + str(i) + "]"
                                         if self.sequence[i] == 1 else None for i in range(len(self.sequence))]))
+
+    def reorder(self, indices: np.array) -> 'State':
+        """
+        Changes order of individual values according to given new indices.
+
+        :param indices: array of indices
+        :return: new reordered State
+        """
+        return State(self.sequence[indices])

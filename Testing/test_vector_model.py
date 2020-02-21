@@ -95,6 +95,7 @@ class TestVectorModel(unittest.TestCase):
             K(S{u})::cyt => K(S{p})::cyt @ alpha*[K(S{u})::cyt]
             K(S{p})::cyt + B{a}::cyt => K(S{p}).B{a}::cyt @ beta*[K(S{p})::cyt]*[B{a}::cyt]
             B{_}::cyt => @ gamma*[B{_}::cyt]
+            K(S{u},T{i}).B{a}::cyt => @ 5
 
             #! inits
             1 B{a}::cyt
@@ -176,11 +177,10 @@ class TestVectorModel(unittest.TestCase):
 
         data_simulated = vector_model.stochastic_simulation(5, 4)
         # print("\n", data_simulated)
-    #
+
     # def test_generate_transition_system(self):
-    #     print(self.model_parser.parse(self.model_TS))
     #     model = self.model_parser.parse(self.model_TS).data
     #     print(model)
     #     vector_model = model.to_vector_model()
     #     print(vector_model)
-        # self.assertEqual(vector_model.generate_transition_system(), self.test_ts)
+    #     self.assertEqual(vector_model.generate_transition_system(), self.test_ts)

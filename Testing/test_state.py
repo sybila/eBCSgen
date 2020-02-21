@@ -20,3 +20,7 @@ class TestState(unittest.TestCase):
         bound = 5
         self.assertFalse((self.s1 - self.s2).check_negative(bound))
         self.assertTrue((self.s3 - self.s4).check_negative(bound))
+
+    def test_reorder(self):
+        order = np.array([2, 0, 1])
+        self.assertEqual(self.s1.reorder(order), State(np.array((3, 1, 2))))

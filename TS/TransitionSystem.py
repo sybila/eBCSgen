@@ -1,5 +1,28 @@
+import numpy as np
+
 from TS.Edge import Edge
 from TS.State import State
+
+
+def create_indices(ordering_1: tuple, ordering_2: tuple):
+    """
+    Creates indices np.array which represents how agents from ordering_1 have to be rearranged
+    in order to fit agents from ordering_2. If such relation is not possible, return False.
+
+    :param ordering_1: first agents ordering
+    :param ordering_2: second agents ordering
+    :return: np.array of indices
+    """
+    if set(ordering_1) == set(ordering_2):
+        result = []
+        for i_1 in range(len(ordering_1)):
+            for i_2 in range(len(ordering_2)):
+                if ordering_1[i_1] == ordering_2[i_2]:
+                    result.append(i_2)
+                    break
+        return True, np.array(result)
+    else:
+        return False, None
 
 
 class TransitionSystem:
@@ -8,17 +31,33 @@ class TransitionSystem:
         self.edges = set()  # Edge objects: (int from, int to, probability), can be used for explicit Storm format
         self.ordering = ordering  # used to decode State to actual agents
 
+    def __str__(self):
+        return str(self.states_encoding) + "\n" + "\n".join(list(map(str, self.edges))) + "\n" + str(self.ordering)
+
+    def __repr__(self):
+        return str(self)
+
     def __eq__(self, other: 'TransitionSystem'):
         """
         Compares with another TransitionSystem regardless the particular encoding (i.e. check isomorphism).
 
-        ! a different ordering could be also considered during comparision !
-
         :param other: given TransitionSystem
         :return: True if equal
         """
-        recoded_ts = self.recode(other.states_encoding)
-        return recoded_ts.edges == other.edges and self.ordering == other.ordering
+        success, reordering_indices = create_indices(other.ordering, self.ordering)
+        if not success:  # the agents in orderings are different => also whole TSs are different
+            return False
+
+        re_encoding = {key.reorder(reordering_indices): self.states_encoding[key] for key in self.states_encoding}
+
+        # new TransitionSystem with ordering taken from other and reordered states in re_encoding
+        ts = TransitionSystem(other.ordering)
+        ts.states_encoding = re_encoding
+        ts.edges = self.edges
+
+        ts.recode(other.states_encoding)
+
+        return ts.edges == other.edges
 
     def get_state_encoding(self, state: 'State') -> int:
         """
@@ -50,20 +89,16 @@ class TransitionSystem:
         self.edges.add(edge)
         return edge
 
-    def recode(self, new_encoding: dict) -> 'TransitionSystem':
+    def recode(self, new_encoding: dict):
         """
         Recodes the transition system according to the new encoding.
 
         :param new_encoding: given new encoding
         :return: new TransitionSystem
         """
-        ts = TransitionSystem(self.ordering)
-        ts.states_encoding = new_encoding
-
         # swap dictionary
         old_encoding = {value: key for key, value in self.states_encoding.items()}
-        ts.edges = set(map(lambda edge: edge.recode(old_encoding, new_encoding), self.edges))
-        return ts
+        self.edges = set(map(lambda edge: edge.recode(old_encoding, new_encoding), self.edges))
 
     def save_to_json(self, output_file):
         pass
