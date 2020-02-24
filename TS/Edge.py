@@ -27,3 +27,11 @@ class Edge:
         return Edge(encoding_new[encoding_old[self.source]],
                     encoding_new[encoding_old[self.target]],
                     self.probability)
+
+    def normalise(self, factor: float):
+        """
+        Normalises rate to probability.
+
+        :param factor: given sum of all rates
+        """
+        self.probability /= factor

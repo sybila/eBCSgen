@@ -1,12 +1,25 @@
+import multiprocessing
+
+import time
 from scipy.integrate import odeint
 import numpy as np
 import pandas as pd
 import random
 
 from TS.State import State
+from TS.TSworker import TSworker
 from TS.TransitionSystem import TransitionSystem
 
 AVOGADRO = 6.022 * 10**23
+
+
+def handle_number_of_threads(number, workers):
+    number = np.math.ceil((1 / 50.0) * number - 1 / 2.)
+    for (i, worker) in enumerate(workers):
+        if i <= number:
+            worker.work.set()
+        else:
+            worker.work.clear()
 
 
 class VectorModel:
@@ -135,4 +148,28 @@ class VectorModel:
         # TSworker does all the work, we just need to initialise them and then somehow check when no new state are being
         # created and no worked is working to end it all
         # how ?
-        pass
+
+        ts = TransitionSystem(self.ordering)
+
+        states_to_process = {self.init}
+
+        workers = [TSworker(ts, states_to_process, self) for _ in range(multiprocessing.cpu_count())]
+        for worker in workers:
+            worker.start()
+
+        workers[0].work.set()
+
+        while any([worker.work.is_set() for worker in workers]):
+            # print("*"*30)
+            # print("To proces:", states_to_process)
+            # print("Working", [worker.work.is_set() for worker in workers])
+            handle_number_of_threads(len(states_to_process), workers)
+            time.sleep(5)
+
+        # print("To proces:", states_to_process)
+
+        for worker in workers:
+            worker.join()
+
+        return ts
+

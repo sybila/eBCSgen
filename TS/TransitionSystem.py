@@ -74,7 +74,7 @@ class TransitionSystem:
             self.states_encoding[state] = length
         return length
 
-    def add_edge(self, source: State, target: State, probability: float) -> Edge:
+    def new_edge(self, source: State, target: State, probability: float) -> Edge:
         """
         Added a new edge with code representations of given States.
 
@@ -83,10 +83,9 @@ class TransitionSystem:
         :param probability: probability of transition
         :return: created Edge
         """
-        edge = Edge(self.states_encoding[source],
-                    self.states_encoding[target],
+        edge = Edge(self.get_state_encoding(source),
+                    self.get_state_encoding(target),
                     probability)
-        self.edges.add(edge)
         return edge
 
     def recode(self, new_encoding: dict):
@@ -101,4 +100,7 @@ class TransitionSystem:
         self.edges = set(map(lambda edge: edge.recode(old_encoding, new_encoding), self.edges))
 
     def save_to_json(self, output_file):
+        pass
+
+    def save_to_PRISM_explicit(self, output_file):
         pass

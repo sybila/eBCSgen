@@ -91,7 +91,7 @@ class TestVectorModel(unittest.TestCase):
 
         self.model_TS = \
             """#! rules
-            => K(S{u},T{i})::cyt @ omega/[K()::cyt]
+            => K(S{u},T{i})::cyt @ omega
             K(S{u})::cyt => K(S{p})::cyt @ alpha*[K(S{u})::cyt]
             K(S{p})::cyt + B{a}::cyt => K(S{p}).B{a}::cyt @ beta*[K(S{p})::cyt]*[B{a}::cyt]
             B{_}::cyt => @ gamma*[B{_}::cyt]
@@ -129,10 +129,10 @@ class TestVectorModel(unittest.TestCase):
                                         }
 
         # in edges we have probabilities, not rates, so we must normalise
-        go = gamma + omega
-        goa = gamma + omega + alpha
-        gob = gamma + omega + beta
-        oa = omega + alpha
+        go = gamma + omega  # 5
+        goa = gamma + omega + alpha  # 15
+        gob = gamma + omega + beta  # 10
+        oa = omega + alpha  # 13
 
         self.test_ts.edges = {Edge(0, 1, gamma/go), Edge(0, 3, omega/go),
                               Edge(1, 2, omega),
@@ -149,38 +149,42 @@ class TestVectorModel(unittest.TestCase):
                               Edge(12, 4, omega/oa), Edge(12, 4, alpha/oa)
                               }
 
-    def test_compute_bound(self):
-        self.assertEqual(self.vm_1.bound, 2)
-
-    def test_deterministic_simulation(self):
-        # simple rates
-        data_simulated = self.vm_2.deterministic_simulation(3, 1/(6.022 * 10**23))
-        data_loaded = pd.read_csv("Testing/simple_out.csv")
-
-        pd.testing.assert_frame_equal(data_simulated, data_loaded)
-
-        # more abstract rates
-
-        model = self.model_parser.parse(self.model_abstract).data
-        vector_model = model.to_vector_model()
-        data_simulated = vector_model.deterministic_simulation(3, 1/(6.022 * 10**23))
-        data_loaded = pd.read_csv("Testing/abstract_out.csv")
-
-        pd.testing.assert_frame_equal(data_simulated, data_loaded)
-
-        # to save dataframe to csv file
-        # data_simulated.to_csv("Testing/abstract_out.csv", index = None, header=True)
-
-    def test_stochastic_simulation(self):
-        model = self.model_parser.parse(self.model_abstract).data
-        vector_model = model.to_vector_model()
-
-        data_simulated = vector_model.stochastic_simulation(5, 4)
-        # print("\n", data_simulated)
-
-    # def test_generate_transition_system(self):
-    #     model = self.model_parser.parse(self.model_TS).data
-    #     print(model)
+    # def test_compute_bound(self):
+    #     self.assertEqual(self.vm_1.bound, 2)
+    #
+    # def test_deterministic_simulation(self):
+    #     # simple rates
+    #     data_simulated = self.vm_2.deterministic_simulation(3, 1/(6.022 * 10**23))
+    #     data_loaded = pd.read_csv("Testing/simple_out.csv")
+    #
+    #     pd.testing.assert_frame_equal(data_simulated, data_loaded)
+    #
+    #     # more abstract rates
+    #
+    #     model = self.model_parser.parse(self.model_abstract).data
     #     vector_model = model.to_vector_model()
-    #     print(vector_model)
-    #     self.assertEqual(vector_model.generate_transition_system(), self.test_ts)
+    #     data_simulated = vector_model.deterministic_simulation(3, 1/(6.022 * 10**23))
+    #     data_loaded = pd.read_csv("Testing/abstract_out.csv")
+    #
+    #     pd.testing.assert_frame_equal(data_simulated, data_loaded)
+    #
+    #     # to save dataframe to csv file
+    #     # data_simulated.to_csv("Testing/abstract_out.csv", index = None, header=True)
+    #
+    # def test_stochastic_simulation(self):
+    #     model = self.model_parser.parse(self.model_abstract).data
+    #     vector_model = model.to_vector_model()
+    #
+    #     data_simulated = vector_model.stochastic_simulation(5, 4)
+    #     # print("\n", data_simulated)
+
+    def test_generate_transition_system(self):
+        model = self.model_parser.parse(self.model_TS).data
+        # print(model)
+        vector_model = model.to_vector_model()
+        # print(vector_model)
+        print(self.test_ts)
+        print("_"*30)
+        ts = vector_model.generate_transition_system()
+        print(ts)
+        self.assertEqual(ts, self.test_ts)

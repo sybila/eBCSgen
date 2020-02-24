@@ -4,6 +4,7 @@ import numpy as np
 class State:
     def __init__(self, sequence: np.array):
         self.sequence = sequence
+        self.is_inf = self.is_hell()
 
     def __eq__(self, other: 'State'):
         return (self.sequence == other.sequence).all()
@@ -80,3 +81,10 @@ class State:
         :return: new reordered State
         """
         return State(self.sequence[indices])
+
+    def is_hell(self):
+        """
+        Checks whether state is special "hell" infinite state.
+        :return: True if is special
+        """
+        return all([np.isinf(i) for i in self.sequence])
