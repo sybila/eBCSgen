@@ -19,6 +19,12 @@ from TS.Edge import edge_from_dict
 
 
 def load_TS_from_json(json_file: str) -> TransitionSystem:
+    """
+    Loads given JSON and interprets it as a TransitionSystem.
+
+    :param json_file: given TS in JSON
+    :return: resulting TransitionSystem
+    """
     complex_parser = Parser("rate_complex")
     with open(json_file) as json_file:
         data = json.load(json_file)
@@ -234,7 +240,15 @@ class Parser:
     def replace(self, expected: set) -> set:
         return set([self.terminals.get(item, item) for item in filter(lambda item: item != 'CNAME', expected)])
 
-    def parse(self, expression):
+    def parse(self, expression: str) -> Result:
+        """
+        Main method for parsing, calls Lark.parse method and creates Result containing parsed
+         object (according to designed 'start' in grammar) or dict with specified error in case
+         the given expression cannot be parsed.
+
+        :param expression: given string expression
+        :return: Result containing parsed object or error specification
+        """
         try:
             return Result(True, self.parser.parse(expression).children[0])
         except UnexpectedCharacters as u:
