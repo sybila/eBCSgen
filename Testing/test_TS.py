@@ -77,4 +77,4 @@ class TestTransitionSystem(unittest.TestCase):
         self.assertEqual(len(self.ts.states_encoding), 3)
 
     def test_add_edge(self):
-        self.assertEqual(self.ts.add_edge(self.s1, self.s2, 0.5), self.edge_1)
+        self.assertEqual(self.ts.new_edge(self.s1, self.s2, 0.5), self.edge_1)

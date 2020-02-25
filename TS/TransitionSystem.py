@@ -1,3 +1,4 @@
+import json
 import numpy as np
 
 from TS.Edge import Edge
@@ -102,7 +103,22 @@ class TransitionSystem:
         old_encoding = {value: key for key, value in self.states_encoding.items()}
         self.edges = set(map(lambda edge: edge.recode(old_encoding, new_encoding), self.edges))
 
-    def save_to_json(self, output_file):
+    def save_to_json(self, output_file: str):
+        """
+        Save current TS as a JSON file.
+
+        :param output_file: given file to write to
+        """
+        nodes = {value: str(key) for key, value in self.states_encoding.items()}
+        unique = list(map(str, self.ordering))
+        edges = [edge.to_dict() for edge in self.edges]
+
+        data = {'nodes': nodes, 'edges': edges, 'unique': unique}
+
+        with open(output_file, 'w') as json_file:
+            json.dump(data, json_file, indent=4)
+
+    def load_from_json(self, json_file):
         pass
 
     def save_to_PRISM_explicit(self, output_file):

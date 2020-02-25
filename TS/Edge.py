@@ -35,3 +35,21 @@ class Edge:
         :param factor: given sum of all rates
         """
         self.probability /= factor
+
+    def to_dict(self):
+        """
+        Exports the edge as a dict.
+
+        :return: dict representing the edge
+        """
+        return {'s': self.source, 't': self.target, 'p': self.probability}
+
+
+def edge_from_dict(d: dict) -> Edge:
+    """
+    Creates edge from given dict.
+
+    :param d: dict representing the edge
+    :return: Edge
+    """
+    return Edge(d['s'], d['t'], d['p'])

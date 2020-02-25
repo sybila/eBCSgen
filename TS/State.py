@@ -19,7 +19,7 @@ class State:
         return self.sequence * other.sequence
 
     def __str__(self):
-        return str(self.sequence)
+        return str(tuple(self.sequence))
 
     def __repr__(self):
         return str(self)

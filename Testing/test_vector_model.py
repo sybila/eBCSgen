@@ -183,5 +183,11 @@ class TestVectorModel(unittest.TestCase):
     def test_generate_transition_system(self):
         model = self.model_parser.parse(self.model_TS).data
         vector_model = model.to_vector_model()
-        ts = vector_model.generate_transition_system()
-        self.assertEqual(self.test_ts, ts)
+        generated_ts = vector_model.generate_transition_system()
+        self.assertEqual(self.test_ts, generated_ts)
+
+    def test_save_to_json(self):
+        model = self.model_parser.parse(self.model_TS).data
+        vector_model = model.to_vector_model()
+        generated_ts = vector_model.generate_transition_system()
+        generated_ts.save_to_json("Testing/testing_ts.json")
