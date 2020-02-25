@@ -14,6 +14,12 @@ AVOGADRO = 6.022 * 10**23
 
 
 def handle_number_of_threads(number, workers):
+    """
+    Estimated number of required workers for current volume of unprocessed states.
+
+    :param number: volume of unprocessed states
+    :param workers: available workers
+    """
     number = np.math.ceil((1 / 50.0) * number - 1 / 2.)
     for (i, worker) in enumerate(workers):
         if i <= number:
@@ -136,19 +142,18 @@ class VectorModel:
         return result_df
 
     def generate_transition_system(self) -> TransitionSystem:
-        # reaction vectors have already replaced known parameters by their values
-        # should be done in parallel
+        """
+        Parallel implementation of Transition system generating.
 
-        # each time we encounter a new state (not present in encoding), add its new code and create edge between codes
-        # -> a better version would be to use hash of State, but the numbers would be probably too huge for Storm
-        # problem of checking whether State exists should be O(1) if State has good hash function
+        The workload is distributed to Workers which take unprocessed States from the pool and process them.
 
-        # if case of getting above the bound, we should create special state with all element mth.inf
+        If the given bound should be exceeded, a special infinite state is introduced.
 
-        # TSworker does all the work, we just need to initialise them and then somehow check when no new state are being
-        # created and no worked is working to end it all
-        # how ?
+        The algorithm dynamically changes number of active workers using thread events. This is done according to the
+        current volume of unprocessed states.
 
+        :return: generated Transition system
+        """
         ts = TransitionSystem(self.ordering)
 
         states_to_process = {self.init}
@@ -160,13 +165,8 @@ class VectorModel:
         workers[0].work.set()
 
         while any([worker.work.is_set() for worker in workers]):
-            # print("*"*30)
-            # print("To proces:", states_to_process)
-            # print("Working", [worker.work.is_set() for worker in workers])
             handle_number_of_threads(len(states_to_process), workers)
             time.sleep(5)
-
-        # print("To proces:", states_to_process)
 
         for worker in workers:
             worker.join()
