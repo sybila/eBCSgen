@@ -151,6 +151,26 @@ class TestVectorModel(unittest.TestCase):
                               Edge(12, 4, omega/oa), Edge(12, 4, alpha/oa)
                               }
 
+        # bigger TS
+
+        self.model_bigger_TS = \
+            """#! rules
+            => K(S{u},T{i})::cyt @ omega
+            K(S{u})::cyt => K(S{p})::cyt @ alpha*[K(S{u})::cyt]
+            K(S{p})::cyt + B{a}::cyt => K(S{p}).B{a}::cyt @ beta*[K(S{p})::cyt]*[B{a}::cyt]
+            B{_}::cyt => @ gamma*[B{_}::cyt]
+            K(S{u},T{i}).B{a}::cyt => @ 5
+
+            #! inits
+            6 B{a}::cyt
+
+            #! definitions
+            alpha = 10
+            beta = 5
+            gamma = 2
+            omega = 3
+            """
+
     def test_compute_bound(self):
         self.assertEqual(self.vm_1.bound, 2)
 
@@ -181,15 +201,23 @@ class TestVectorModel(unittest.TestCase):
         # print("\n", data_simulated)
 
     def test_generate_transition_system(self):
-        model = self.model_parser.parse(self.model_TS).data
-        vector_model = model.to_vector_model()
-        generated_ts = vector_model.generate_transition_system()
-        self.assertEqual(self.test_ts, generated_ts)
+        # model = self.model_parser.parse(self.model_TS).data
+        # vector_model = model.to_vector_model()
+        # generated_ts = vector_model.generate_transition_system()
+        # self.assertEqual(self.test_ts, generated_ts)
 
-    def test_save_to_json(self):
-        model = self.model_parser.parse(self.model_TS).data
+        # bigger TS
+
+        model = self.model_parser.parse(self.model_bigger_TS).data
         vector_model = model.to_vector_model()
         generated_ts = vector_model.generate_transition_system()
-        generated_ts.save_to_json("Testing/testing_ts.json")
-        loaded_ts = load_TS_from_json("Testing/testing_ts.json")
+        loaded_ts = load_TS_from_json("Testing/testing_bigger_ts.json")
         self.assertEqual(generated_ts, loaded_ts)
+
+    # def test_save_to_json(self):
+    #     model = self.model_parser.parse(self.model_TS).data
+    #     vector_model = model.to_vector_model()
+    #     generated_ts = vector_model.generate_transition_system()
+    #     generated_ts.save_to_json("Testing/testing_ts.json")
+    #     loaded_ts = load_TS_from_json("Testing/testing_ts.json")
+    #     self.assertEqual(generated_ts, loaded_ts)
