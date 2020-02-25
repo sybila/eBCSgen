@@ -6,7 +6,7 @@ from Core.Atomic import AtomicAgent
 from Core.Rate import Rate
 from Core.Structure import StructureAgent
 from Core.Complex import Complex
-from Parsing.ParseModel import Parser
+from Parsing.ParseBCSL import Parser, load_TS_from_json
 from TS.Edge import Edge
 from TS.State import State
 from TS.TransitionSystem import TransitionSystem
@@ -191,3 +191,5 @@ class TestVectorModel(unittest.TestCase):
         vector_model = model.to_vector_model()
         generated_ts = vector_model.generate_transition_system()
         generated_ts.save_to_json("Testing/testing_ts.json")
+        loaded_ts = load_TS_from_json("Testing/testing_ts.json")
+        self.assertEqual(generated_ts, loaded_ts)

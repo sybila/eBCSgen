@@ -6,7 +6,7 @@ from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
 from Core.Rate import Rate
 from Core.Structure import StructureAgent
-from Parsing.ParseModel import Parser
+from Parsing.ParseBCSL import Parser
 from TS.State import State
 
 

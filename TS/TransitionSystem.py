@@ -5,27 +5,6 @@ from TS.Edge import Edge
 from TS.State import State
 
 
-def create_indices(ordering_1: tuple, ordering_2: tuple):
-    """
-    Creates indices np.array which represents how agents from ordering_1 have to be rearranged
-    in order to fit agents from ordering_2. If such relation is not possible, return False.
-
-    :param ordering_1: first agents ordering
-    :param ordering_2: second agents ordering
-    :return: np.array of indices
-    """
-    if set(ordering_1) == set(ordering_2):
-        result = []
-        for i_1 in range(len(ordering_1)):
-            for i_2 in range(len(ordering_2)):
-                if ordering_1[i_1] == ordering_2[i_2]:
-                    result.append(i_2)
-                    break
-        return True, np.array(result)
-    else:
-        return False, None
-
-
 class TransitionSystem:
     def __init__(self, ordering: tuple):
         self.states_encoding = dict()  # State -> int
@@ -113,13 +92,31 @@ class TransitionSystem:
         unique = list(map(str, self.ordering))
         edges = [edge.to_dict() for edge in self.edges]
 
-        data = {'nodes': nodes, 'edges': edges, 'unique': unique}
+        data = {'nodes': nodes, 'edges': edges, 'ordering': unique}
 
         with open(output_file, 'w') as json_file:
             json.dump(data, json_file, indent=4)
 
-    def load_from_json(self, json_file):
-        pass
-
     def save_to_PRISM_explicit(self, output_file):
         pass
+
+
+def create_indices(ordering_1: tuple, ordering_2: tuple):
+    """
+    Creates indices np.array which represents how agents from ordering_1 have to be rearranged
+    in order to fit agents from ordering_2. If such relation is not possible, return False.
+
+    :param ordering_1: first agents ordering
+    :param ordering_2: second agents ordering
+    :return: np.array of indices
+    """
+    if set(ordering_1) == set(ordering_2):
+        result = []
+        for i_1 in range(len(ordering_1)):
+            for i_2 in range(len(ordering_2)):
+                if ordering_1[i_1] == ordering_2[i_2]:
+                    result.append(i_2)
+                    break
+        return True, np.array(result)
+    else:
+        return False, None

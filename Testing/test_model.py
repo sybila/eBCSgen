@@ -7,7 +7,7 @@ from Core.Rate import Rate
 from Core.Structure import StructureAgent
 from Core.Complex import Complex
 from Core.Rule import Rule
-from Parsing.ParseModel import Parser
+from Parsing.ParseBCSL import Parser
 from TS.State import State
 from TS.VectorModel import VectorModel
 from TS.VectorReaction import VectorReaction

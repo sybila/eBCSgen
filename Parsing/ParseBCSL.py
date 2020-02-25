@@ -1,4 +1,7 @@
 import collections
+import json
+from numpy import inf
+import numpy as np
 from copy import deepcopy
 from lark import Lark, Transformer, Tree
 from lark import UnexpectedCharacters, UnexpectedToken
@@ -10,6 +13,21 @@ from Core.Model import Model
 from Core.Rate import Rate
 from Core.Rule import Rule
 from Core.Structure import StructureAgent
+from TS.State import State
+from TS.TransitionSystem import TransitionSystem
+from TS.Edge import edge_from_dict
+
+
+def load_TS_from_json(json_file: str) -> TransitionSystem:
+    complex_parser = Parser("rate_complex")
+    with open(json_file) as json_file:
+        data = json.load(json_file)
+
+        ordering = tuple(map(lambda agent: complex_parser.parse(agent).data.children[0], data['ordering']))
+        ts = TransitionSystem(ordering)
+        ts.states_encoding = {State(np.array(eval(data['nodes'][node_id]))): int(node_id) for node_id in data['nodes']}
+        ts.edges = {edge_from_dict(edge) for edge in data['edges']}
+        return ts
 
 
 class Result:

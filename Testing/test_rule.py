@@ -8,7 +8,7 @@ from Core.Complex import Complex
 from Core.Rule import Rule
 from Core.Side import Side
 from Core.Reaction import Reaction
-from Parsing.ParseModel import Parser
+from Parsing.ParseBCSL import Parser
 
 
 class TestRule(unittest.TestCase):
