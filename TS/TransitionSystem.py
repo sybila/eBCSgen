@@ -55,7 +55,10 @@ class TransitionSystem:
         ts.states_encoding = re_encoding
         ts.edges = self.edges
 
-        ts.recode(other.states_encoding)
+        try:
+            ts.recode(other.states_encoding)
+        except KeyError:
+            return False
 
         return ts.edges == other.edges
 

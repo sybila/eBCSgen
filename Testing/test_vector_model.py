@@ -87,7 +87,8 @@ class TestVectorModel(unittest.TestCase):
         cx4 = Complex([s1, a1], "cyt")
         cx5 = Complex([s2, a1], "cyt")
 
-        ordering = tuple(sorted({cx1, cx2, cx3, cx4, cx5}))
+        ordering = (cx5, cx4, cx3, cx2, cx1)
+        # (K(S{u},T{i}).B{a}::cyt, K(S{p},T{i}).B{a}::cyt, K(S{u},T{i})::cyt, K(S{p},T{i})::cyt, B{a}::cyt)
 
         self.model_TS = \
             """#! rules
@@ -131,60 +132,56 @@ class TestVectorModel(unittest.TestCase):
         # in edges we have probabilities, not rates, so we must normalise
         go = gamma + omega  # 5
         goa = gamma + omega + alpha  # 15
+        goab = gamma + omega + alpha + beta # 20
         gob = gamma + omega + beta  # 10
         oa = omega + alpha  # 13
 
         self.test_ts.edges = {Edge(0, 1, gamma/go), Edge(0, 3, omega/go),
-                              Edge(1, 2, omega),
-                              Edge(2, 4, omega),
+                              Edge(1, 2, omega/omega),
+                              Edge(2, 4, omega/oa), Edge(2, 8, alpha/oa),
                               Edge(3, 2, gamma/goa), Edge(3, 4, omega/goa), Edge(3, 5, alpha/goa),
                               Edge(4, 4, 1),
-                              Edge(5, 6, omega/gob), Edge(5, 7, gamma/gob), Edge(5, 8, beta/gob),
-                              Edge(6, 4, omega/goa), Edge(6, 4, alpha/goa), Edge(6, 9, gamma/goa),
-                              Edge(7, 10, omega),
-                              Edge(8, 9, gamma),
+                              Edge(5, 6, omega/gob), Edge(5, 7, beta/gob), Edge(5, 8, gamma/gob),
+                              Edge(6, 4, omega/goab), Edge(6, 4, alpha/goab), Edge(6, 9, gamma/goab), Edge(6, 10, beta/goab),
+                              Edge(7, 10, omega/omega),
+                              Edge(8, 9, gamma/gamma),
                               Edge(9, 4, omega/oa), Edge(9, 4, alpha/oa),
                               Edge(10, 4, omega/oa), Edge(10, 11, alpha/oa),
-                              Edge(11, 12, omega),
+                              Edge(11, 12, omega/omega),
                               Edge(12, 4, omega/oa), Edge(12, 4, alpha/oa)
                               }
 
-    # def test_compute_bound(self):
-    #     self.assertEqual(self.vm_1.bound, 2)
-    #
-    # def test_deterministic_simulation(self):
-    #     # simple rates
-    #     data_simulated = self.vm_2.deterministic_simulation(3, 1/(6.022 * 10**23))
-    #     data_loaded = pd.read_csv("Testing/simple_out.csv")
-    #
-    #     pd.testing.assert_frame_equal(data_simulated, data_loaded)
-    #
-    #     # more abstract rates
-    #
-    #     model = self.model_parser.parse(self.model_abstract).data
-    #     vector_model = model.to_vector_model()
-    #     data_simulated = vector_model.deterministic_simulation(3, 1/(6.022 * 10**23))
-    #     data_loaded = pd.read_csv("Testing/abstract_out.csv")
-    #
-    #     pd.testing.assert_frame_equal(data_simulated, data_loaded)
-    #
-    #     # to save dataframe to csv file
-    #     # data_simulated.to_csv("Testing/abstract_out.csv", index = None, header=True)
-    #
-    # def test_stochastic_simulation(self):
-    #     model = self.model_parser.parse(self.model_abstract).data
-    #     vector_model = model.to_vector_model()
-    #
-    #     data_simulated = vector_model.stochastic_simulation(5, 4)
-    #     # print("\n", data_simulated)
+    def test_compute_bound(self):
+        self.assertEqual(self.vm_1.bound, 2)
+
+    def test_deterministic_simulation(self):
+        # simple rates
+        data_simulated = self.vm_2.deterministic_simulation(3, 1/(6.022 * 10**23))
+        data_loaded = pd.read_csv("Testing/simple_out.csv")
+
+        pd.testing.assert_frame_equal(data_simulated, data_loaded)
+
+        # more abstract rates
+
+        model = self.model_parser.parse(self.model_abstract).data
+        vector_model = model.to_vector_model()
+        data_simulated = vector_model.deterministic_simulation(3, 1/(6.022 * 10**23))
+        data_loaded = pd.read_csv("Testing/abstract_out.csv")
+
+        pd.testing.assert_frame_equal(data_simulated, data_loaded)
+
+        # to save dataframe to csv file
+        # data_simulated.to_csv("Testing/abstract_out.csv", index = None, header=True)
+
+    def test_stochastic_simulation(self):
+        model = self.model_parser.parse(self.model_abstract).data
+        vector_model = model.to_vector_model()
+
+        data_simulated = vector_model.stochastic_simulation(5, 4)
+        # print("\n", data_simulated)
 
     def test_generate_transition_system(self):
         model = self.model_parser.parse(self.model_TS).data
-        # print(model)
         vector_model = model.to_vector_model()
-        # print(vector_model)
-        print(self.test_ts)
-        print("_"*30)
         ts = vector_model.generate_transition_system()
-        print(ts)
-        self.assertEqual(ts, self.test_ts)
+        self.assertEqual(self.test_ts, ts)
