@@ -10,7 +10,11 @@ from TS.State import State
 from TS.TSworker import TSworker
 from TS.TransitionSystem import TransitionSystem
 
-AVOGADRO = 6.022 * 10**23
+AVOGADRO = 6.022 * 10 ** 23
+
+
+def fake_expovariate(rate):
+    return 0.1
 
 
 def handle_number_of_threads(number, workers):
@@ -36,7 +40,7 @@ class VectorModel:
         self.bound = bound if bound else self.compute_bound()
 
     def __eq__(self, other: 'VectorModel') -> bool:
-        return self.vector_reactions == other.vector_reactions and\
+        return self.vector_reactions == other.vector_reactions and \
                self.init == other.init and self.ordering == other.ordering
 
     def __str__(self):
@@ -88,13 +92,13 @@ class VectorModel:
                 if reaction.target.sequence[i] == 1:
                     ODEs[i] += " + " + str(reaction.rate)
         t = np.arange(0, max_time, 0.01)
-        y_0 = list(map(lambda x: x/(AVOGADRO * volume), self.init.sequence))
+        y_0 = list(map(lambda x: x / (AVOGADRO * volume), self.init.sequence))
         y = odeint(fun, y_0, t)
         df = pd.DataFrame(data=y, columns=list(map(str, self.ordering)))
         df.insert(0, "times", t)
         return df
 
-    def stochastic_simulation(self, max_time: float, runs: int) -> pd.DataFrame:
+    def stochastic_simulation(self, max_time: float, runs: int, testing: bool = False) -> pd.DataFrame:
         """
         Gillespie algorithm implementation.
 
@@ -109,6 +113,12 @@ class VectorModel:
         header = ["times"] + list(map(str, self.ordering))
         result_df = pd.DataFrame(columns=header)
 
+        if not testing:
+            time_step = random.expovariate
+        else:
+            random.seed(10)
+            time_step = fake_expovariate
+
         for run in range(runs):
             df = pd.DataFrame(columns=header)
             solution = self.init
@@ -118,6 +128,7 @@ class VectorModel:
                 applied_reactions = pd.DataFrame(data=[reaction.apply(solution, np.math.inf)
                                                        for reaction in self.vector_reactions],
                                                  columns=["state", "rate"])
+                applied_reactions = applied_reactions.dropna()
                 rates_sum = applied_reactions.sum()["rate"]
                 sorted_applied = applied_reactions.sort_values(by=["rate"])
                 sorted_applied["cumsum"] = sorted_applied.cumsum(axis=0)["rate"]
@@ -131,7 +142,7 @@ class VectorModel:
                 df.loc[len(df)] = [time] + list(solution.sequence)
 
                 # update time
-                time += random.expovariate(rates_sum)
+                time += time_step(rates_sum)
 
             if run != 0:
                 averages = (df.stack() + result_df.stack()) / 2
@@ -172,4 +183,3 @@ class VectorModel:
             worker.join()
 
         return ts
-

@@ -190,15 +190,17 @@ class TestVectorModel(unittest.TestCase):
 
         pd.testing.assert_frame_equal(data_simulated, data_loaded)
 
-        # to save dataframe to csv file
-        # data_simulated.to_csv("Testing/abstract_out.csv", index = None, header=True)
-
     def test_stochastic_simulation(self):
         model = self.model_parser.parse(self.model_abstract).data
         vector_model = model.to_vector_model()
 
-        data_simulated = vector_model.stochastic_simulation(5, 4)
-        # print("\n", data_simulated)
+        data_simulated = vector_model.stochastic_simulation(5, 4, testing=True)
+
+        # to save dataframe to csv file
+        # data_simulated.to_csv("Testing/stochastic_out.csv", index=None, header=True)
+
+        data_loaded = pd.read_csv("Testing/stochastic_out.csv")
+        pd.testing.assert_frame_equal(data_simulated, data_loaded)
 
     def test_generate_transition_system(self):
         model = self.model_parser.parse(self.model_TS).data
