@@ -152,7 +152,7 @@ class VectorModel:
                 result_df = df
         return result_df
 
-    def generate_transition_system(self) -> TransitionSystem:
+    def generate_transition_system(self, ts: TransitionSystem = None) -> TransitionSystem:
         """
         Parallel implementation of Transition system generating.
 
@@ -165,19 +165,22 @@ class VectorModel:
 
         :return: generated Transition system
         """
-        ts = TransitionSystem(self.ordering)
+        if not ts:
+            ts = TransitionSystem(self.ordering)
+            ts.unprocessed = {self.init}
 
-        states_to_process = {self.init}
-
-        workers = [TSworker(ts, states_to_process, self) for _ in range(multiprocessing.cpu_count())]
+        workers = [TSworker(ts, self) for _ in range(multiprocessing.cpu_count())]
         for worker in workers:
             worker.start()
 
         workers[0].work.set()
 
-        while any([worker.work.is_set() for worker in workers]):
-            handle_number_of_threads(len(states_to_process), workers)
-            time.sleep(5)
+        try:
+            while any([worker.work.is_set() for worker in workers]):
+                handle_number_of_threads(len(ts.unprocessed), workers)
+                time.sleep(5)
+        except (KeyboardInterrupt, EOFError) as e:
+            pass
 
         for worker in workers:
             worker.join()

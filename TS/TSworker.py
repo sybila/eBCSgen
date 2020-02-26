@@ -2,10 +2,9 @@ import threading
 
 
 class TSworker(threading.Thread):
-    def __init__(self, ts, states_to_process, model):
+    def __init__(self, ts, model):
         super(TSworker, self).__init__()
         self.ts = ts  # resulting transition system
-        self.states_to_process = states_to_process  # pile of states to be processed, shared with all the processes
         self.model = model
 
         self.stop_request = threading.Event()
@@ -23,7 +22,7 @@ class TSworker(threading.Thread):
         while not self.stop_request.isSet():
             self.work.wait()
             try:
-                state = self.states_to_process.pop()
+                state = self.ts.unprocessed.pop()
                 edges = set()
 
                 # special "hell" state
@@ -35,7 +34,7 @@ class TSworker(threading.Thread):
                         new_state, rate = reaction.apply(state, self.model.bound)
                         if new_state and rate:
                             if new_state not in self.ts.states_encoding:
-                                self.states_to_process.add(new_state)
+                                self.ts.unprocessed.add(new_state)
                             edges.add(self.ts.new_edge(state, new_state, rate))
 
                     # normalise

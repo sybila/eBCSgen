@@ -11,6 +11,9 @@ class TransitionSystem:
         self.edges = set()  # Edge objects: (int from, int to, probability), can be used for explicit Storm format
         self.ordering = ordering  # used to decode State to actual agents
 
+        # for TS generating
+        self.unprocessed = set()
+
     def __str__(self):
         return str(self.states_encoding) + "\n" + "\n".join(list(map(str, self.edges))) + "\n" + str(self.ordering)
 
@@ -39,6 +42,8 @@ class TransitionSystem:
             ts.recode(other.states_encoding)
         except KeyError:
             return False
+
+        # print(ts.edges - other.edges)
 
         return ts.edges == other.edges
 
@@ -93,6 +98,9 @@ class TransitionSystem:
         edges = [edge.to_dict() for edge in self.edges]
 
         data = {'nodes': nodes, 'edges': edges, 'ordering': unique}
+
+        if self.unprocessed:
+            data['unprocessed'] = [str(state) for state in self.unprocessed]
 
         with open(output_file, 'w') as json_file:
             json.dump(data, json_file, indent=4)
