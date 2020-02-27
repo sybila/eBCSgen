@@ -152,7 +152,8 @@ class VectorModel:
                 result_df = df
         return result_df
 
-    def generate_transition_system(self, ts: TransitionSystem = None) -> TransitionSystem:
+    def generate_transition_system(self, ts: TransitionSystem = None,
+                                   max_time: float = np.inf, max_size: float = np.inf) -> TransitionSystem:
         """
         Parallel implementation of Transition system generating.
 
@@ -174,11 +175,16 @@ class VectorModel:
             worker.start()
 
         workers[0].work.set()
+        start_time = time.time()
 
         try:
-            while any([worker.work.is_set() for worker in workers]):
+            while any([worker.work.is_set() for worker in workers]) \
+                    and time.time() - start_time < max_time \
+                    and len(ts.states_encoding) < max_size:
                 handle_number_of_threads(len(ts.unprocessed), workers)
-                time.sleep(5)
+                time.sleep(1)
+        # probably should be changed to a different exceptions for the case when the execution is stopped on Galaxy
+        # then also the ts should be exported to appropriate file
         except (KeyboardInterrupt, EOFError) as e:
             pass
 
