@@ -1,5 +1,7 @@
 import threading
 
+import time
+
 
 class TSworker(threading.Thread):
     def __init__(self, ts, model):

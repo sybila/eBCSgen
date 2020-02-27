@@ -191,4 +191,7 @@ class VectorModel:
         for worker in workers:
             worker.join()
 
+        while any([worker.is_alive() for worker in workers]):
+            time.sleep(1)
+
         return ts
