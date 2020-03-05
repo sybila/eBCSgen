@@ -150,11 +150,33 @@ class TestModel(unittest.TestCase):
             k2 = 0.12
             """
 
-    def test_str(self):
-        model = self.model_parser.parse(self.model_str_1).data
-        back_to_str = repr(model)
-        parsed_again = self.model_parser.parse(back_to_str).data
-        self.assertEqual(model, parsed_again)
+        self.model_with_comments = """
+            #! rules
+            // commenting
+            X(K{i})::rep => X(K{p})::rep @ k1*[X()::rep] // also
+            X(T{a})::rep => X(T{o})::rep @ k2*[Z()::rep]
+            => Y(P{f})::rep @ 1/(1+([X()::rep])**4)
+
+            #! inits
+            // here
+            2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+            Y(P{g}, N{l})::rep
+
+            #! definitions
+            // and
+            k1 = 0.05
+            k2 = 0.12
+            """
+
+    # def test_str(self):
+    #     model = self.model_parser.parse(self.model_str_1).data
+    #     back_to_str = repr(model)
+    #     parsed_again = self.model_parser.parse(back_to_str).data
+    #     self.assertEqual(model, parsed_again)
+
+    def test_comments(self):
+        result = self.model_parser.parse(self.model_with_comments)
+        print(result.success, repr(result.data))
 
     # def test_parser(self):
     #     self.assertEqual(self.model_parser.parse(self.model_str_1).data, self.model)

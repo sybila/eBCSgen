@@ -3,7 +3,7 @@ import json
 from numpy import inf
 import numpy as np
 from copy import deepcopy
-from lark import Lark, Transformer, Tree
+from lark import Lark, Transformer, Tree, Discard
 from lark import UnexpectedCharacters, UnexpectedToken
 from lark.load_grammar import _TERMINAL_NAMES
 
@@ -67,13 +67,13 @@ class SideHelper:
 GRAMMAR = r"""
     model: rules inits definitions
 
-    rules: RULES_START rule+
-    inits: INITS_START init+
-    definitions: DEFNS_START definition+
+    rules: RULES_START (rule|comment)+
+    inits: INITS_START (init|comment)+
+    definitions: DEFNS_START (definition|comment)+
 
-    init: const? rate_complex
-    definition: def_param "=" number
-    rule: side ARROW side ("@" rate)?
+    init: const? rate_complex (comment)?
+    definition: def_param "=" number (comment)?
+    rule: side ARROW side ("@" rate)? (comment)?
 
     side: (const? complex "+")* (const? complex)?
     complex: sequence DOUBLE_COLON compartment
@@ -92,6 +92,9 @@ GRAMMAR = r"""
 
     !state: (DIGIT|LETTER|"+"|"-"|"*"|"_")+
 
+    comment: COM WORD
+
+    COM: "//"
     POW: "**"
     ARROW: "=>"
     DOUBLE_COLON: "::"
@@ -108,6 +111,7 @@ GRAMMAR = r"""
 
     const: INT
 
+    %import common.WORD
     %import common.NUMBER
     %import common.INT
     %import common.LETTER
@@ -124,6 +128,9 @@ class TreeToObjects(Transformer):
     A transformer which is called on a tree in a bottom-up manner and transforms all subtrees/tokens it encounters.
     Note the defined methods have the same name as elements in the grammar above.
     """
+    def comment(self, matches):
+        return Discard
+
     def state(self, matches):
         return "".join(map(str, matches))
 
@@ -177,6 +184,7 @@ class TreeToObjects(Transformer):
         return helper
 
     def rule(self, matches):
+        matches = list(filter(lambda item: item is not Discard, matches))
         if len(matches) > 3:
             lhs, arrow, rhs, rate = matches
         else:
@@ -196,9 +204,11 @@ class TreeToObjects(Transformer):
         return Rule(agents, mid, compartments, complexes, pairs, Rate(rate) if rate else None)
 
     def rules(self, matches):
+        matches = list(filter(lambda item: item is not Discard, matches))
         return matches[1:]
 
     def definitions(self, matches):
+        matches = list(filter(lambda item: item is not Discard, matches))
         result = dict()
         for definition in matches[1:]:
             pair = definition.children
@@ -209,6 +219,7 @@ class TreeToObjects(Transformer):
         return matches
 
     def inits(self, matches):
+        matches = list(filter(lambda item: item is not Discard, matches))
         result = collections.Counter()
         for init in matches[1:]:
             if len(init) > 1:
@@ -231,7 +242,8 @@ class Parser:
                            )
 
         self.terminals = dict((v, k) for k, v in _TERMINAL_NAMES.items())
-        self.terminals.update({"ARROW": "=>",
+        self.terminals.update({"COM": "//",
+                               "ARROW": "=>",
                                "POW": "**",
                                "DOUBLE_COLON": "::",
                                "RULES_START": "#! rules",
