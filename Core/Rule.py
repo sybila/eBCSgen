@@ -39,8 +39,9 @@ class Rule:
 
     def __str__(self):
         lhs, rhs = self.create_complexes()
+        rate = " @ " + str(self.rate) if self.rate else ""
         return " + ".join(lhs.to_list_of_strings()) + " => " + " + ".join(rhs.to_list_of_strings()) \
-               + " @ " + str(self.rate)
+               + rate
 
     def __lt__(self, other):
         return str(self) < str(other)

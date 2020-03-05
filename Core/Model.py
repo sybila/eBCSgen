@@ -23,6 +23,11 @@ class Model:
         return "Model:\n" + "\n".join(map(str, self.rules)) + "\n\n" + str(self.init) + "\n\n" + str(self.definitions) \
             + "\n\n" + str(self.atomic_signature) + "\n" + str(self.structure_signature)
 
+    def __repr__(self):
+        return "#! rules\n" + "\n".join(map(str, self.rules)) + \
+               "\n\n#! inits\n" + "\n".join([str(self.init[a]) + " " + str(a) for a in self.init]) + \
+               "\n\n#! definitions\n" + "\n".join([str(p) + " = " + str(self.definitions[p]) for p in self.definitions])
+
     def extract_signatures(self):
         """
         Automatically creates signature from context of rules and initial state.
