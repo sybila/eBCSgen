@@ -36,6 +36,12 @@ class Complex:
         return atomic_signature, structure_signature
 
     def compatible(self, other: 'Complex'):
+        """
+        Checks whether two Complexes are compatible.
+
+        :param other: another Complex
+        :return: True if they are compatible
+        """
         if type(self) != type(other):
             return False
         if self == other:

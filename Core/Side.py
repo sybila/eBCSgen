@@ -24,6 +24,9 @@ class Side:
     def __lt__(self, other):
         return str(self) < str(other)
 
+    def __len__(self):
+        return len(self.agents)
+
     def to_list_of_strings(self):
         return list(map(str, self.agents))
 
@@ -42,3 +45,17 @@ class Side:
         for agent in list(multiset):
             vector[ordering.index(agent)] = multiset[agent]
         return State(vector)
+
+    def compatible(self, other: 'Side') -> bool:
+        """
+        Checks whether two Sides are compatible.
+
+        Is True only of on corresponding positions the Complexes are compatible
+        and length of the Sides is equal.
+
+        :param other: given Side
+        :return: True if they are compatible
+        """
+        if len(self) != len(other):
+            return False
+        return all([self.agents[i].compatible(other.agents[i]) for i in range(len(self))])
