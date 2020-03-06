@@ -29,6 +29,7 @@ class Rule:
         self.complexes = complexes
         self.pairs = pairs
         self.rate = rate
+        self.comment = (False, None)
 
     def __eq__(self, other: 'Rule'):
         return self.agents == other.agents and self.mid == other.mid and self.compartments == other.compartments and \
@@ -98,3 +99,6 @@ class Rule:
             new_rule = Rule(new_agents, self.mid, self.compartments, self.complexes, self.pairs, self.rate)
             reactions.add(new_rule.to_reaction())
         return reactions
+
+    def compatible(self, other: 'Rule'):
+        pass
