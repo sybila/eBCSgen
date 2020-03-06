@@ -175,8 +175,12 @@ class TestModel(unittest.TestCase):
     #     self.assertEqual(model, parsed_again)
 
     def test_comments(self):
-        result = self.model_parser.parse(self.model_with_comments)
-        print(result.success, repr(result.data))
+        model_with_comments = self.model_parser.parse(self.model_with_comments)
+        model_without_comments = self.model_parser.parse(self.model_str_2).data
+
+        print(model_with_comments.success, repr(model_with_comments.data))
+
+        self.assertEqual(model_with_comments.data, model_without_comments)
 
     # def test_parser(self):
     #     self.assertEqual(self.model_parser.parse(self.model_str_1).data, self.model)
