@@ -67,13 +67,13 @@ class SideHelper:
 GRAMMAR = r"""
     model: rules inits definitions
 
-    rules: RULES_START (rule|comment)+
-    inits: INITS_START (init|comment)+
-    definitions: DEFNS_START (definition|comment)+
+    rules: RULES_START (rule|COMMENT)+
+    inits: INITS_START (init|COMMENT)+
+    definitions: DEFNS_START (definition|COMMENT)+
 
-    init: const? rate_complex (comment)?
-    definition: def_param "=" number (comment)?
-    rule: side ARROW side ("@" rate)? (comment)?
+    init: const? rate_complex (COMMENT)?
+    definition: def_param "=" number (COMMENT)?
+    rule: side ARROW side ("@" rate)? (COMMENT)?
 
     side: (const? complex "+")* (const? complex)?
     complex: sequence DOUBLE_COLON compartment
@@ -92,7 +92,7 @@ GRAMMAR = r"""
 
     !state: (DIGIT|LETTER|"+"|"-"|"*"|"_")+
 
-    comment: COM WORD
+    COMMENT: "//" /[^\n]/*
 
     COM: "//"
     POW: "**"
@@ -120,6 +120,7 @@ GRAMMAR = r"""
     %import common.DECIMAL
     %import common.WS
     %ignore WS
+    %ignore COMMENT
 """
 
 
@@ -128,9 +129,6 @@ class TreeToObjects(Transformer):
     A transformer which is called on a tree in a bottom-up manner and transforms all subtrees/tokens it encounters.
     Note the defined methods have the same name as elements in the grammar above.
     """
-    def comment(self, matches):
-        return Discard
-
     def state(self, matches):
         return "".join(map(str, matches))
 
@@ -184,7 +182,6 @@ class TreeToObjects(Transformer):
         return helper
 
     def rule(self, matches):
-        matches = list(filter(lambda item: item is not Discard, matches))
         if len(matches) > 3:
             lhs, arrow, rhs, rate = matches
         else:
@@ -204,11 +201,9 @@ class TreeToObjects(Transformer):
         return Rule(agents, mid, compartments, complexes, pairs, Rate(rate) if rate else None)
 
     def rules(self, matches):
-        matches = list(filter(lambda item: item is not Discard, matches))
         return matches[1:]
 
     def definitions(self, matches):
-        matches = list(filter(lambda item: item is not Discard, matches))
         result = dict()
         for definition in matches[1:]:
             pair = definition.children
@@ -219,7 +214,6 @@ class TreeToObjects(Transformer):
         return matches
 
     def inits(self, matches):
-        matches = list(filter(lambda item: item is not Discard, matches))
         result = collections.Counter()
         for init in matches[1:]:
             if len(init) > 1:
