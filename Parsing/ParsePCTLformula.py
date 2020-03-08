@@ -1,9 +1,10 @@
-from lark import Lark, Transformer
+from lark import Lark, Transformer, Tree
 from lark import UnexpectedCharacters, UnexpectedToken
 from lark.load_grammar import _TERMINAL_NAMES
 
-from Core.Formula import Formula
+from Core.Formula import Formula, AtomicProposition
 from Parsing.ParseBCSL import COMPLEX_GRAMMAR, TreeToComplex
+
 
 GRAMMAR = """
     start: state_formula
@@ -19,7 +20,7 @@ GRAMMAR = """
     UNTIL: "U"
     FUTURE: "F"
 
-    !ap: "[" rate_complex SIGN number "]"
+    ap: "[" rate_complex SIGN number "]"
     SIGN: "<" | ">" | "=<" | "=>"
 
     number: NUMBER
@@ -42,14 +43,23 @@ class TreeToStrings(Transformer):
     def OR(self, matches):
         return self._extend_ws(matches)
 
-    def NEXT(self, matches):
-        return self._extend_ws(matches)
-
     def UNTIL(self, matches):
         return self._extend_ws(matches)
 
+    def NEXT(self, matches):
+        return str(matches) + " "
+
     def FUTURE(self, matches):
-        return self._extend_ws(matches)
+        return str(matches) + " "
+
+    def number(self, matches):
+        return matches[0]
+
+    def agent(self, matches):
+        return matches[0]
+
+    def ap(self, matches):
+        return Tree("ap", [AtomicProposition(*matches)])
 
 
 class PCTLparser:
