@@ -16,7 +16,7 @@ class Rate:
         return str(self)
 
     def __str__(self):
-        return self.expression if type(self.expression) == str else "".join(to_string(self.expression))
+        return self.expression if type(self.expression) == str else "".join(tree_to_string(self.expression))
 
     def vectorize(self, ordering: tuple, definitions: dict) -> list:
         """
@@ -50,7 +50,7 @@ class Rate:
         evaluater = Evaluater(state)
         result = evaluater.transform(self.expression)
         try:
-            return float(sympy.sympify("".join(to_string(result))))
+            return float(sympy.sympify("".join(tree_to_string(result))))
         except TypeError:
             return None
 
@@ -106,8 +106,8 @@ class Evaluater(Transformer):
         return sum(self.state * state[0])
 
 
-def to_string(tree):
+def tree_to_string(tree):
     if type(tree) == Tree:
-        return sum(list(map(to_string, tree.children)), [])
+        return sum(list(map(tree_to_string, tree.children)), [])
     else:
         return [str(tree)]

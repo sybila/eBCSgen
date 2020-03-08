@@ -101,9 +101,6 @@ GRAMMAR = r"""
     %import common.WORD
     %import common.NUMBER
     %import common.INT
-    %import common.LETTER
-    %import common.DIGIT
-    %import common.CNAME
     %import common.DECIMAL
     %import common.WS
     %ignore WS
@@ -124,6 +121,10 @@ COMPLEX_GRAMMAR = """
     !state: (DIGIT|LETTER|"+"|"-"|"*"|"_")+
 
     DOUBLE_COLON: "::"
+
+    %import common.CNAME
+    %import common.LETTER
+    %import common.DIGIT
 """
 
 class TreeToComplex(Transformer):
