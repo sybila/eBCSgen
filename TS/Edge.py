@@ -5,7 +5,7 @@ class Edge:
         self.probability = probability
 
     def __hash__(self):
-        return int(self.source * self.target * self.probability)
+        return hash(self.source) * hash(self.target) * hash(self.probability)
 
     def __eq__(self, other: 'Edge'):
         return self.source == other.source and self.target == other.target and self.probability == other.probability
@@ -28,13 +28,18 @@ class Edge:
                     encoding_new[encoding_old[self.target]],
                     self.probability)
 
-    def normalise(self, factor: float):
+    def normalise(self, factor):
         """
-        Normalises rate to probability.
+        Normalises rate to probability and converts it to float or string
+        (depending on parameters presence).
 
         :param factor: given sum of all rates
         """
         self.probability /= factor
+        try:
+            self.probability = float(self.probability)
+        except TypeError:
+            self.probability = str(self.probability)
 
     def to_dict(self):
         """

@@ -41,16 +41,19 @@ class Rate:
         It is done as intersection of particular state with given state
         and sum of resulting elements.
 
-        If the type of result cannot be changed to float, None is returned
-         (it means it is nan).
+        If the result is nan, None is returned instead.
 
         :param state: given state
         :return: Sympy object for expression representation
         """
         evaluater = Evaluater(state)
         result = evaluater.transform(self.expression)
+
         try:
-            return float(sympy.sympify("".join(to_string(result))))
+            value = sympy.sympify("".join(to_string(result)), locals=evaluater.locals)
+            if value == sympy.nan:
+                return None
+            return value
         except TypeError:
             return None
 
@@ -94,16 +97,22 @@ class Vectorizer(Transformer):
         return matches[1]
 
     def param(self, matches):
-        return self.definitions.get(str(matches[0]), str(matches[0]))
+        return self.definitions.get(str(matches[0]), Tree("param", matches))
 
 
 class Evaluater(Transformer):
     def __init__(self, state):
         super(Transformer, self).__init__()
         self.state = state
+        self.locals = dict()
 
     def agent(self, state):
         return sum(self.state * state[0])
+
+    def param(self, matches):
+        name = matches[0]
+        self.locals[name] = sympy.Symbol(name)
+        return name
 
 
 def to_string(tree):
