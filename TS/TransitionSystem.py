@@ -42,10 +42,7 @@ class TransitionSystem:
             ts.recode(other.states_encoding)
         except KeyError:
             return False
-
-        print(ts.edges - other.edges)
-        print(other.edges - ts.edges)
-
+        
         return ts.edges == other.edges
 
     def get_state_encoding(self, state: 'State') -> int:
