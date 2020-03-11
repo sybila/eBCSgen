@@ -35,11 +35,11 @@ class Edge:
 
         :param factor: given sum of all rates
         """
-        self.probability /= factor
         try:
             self.probability = float(self.probability)
+            self.probability /= float(factor)
         except TypeError:
-            self.probability = str(self.probability)
+            self.probability = "(" + str(self.probability) + ")/(" + str(factor) + ")"
 
     def to_dict(self):
         """
