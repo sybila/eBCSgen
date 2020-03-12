@@ -25,6 +25,7 @@ class TSworker(threading.Thread):
             self.work.wait()
             try:
                 state = self.ts.unprocessed.pop()
+                self.ts.processed.add(state)
                 edges = set()
 
                 # special "hell" state
@@ -35,7 +36,7 @@ class TSworker(threading.Thread):
                     for reaction in self.model.vector_reactions:
                         new_state, rate = reaction.apply(state, self.model.bound)
                         if new_state and rate:
-                            if new_state not in self.ts.states_encoding:
+                            if new_state not in self.ts.processed:
                                 self.ts.unprocessed.add(new_state)
                             edges.add(self.ts.new_edge(state, new_state, rate))
 

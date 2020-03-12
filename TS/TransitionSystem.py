@@ -13,6 +13,7 @@ class TransitionSystem:
 
         # for TS generating
         self.unprocessed = set()
+        self.processed = set()
 
     def __str__(self):
         return str(self.states_encoding) + "\n" + "\n".join(list(map(str, self.edges))) + "\n" + str(self.ordering)
@@ -42,23 +43,21 @@ class TransitionSystem:
             ts.recode(other.states_encoding)
         except KeyError:
             return False
-        
-        return ts.edges == other.edges
 
-    def get_state_encoding(self, state: 'State') -> int:
-        """
-        Returns code of particular State if already exists,
-        otherwise it is created and returned.
+        # this is weird, but well...
+        return set(map(hash, ts.edges)) == set(map(hash, other.edges))
+        # return ts.edges == other.edges
 
-        :param state: given State to be checked
-        :return: the code of the State
-        """
-        if state in self.states_encoding:
-            return self.states_encoding[state]
-        else:
-            length = len(self.states_encoding)
-            self.states_encoding[state] = length
-        return length
+    def encode(self):
+        for state in self.processed | self.unprocessed:
+            if state not in self.states_encoding:
+                self.states_encoding[state] = len(self.states_encoding) + 1
+        self.processed = set()
+        self.encode_edges()
+
+    def encode_edges(self):
+        for edge in self.edges:
+            edge.encode(self.states_encoding)
 
     def new_edge(self, source: State, target: State, probability: float) -> Edge:
         """
@@ -69,10 +68,7 @@ class TransitionSystem:
         :param probability: probability of transition
         :return: created Edge
         """
-        edge = Edge(self.get_state_encoding(source),
-                    self.get_state_encoding(target),
-                    probability)
-        return edge
+        return Edge(source, target, probability)
 
     def recode(self, new_encoding: dict):
         """

@@ -1,11 +1,12 @@
 class Edge:
-    def __init__(self, source, target, probability):
+    def __init__(self, source, target, probability, encoded=False):
         self.source = source
         self.target = target
         self.probability = probability
+        self._is_encoded = encoded
 
     def __hash__(self):
-        return hash(self.source) * hash(self.target) * hash(self.probability)
+        return hash((self.source, self.target, self.probability))
 
     def __eq__(self, other: 'Edge'):
         return self.source == other.source and self.target == other.target and self.probability == other.probability
@@ -15,6 +16,12 @@ class Edge:
 
     def __str__(self):
         return " ".join(list(map(str, [self.source, self.target, self.probability])))
+
+    def encode(self, encoding):
+        if not self._is_encoded:
+            self.source = encoding[self.source]
+            self.target = encoding[self.target]
+            self._is_encoded = True
 
     def recode(self, encoding_old: dict, encoding_new: dict) -> 'Edge':
         """
@@ -57,4 +64,4 @@ def edge_from_dict(d: dict) -> Edge:
     :param d: dict representing the edge
     :return: Edge
     """
-    return Edge(d['s'], d['t'], d['p'])
+    return Edge(d['s'], d['t'], d['p'], True)
