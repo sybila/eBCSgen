@@ -44,7 +44,10 @@ class TSworker(threading.Thread):
                     factor = sum(list(map(lambda edge: edge.probability, edges)))
                     for edge in edges:
                         edge.normalise(factor)
-                        self.ts.edges.add(edge)
+                        try:
+                            self.ts.edges.add(edge)
+                        except AttributeError:
+                            print(edge)
 
             except KeyError:
                 self.work.clear()
