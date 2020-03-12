@@ -35,6 +35,7 @@ def load_TS_from_json(json_file: str) -> TransitionSystem:
         ts.edges = {edge_from_dict(edge) for edge in data['edges']}
 
         ts.unprocessed = {State(np.array(eval(state))) for state in data.get('unprocessed', list())}
+        ts.processed = ts.states_encoding.keys() - ts.unprocessed
         return ts
 
 

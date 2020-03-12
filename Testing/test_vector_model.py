@@ -114,42 +114,49 @@ class TestVectorModel(unittest.TestCase):
         omega = 3
 
         self.test_ts = TransitionSystem(ordering)
-        self.test_ts.states_encoding = {State(np.array((0, 0, 0, 0, 1))): 0,
-                                        State(np.array((0, 0, 0, 0, 0))): 1,
-                                        State(np.array((0, 0, 1, 0, 0))): 2,
-                                        State(np.array((0, 0, 1, 0, 1))): 3,
-                                        State(np.array((np.inf, np.inf, np.inf, np.inf, np.inf))): 4,
-                                        State(np.array((0, 0, 0, 1, 1))): 5,
-                                        State(np.array((0, 0, 1, 1, 1))): 6,
-                                        State(np.array((0, 1, 0, 0, 0))): 7,
-                                        State(np.array((0, 0, 0, 1, 0))): 8,
-                                        State(np.array((0, 0, 1, 1, 0))): 9,
-                                        State(np.array((0, 1, 1, 0, 0))): 10,
-                                        State(np.array((0, 1, 0, 1, 0))): 11,
-                                        State(np.array((0, 1, 1, 1, 0))): 12,
-                                        }
+
+        states = [State(np.array((0.0, 0.0, 0.0, 0.0, 1.0))),
+                                  State(np.array((0.0, 0.0, 0.0, 0.0, 0.0))),
+                                  State(np.array((0.0, 0.0, 1.0, 0.0, 0.0))),
+                                  State(np.array((0.0, 0.0, 1.0, 0.0, 1.0))),
+                                  State(np.array((np.inf, np.inf, np.inf, np.inf, np.inf))),
+                                  State(np.array((0.0, 0.0, 0.0, 1.0, 1.0))),
+                                  State(np.array((0.0, 0.0, 1.0, 1.0, 1.0))),
+                                  State(np.array((0.0, 1.0, 0.0, 0.0, 0.0))),
+                                  State(np.array((0.0, 0.0, 0.0, 1.0, 0.0))),
+                                  State(np.array((0.0, 0.0, 1.0, 1.0, 0.0))),
+                                  State(np.array((0.0, 1.0, 1.0, 0.0, 0.0))),
+                                  State(np.array((0.0, 1.0, 0.0, 1.0, 0.0))),
+                                  State(np.array((0.0, 1.0, 1.0, 1.0, 0.0)))]
 
         # in edges we have probabilities, not rates, so we must normalise
         go = gamma + omega  # 5
         goa = gamma + omega + alpha  # 15
-        goab = gamma + omega + alpha + beta # 20
+        goab = gamma + omega + alpha + beta  # 20
         gob = gamma + omega + beta  # 10
         oa = omega + alpha  # 13
 
-        self.test_ts.edges = {Edge(0, 1, gamma/go), Edge(0, 3, omega/go),
-                              Edge(1, 2, omega/omega),
-                              Edge(2, 4, omega/oa), Edge(2, 8, alpha/oa),
-                              Edge(3, 2, gamma/goa), Edge(3, 4, omega/goa), Edge(3, 5, alpha/goa),
-                              Edge(4, 4, 1),
-                              Edge(5, 6, omega/gob), Edge(5, 7, beta/gob), Edge(5, 8, gamma/gob),
-                              Edge(6, 4, omega/goab), Edge(6, 4, alpha/goab), Edge(6, 9, gamma/goab), Edge(6, 10, beta/goab),
-                              Edge(7, 10, omega/omega),
-                              Edge(8, 9, gamma/gamma),
-                              Edge(9, 4, omega/oa), Edge(9, 4, alpha/oa),
-                              Edge(10, 4, omega/oa), Edge(10, 11, alpha/oa),
-                              Edge(11, 12, omega/omega),
-                              Edge(12, 4, omega/oa), Edge(12, 4, alpha/oa)
+        self.test_ts.processed = set(states)
+
+        self.test_ts.edges = {Edge(states[0], states[1], gamma / go), Edge(states[0], states[3], omega / go),
+                              Edge(states[1], states[2], omega / omega),
+                              Edge(states[2], states[4], omega / oa), Edge(states[2], states[8], alpha / oa),
+                              Edge(states[3], states[2], gamma / goa), Edge(states[3], states[4], omega / goa),
+                              Edge(states[3], states[5], alpha / goa),
+                              Edge(states[4], states[4], 1),
+                              Edge(states[5], states[6], omega / gob), Edge(states[5], states[7], beta / gob),
+                              Edge(states[5], states[8], gamma / gob),
+                              Edge(states[6], states[4], omega / goab), Edge(states[6], states[4], alpha / goab),
+                              Edge(states[6], states[9], gamma / goab), Edge(states[6], states[10], beta / goab),
+                              Edge(states[7], states[10], omega / omega),
+                              Edge(states[8], states[9], gamma / gamma),
+                              Edge(states[9], states[4], omega / oa), Edge(states[9], states[4], alpha / oa),
+                              Edge(states[10], states[4], omega / oa), Edge(states[10], states[11], alpha / oa),
+                              Edge(states[11], states[12], omega / omega),
+                              Edge(states[12], states[4], omega / oa), Edge(states[12], states[4], alpha / oa)
                               }
+
+        self.test_ts.encode()
 
         # bigger TS
 
@@ -269,28 +276,33 @@ class TestVectorModel(unittest.TestCase):
         loaded_ts = load_TS_from_json("Testing/ts_pMC.json")
         self.assertEqual(generated_ts, loaded_ts)
 
-    # def test_generate_transition_system_interrupt(self):
-    #     # model = self.model_parser.parse(self.model_even_bigger_TS).data
-    #     # vector_model = model.to_vector_model()
-    #     # generated_ts = vector_model.generate_transition_system()
-    #     # generated_ts.save_to_json("Testing/interrupt_even_bigger_ts.json")
-    #
-    #     # test not working, after interruption some unprocessed states are missing
-    #     # therefore resulting TS is not correct
-    #     # sometimes edges are somehow mixed - is it possible that the algorithm allows it?
-    #     model = self.model_parser.parse(self.model_even_bigger_TS).data
-    #     vector_model = model.to_vector_model()
-    #     # partially generate TS with max ~1000 states
-    #     generated_ts = vector_model.generate_transition_system(max_size=1000)
-    #     # was interrupted
-    #     generated_ts.save_to_json("Testing/TS_in_progress.json")
-    #     loaded_unfinished_ts = load_TS_from_json("Testing/TS_in_progress.json")
-    #
-    #     generated_ts = vector_model.generate_transition_system(loaded_unfinished_ts)
-    #     generated_ts.save_to_json("Testing/TS_finished.json")
-    #     loaded_ts = load_TS_from_json("Testing/interrupt_even_bigger_ts.json")
-    #
-    #     # print(len(generated_ts.states_encoding), len(generated_ts.edges), "|",
-    #     #       len(loaded_ts.states_encoding), len(loaded_ts.edges))
-    #
-    #     self.assertEqual(generated_ts, loaded_ts)
+    def test_generate_transition_system_interrupt(self):
+        # model = self.model_parser.parse(self.model_even_bigger_TS).data
+        # vector_model = model.to_vector_model()
+        # generated_ts = vector_model.generate_transition_system()
+        # generated_ts.save_to_json("Testing/interrupt_even_bigger_ts.json")
+
+        # test not working, after interruption some unprocessed states are missing
+        # therefore resulting TS is not correct
+        # sometimes edges are somehow mixed - is it possible that the algorithm allows it?
+        model = self.model_parser.parse(self.model_even_bigger_TS).data
+        vector_model = model.to_vector_model()
+
+        # partially generate TS with max ~1000 states
+        generated_ts = vector_model.generate_transition_system(max_size=1000)
+        # was interrupted
+        generated_ts.save_to_json("Testing/TS_in_progress.json")
+        loaded_unfinished_ts = load_TS_from_json("Testing/TS_in_progress.json")
+
+        # continue in generating with max ~5000 states
+        generated_ts = vector_model.generate_transition_system(loaded_unfinished_ts, max_size=5000)
+        generated_ts.save_to_json("Testing/TS_in_progress.json")
+        loaded_unfinished_ts = load_TS_from_json("Testing/TS_in_progress.json")
+
+        # finish the TS
+        generated_ts = vector_model.generate_transition_system(loaded_unfinished_ts)
+
+        generated_ts.save_to_json("Testing/TS_finished.json")
+        loaded_ts = load_TS_from_json("Testing/interrupt_even_bigger_ts.json")
+
+        self.assertEqual(generated_ts, loaded_ts)

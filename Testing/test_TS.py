@@ -10,15 +10,15 @@ from TS.TransitionSystem import TransitionSystem
 
 class TestTransitionSystem(unittest.TestCase):
     def setUp(self):
-        self.s1 = StructureAgent("X", set())
-        self.s2 = StructureAgent("Y", set())
-        self.s3 = StructureAgent("Z", set())
-        self.s4 = StructureAgent("W", set())
+        self.str1 = StructureAgent("X", set())
+        self.str2 = StructureAgent("Y", set())
+        self.str3 = StructureAgent("Z", set())
+        self.str4 = StructureAgent("W", set())
 
-        self.c1 = Complex([self.s1], "rep")
-        self.c2 = Complex([self.s2], "rep")
-        self.c3 = Complex([self.s3], "rep")
-        self.c4 = Complex([self.s4], "rep")
+        self.c1 = Complex([self.str1], "rep")
+        self.c2 = Complex([self.str2], "rep")
+        self.c3 = Complex([self.str3], "rep")
+        self.c4 = Complex([self.str4], "rep")
 
         ordering = (self.c1, self.c2, self.c3)
         ordering_wrong = (self.c1, self.c2, self.c3, self.c4),
@@ -33,7 +33,7 @@ class TestTransitionSystem(unittest.TestCase):
         self.s3_reordered = State(np.array((5, 1, 2)))
 
         self.ts = TransitionSystem(tuple())
-        self.ts.states_encoding = {self.s1: 0, self.s2: 1}
+        self.ts.states_encoding = {self.s1: 1, self.s2: 2}
 
         self.edge_1 = Edge(0, 1, 0.5)
 
@@ -72,9 +72,12 @@ class TestTransitionSystem(unittest.TestCase):
         self.assertNotEqual(self.ts_neq_1, self.ts_neq_3)
 
     def test_get_state_encoding(self):
-        self.assertEqual(self.ts.get_state_encoding(self.s2), 1)
-        self.assertEqual(self.ts.get_state_encoding(self.s3), 2)
-        self.assertEqual(len(self.ts.states_encoding), 3)
+        self.assertEqual(self.ts.states_encoding[self.s2], 2)
+        self.assertEqual(self.ts.states_encoding[self.s1], 1)
+        self.assertEqual(len(self.ts.states_encoding), 2)
 
     def test_add_edge(self):
-        self.assertEqual(self.ts.new_edge(self.s1, self.s2, 0.5), self.edge_1)
+        self.assertEqual(self.ts.new_edge(0, 1, 0.5), self.edge_1)
+
+    def test_hash_edge(self):
+        self.assertNotEqual(hash(Edge(1, 2, 0.3)), hash(Edge(2, 1, 0.3)))

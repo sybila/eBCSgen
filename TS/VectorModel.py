@@ -180,7 +180,7 @@ class VectorModel:
         try:
             while any([worker.work.is_set() for worker in workers]) \
                     and time.time() - start_time < max_time \
-                    and len(ts.states_encoding) < max_size:
+                    and len(ts.processed) + len(ts.states_encoding) < max_size:
                 handle_number_of_threads(len(ts.unprocessed), workers)
                 time.sleep(1)
         # probably should be changed to a different exceptions for the case when the execution is stopped on Galaxy
@@ -193,5 +193,7 @@ class VectorModel:
 
         while any([worker.is_alive() for worker in workers]):
             time.sleep(1)
+
+        ts.encode()
 
         return ts
