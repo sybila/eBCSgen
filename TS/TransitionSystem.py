@@ -49,6 +49,9 @@ class TransitionSystem:
         # return ts.edges == other.edges
 
     def encode(self):
+        """
+        Assigns a unique code to each State for storing purposes
+        """
         for state in self.processed | self.unprocessed:
             if state not in self.states_encoding:
                 self.states_encoding[state] = len(self.states_encoding) + 1
@@ -56,6 +59,9 @@ class TransitionSystem:
         self.encode_edges()
 
     def encode_edges(self):
+        """
+        Encodes every State in Edge according to the unique encoding.
+        """
         for edge in self.edges:
             edge.encode(self.states_encoding)
 
