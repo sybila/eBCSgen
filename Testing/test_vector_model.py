@@ -216,65 +216,65 @@ class TestVectorModel(unittest.TestCase):
             omega = 3
             """
 
-    # def test_compute_bound(self):
-    #     self.assertEqual(self.vm_1.bound, 2)
-    #
-    # def test_deterministic_simulation(self):
-    #     # simple rates
-    #     data_simulated = self.vm_2.deterministic_simulation(3, 1/(6.022 * 10**23))
-    #     data_loaded = pd.read_csv("Testing/simple_out.csv")
-    #
-    #     pd.testing.assert_frame_equal(data_simulated, data_loaded)
-    #
-    #     # more abstract rates
-    #
-    #     model = self.model_parser.parse(self.model_abstract).data
-    #     vector_model = model.to_vector_model()
-    #     data_simulated = vector_model.deterministic_simulation(3, 1/(6.022 * 10**23))
-    #     data_loaded = pd.read_csv("Testing/abstract_out.csv")
-    #
-    #     pd.testing.assert_frame_equal(data_simulated, data_loaded)
-    #
-    # def test_stochastic_simulation(self):
-    #     model = self.model_parser.parse(self.model_abstract).data
-    #     vector_model = model.to_vector_model()
-    #
-    #     data_simulated = vector_model.stochastic_simulation(5, 4, testing=True)
-    #
-    #     # to save dataframe to csv file
-    #     # data_simulated.to_csv("Testing/stochastic_out.csv", index=None, header=True)
-    #
-    #     data_loaded = pd.read_csv("Testing/stochastic_out.csv")
-    #     pd.testing.assert_frame_equal(data_simulated, data_loaded)
-    #
-    # def test_generate_transition_system(self):
-    #     model = self.model_parser.parse(self.model_TS).data
-    #     vector_model = model.to_vector_model()
-    #     generated_ts = vector_model.generate_transition_system()
-    #     self.assertEqual(self.test_ts, generated_ts)
-    #
-    #     # bigger TS
-    #
-    #     model = self.model_parser.parse(self.model_bigger_TS).data
-    #     vector_model = model.to_vector_model()
-    #     generated_ts = vector_model.generate_transition_system()
-    #     loaded_ts = load_TS_from_json("Testing/testing_bigger_ts.json")
-    #     self.assertEqual(generated_ts, loaded_ts)
-    #
-    # def test_save_to_json(self):
-    #     model = self.model_parser.parse(self.model_TS).data
-    #     vector_model = model.to_vector_model()
-    #     generated_ts = vector_model.generate_transition_system()
-    #     generated_ts.save_to_json("Testing/testing_ts.json")
-    #     loaded_ts = load_TS_from_json("Testing/testing_ts.json")
-    #     self.assertEqual(generated_ts, loaded_ts)
-    #
-    # def test_generate_pMC(self):
-    #     model = self.model_parser.parse(self.model_parametrised).data
-    #     vector_model = model.to_vector_model()
-    #     generated_ts = vector_model.generate_transition_system()
-    #     loaded_ts = load_TS_from_json("Testing/ts_pMC.json")
-    #     self.assertEqual(generated_ts, loaded_ts)
+    def test_compute_bound(self):
+        self.assertEqual(self.vm_1.bound, 2)
+
+    def test_deterministic_simulation(self):
+        # simple rates
+        data_simulated = self.vm_2.deterministic_simulation(3, 1/(6.022 * 10**23))
+        data_loaded = pd.read_csv("Testing/simple_out.csv")
+
+        pd.testing.assert_frame_equal(data_simulated, data_loaded)
+
+        # more abstract rates
+
+        model = self.model_parser.parse(self.model_abstract).data
+        vector_model = model.to_vector_model()
+        data_simulated = vector_model.deterministic_simulation(3, 1/(6.022 * 10**23))
+        data_loaded = pd.read_csv("Testing/abstract_out.csv")
+
+        pd.testing.assert_frame_equal(data_simulated, data_loaded)
+
+    def test_stochastic_simulation(self):
+        model = self.model_parser.parse(self.model_abstract).data
+        vector_model = model.to_vector_model()
+
+        data_simulated = vector_model.stochastic_simulation(5, 4, testing=True)
+
+        # to save dataframe to csv file
+        # data_simulated.to_csv("Testing/stochastic_out.csv", index=None, header=True)
+
+        data_loaded = pd.read_csv("Testing/stochastic_out.csv")
+        pd.testing.assert_frame_equal(data_simulated, data_loaded)
+
+    def test_generate_transition_system(self):
+        model = self.model_parser.parse(self.model_TS).data
+        vector_model = model.to_vector_model()
+        generated_ts = vector_model.generate_transition_system()
+        self.assertEqual(self.test_ts, generated_ts)
+
+        # bigger TS
+
+        model = self.model_parser.parse(self.model_bigger_TS).data
+        vector_model = model.to_vector_model()
+        generated_ts = vector_model.generate_transition_system()
+        loaded_ts = load_TS_from_json("Testing/testing_bigger_ts.json")
+        self.assertEqual(generated_ts, loaded_ts)
+
+    def test_save_to_json(self):
+        model = self.model_parser.parse(self.model_TS).data
+        vector_model = model.to_vector_model()
+        generated_ts = vector_model.generate_transition_system()
+        generated_ts.save_to_json("Testing/testing_ts.json")
+        loaded_ts = load_TS_from_json("Testing/testing_ts.json")
+        self.assertEqual(generated_ts, loaded_ts)
+
+    def test_generate_pMC(self):
+        model = self.model_parser.parse(self.model_parametrised).data
+        vector_model = model.to_vector_model()
+        generated_ts = vector_model.generate_transition_system()
+        loaded_ts = load_TS_from_json("Testing/ts_pMC.json")
+        self.assertEqual(generated_ts, loaded_ts)
 
     def test_generate_transition_system_interrupt(self):
         # model = self.model_parser.parse(self.model_even_bigger_TS).data
