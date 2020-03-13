@@ -78,34 +78,21 @@ GRAMMAR = r"""
 
     side: (const? complex "+")* (const? complex)?
     complex: sequence DOUBLE_COLON compartment
-    sequence: (agent ".")* agent
-    agent: atomic | structure
-    structure: s_name "()" | s_name "(" composition ")"
-    composition: (atomic ",")* atomic?
-    atomic : a_name "{" state "}" | a_name
 
     !rate : fun "/" fun | fun
     !fun: const | param | rate_agent | fun "+" fun | fun "*" fun | fun POW const | "(" fun ")"
 
     !rate_agent: "[" rate_complex "]"
 
-    rate_complex: sequence DOUBLE_COLON compartment
-
-    !state: (DIGIT|LETTER|"+"|"-"|"*"|"_")+
-
     COMMENT: "//" /[^\n]/*
 
     COM: "//"
     POW: "**"
     ARROW: "=>"
-    DOUBLE_COLON: "::"
     RULES_START: "#! rules"
     INITS_START: "#! inits"
     DEFNS_START: "#! definitions"
 
-    a_name: CNAME
-    s_name: CNAME
-    compartment: CNAME
     param: CNAME
     def_param : CNAME
     number: NUMBER
@@ -115,21 +102,33 @@ GRAMMAR = r"""
     %import common.WORD
     %import common.NUMBER
     %import common.INT
-    %import common.LETTER
-    %import common.DIGIT
-    %import common.CNAME
     %import common.DECIMAL
     %import common.WS
     %ignore WS
     %ignore COMMENT
 """
 
+COMPLEX_GRAMMAR = """
+    rate_complex: sequence DOUBLE_COLON compartment
+    sequence: (agent ".")* agent
+    agent: atomic | structure
+    structure: s_name "()" | s_name "(" composition ")"
+    composition: (atomic ",")* atomic?
+    atomic : a_name "{" state "}" | a_name
 
-class TreeToObjects(Transformer):
-    """
-    A transformer which is called on a tree in a bottom-up manner and transforms all subtrees/tokens it encounters.
-    Note the defined methods have the same name as elements in the grammar above.
-    """
+    a_name: CNAME
+    s_name: CNAME
+    compartment: CNAME
+    !state: (DIGIT|LETTER|"+"|"-"|"*"|"_")+
+
+    DOUBLE_COLON: "::"
+
+    %import common.CNAME
+    %import common.LETTER
+    %import common.DIGIT
+"""
+
+class TreeToComplex(Transformer):
     def state(self, matches):
         return "".join(map(str, matches))
 
@@ -155,6 +154,12 @@ class TreeToObjects(Transformer):
     def compartment(self, matches):
         return str(matches[0])
 
+
+class TreeToObjects(Transformer):
+    """
+    A transformer which is called on a tree in a bottom-up manner and transforms all subtrees/tokens it encounters.
+    Note the defined methods have the same name as elements in the grammar above.
+    """
     def const(self, matches):
         return int(matches[0])
 
@@ -229,11 +234,11 @@ class TreeToObjects(Transformer):
 
 class Parser:
     def __init__(self, start):
-        grammar = "start: " + start + GRAMMAR
+        grammar = "start: " + start + GRAMMAR + COMPLEX_GRAMMAR
         self.parser = Lark(grammar, parser='lalr',
                            propagate_positions=False,
                            maybe_placeholders=False,
-                           transformer=TreeToObjects()
+                           transformer=TreeToComplex()
                            )
 
         self.terminals = dict((v, k) for k, v in _TERMINAL_NAMES.items())
@@ -259,7 +264,9 @@ class Parser:
         :return: Result containing parsed object or error specification
         """
         try:
-            return Result(True, self.parser.parse(expression).children[0])
+            tree = self.parser.parse(expression)
+            tree = TreeToObjects().transform(tree)
+            return Result(True, tree.children[0])
         except UnexpectedCharacters as u:
             return Result(False, {"unexpected": expression[u.pos_in_stream],
                                   "expected": self.replace(u.allowed),

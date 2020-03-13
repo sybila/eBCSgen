@@ -16,7 +16,7 @@ class Rate:
         return str(self)
 
     def __str__(self):
-        return self.expression if type(self.expression) == str else "".join(to_string(self.expression))
+        return self.expression if type(self.expression) == str else "".join(tree_to_string(self.expression))
 
     def vectorize(self, ordering: tuple, definitions: dict) -> list:
         """
@@ -50,7 +50,7 @@ class Rate:
         result = evaluater.transform(self.expression)
 
         try:
-            value = sympy.sympify("".join(to_string(result)), locals=evaluater.locals)
+            value = sympy.sympify("".join(tree_to_string(result)), locals=evaluater.locals)
             if value == sympy.nan:
                 return None
             return value
@@ -115,8 +115,8 @@ class Evaluater(Transformer):
         return name
 
 
-def to_string(tree):
+def tree_to_string(tree):
     if type(tree) == Tree:
-        return sum(list(map(to_string, tree.children)), [])
+        return sum(list(map(tree_to_string, tree.children)), [])
     else:
         return [str(tree)]
