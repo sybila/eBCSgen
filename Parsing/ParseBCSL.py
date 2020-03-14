@@ -66,15 +66,17 @@ class SideHelper:
 
 
 GRAMMAR = r"""
-    model: rules inits definitions
+    model: rules inits definitions complexes
 
     rules: RULES_START (rule|COMMENT)+
     inits: INITS_START (init|COMMENT)+
     definitions: DEFNS_START (definition|COMMENT)+
+    complexes: COMPLEXES_START (cmplx_dfn|COMMENT)+
 
     init: const? rate_complex (COMMENT)?
     definition: def_param "=" number (COMMENT)?
     rule: side ARROW side ("@" rate)? (COMMENT)?
+    cmplx_dfn: cmplx_name "=" sequence (COMMENT)?
 
     side: (const? complex "+")* (const? complex)?
     complex: sequence DOUBLE_COLON compartment
@@ -92,7 +94,9 @@ GRAMMAR = r"""
     RULES_START: "#! rules"
     INITS_START: "#! inits"
     DEFNS_START: "#! definitions"
+    COMPLEXES_START: "#! complexes"
 
+    cmplx_name: CNAME
     param: CNAME
     def_param : CNAME
     number: NUMBER
@@ -106,6 +110,14 @@ GRAMMAR = r"""
     %import common.WS
     %ignore WS
     %ignore COMMENT
+"""
+
+EXTENDED_GRAMMAR = """
+    abstract_sequence: atomic_complex | atomic_structure | structure_complex
+    atomic_complex:
+    atomic_structure: atomic DOUBLE_COLON
+    structure_complex:
+
 """
 
 COMPLEX_GRAMMAR = """
@@ -127,6 +139,24 @@ COMPLEX_GRAMMAR = """
     %import common.LETTER
     %import common.DIGIT
 """
+
+class ExtractComplexNames(Transformer):
+    def __init__(self):
+        super(Transformer, self).__init__()
+        self.complex_defns = dict()
+
+    def cmplx_dfn(self, matches):
+        self.complex_defns[str(matches[0].children[0])] = matches[1]
+
+class TransformAbstractSyntax(Transformer):
+    def __init__(self, complex_defns):
+        super(Transformer, self).__init__()
+        self.complex_defns = complex_defns
+
+    # transform to Tree(sequence)
+    def abstract_sequence(self, matches):
+        print(matches)
+
 
 class TreeToComplex(Transformer):
     def state(self, matches):
@@ -234,11 +264,11 @@ class TreeToObjects(Transformer):
 
 class Parser:
     def __init__(self, start):
-        grammar = "start: " + start + GRAMMAR + COMPLEX_GRAMMAR
+        grammar = "start: " + start + GRAMMAR + COMPLEX_GRAMMAR #+ EXTENDED_GRAMMAR
         self.parser = Lark(grammar, parser='lalr',
                            propagate_positions=False,
                            maybe_placeholders=False,
-                           transformer=TreeToComplex()
+                           transformer=()
                            )
 
         self.terminals = dict((v, k) for k, v in _TERMINAL_NAMES.items())
@@ -265,7 +295,14 @@ class Parser:
         """
         try:
             tree = self.parser.parse(expression)
+            complexer = ExtractComplexNames()
+            tree = complexer.transform(tree)
+            print(complexer.complex_defns)
+            #de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
+            #tree = de_abstracter.transform(tree)
+            tree = TreeToComplex().transform(tree)
             tree = TreeToObjects().transform(tree)
+
             return Result(True, tree.children[0])
         except UnexpectedCharacters as u:
             return Result(False, {"unexpected": expression[u.pos_in_stream],
