@@ -66,7 +66,7 @@ class SideHelper:
 
 
 GRAMMAR = r"""
-    model: rules inits definitions complexes
+    model: rules inits definitions (complexes)?
 
     rules: RULES_START (rule|COMMENT)+
     inits: INITS_START (init|COMMENT)+
@@ -79,7 +79,7 @@ GRAMMAR = r"""
     cmplx_dfn: cmplx_name "=" sequence (COMMENT)?
 
     side: (const? complex "+")* (const? complex)?
-    complex: sequence DOUBLE_COLON compartment
+    complex: (abstract_sequence|sequence) DOUBLE_COLON compartment
 
     !rate : fun "/" fun | fun
     !fun: const | param | rate_agent | fun "+" fun | fun "*" fun | fun POW const | "(" fun ")"
@@ -113,11 +113,10 @@ GRAMMAR = r"""
 """
 
 EXTENDED_GRAMMAR = """
-    abstract_sequence: atomic_complex | atomic_structure | structure_complex
-    atomic_complex:
-    atomic_structure: atomic DOUBLE_COLON
-    structure_complex:
-
+    abstract_sequence: atomic_complex | atomic_structure_complex | structure_complex
+    atomic_complex: atomic ":" cmplx_name
+    atomic_structure_complex: atomic ":" structure ":" cmplx_name
+    structure_complex: structure ":" cmplx_name
 """
 
 COMPLEX_GRAMMAR = """
@@ -140,6 +139,7 @@ COMPLEX_GRAMMAR = """
     %import common.DIGIT
 """
 
+# obtain complex definitions
 class ExtractComplexNames(Transformer):
     def __init__(self):
         super(Transformer, self).__init__()
@@ -148,15 +148,57 @@ class ExtractComplexNames(Transformer):
     def cmplx_dfn(self, matches):
         self.complex_defns[str(matches[0].children[0])] = matches[1]
 
+# remove abstract syntax
 class TransformAbstractSyntax(Transformer):
     def __init__(self, complex_defns):
         super(Transformer, self).__init__()
         self.complex_defns = complex_defns
 
-    # transform to Tree(sequence)
-    def abstract_sequence(self, matches):
-        print(matches)
+    def cmplx_name(self, matches):
+        return deepcopy(self.complex_defns[str(matches[0])])
 
+    def abstract_sequence(self, matches):
+        return matches[0]
+
+    # atomic:structure:complex
+    def atomic_structure_complex(self, matches):
+        structure = self.insert_atomic_to_struct(matches[0], matches[1])
+        sequence = self.insert_struct_to_complex(structure, matches[2])
+        return sequence
+
+    # atomic:complex
+    def atomic_complex(self, matches):
+        sequence = self.insert_atomic_to_complex(matches[0], matches[1])
+        return sequence
+
+    # structure:complex
+    def structure_complex(self, matches):
+        sequence = self.insert_struct_to_complex(matches[0], matches[1])
+        return sequence
+
+    def insert_atomic_to_struct(self, atomic, struct):
+        if len(struct.children) == 2:
+            struct.children[1].children.append(atomic)
+        else:
+            struct.children.append(Tree('composition', [atomic]))
+        return struct
+
+    def insert_struct_to_complex(self, struct, complex):
+        for i in range(len(complex.children)):
+            if self.get_name(struct) == self.get_name(complex.children[i].children[0]):
+                complex.children[i] = Tree('agent', [struct])
+                break
+        return complex
+
+    def insert_atomic_to_complex(self, atomic, complex):
+        for i in range(len(complex.children)):
+            if self.get_name(atomic) == self.get_name(complex.children[i].children[0]):
+                complex.children[i] = Tree('agent', [atomic])
+                break
+        return complex
+
+    def get_name(self, agent):
+        return str(agent.children[0].children[0])
 
 class TreeToComplex(Transformer):
     def state(self, matches):
@@ -264,7 +306,7 @@ class TreeToObjects(Transformer):
 
 class Parser:
     def __init__(self, start):
-        grammar = "start: " + start + GRAMMAR + COMPLEX_GRAMMAR #+ EXTENDED_GRAMMAR
+        grammar = "start: " + start + GRAMMAR + COMPLEX_GRAMMAR + EXTENDED_GRAMMAR
         self.parser = Lark(grammar, parser='lalr',
                            propagate_positions=False,
                            maybe_placeholders=False,
@@ -278,11 +320,12 @@ class Parser:
                                "DOUBLE_COLON": "::",
                                "RULES_START": "#! rules",
                                "INITS_START": "#! inits",
-                               "DEFNS_START": "#! definitions"
+                               "DEFNS_START": "#! definitions",
+                               "CNAME": "NAME"
                                })
 
     def replace(self, expected: set) -> set:
-        return set([self.terminals.get(item, item) for item in filter(lambda item: item != 'CNAME', expected)])
+        return set([self.terminals.get(item, item) for item in expected])
 
     def parse(self, expression: str) -> Result:
         """
@@ -295,15 +338,6 @@ class Parser:
         """
         try:
             tree = self.parser.parse(expression)
-            complexer = ExtractComplexNames()
-            tree = complexer.transform(tree)
-            print(complexer.complex_defns)
-            #de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
-            #tree = de_abstracter.transform(tree)
-            tree = TreeToComplex().transform(tree)
-            tree = TreeToObjects().transform(tree)
-
-            return Result(True, tree.children[0])
         except UnexpectedCharacters as u:
             return Result(False, {"unexpected": expression[u.pos_in_stream],
                                   "expected": self.replace(u.allowed),
@@ -312,3 +346,15 @@ class Parser:
             return Result(False, {"unexpected": str(u.token),
                                   "expected": self.replace(u.expected),
                                   "line": u.line, "column": u.column})
+
+        try:
+            complexer = ExtractComplexNames()
+            tree = complexer.transform(tree)
+            de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
+            tree = de_abstracter.transform(tree)
+            tree = TreeToComplex().transform(tree)
+            tree = TreeToObjects().transform(tree)
+
+            return Result(True, tree.children[0])
+        except Exception as u:
+            return Result(False, "Logical error + " + str(u))

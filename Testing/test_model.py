@@ -123,7 +123,7 @@ class TestModel(unittest.TestCase):
         self.model_wrong_1 = \
             """#! rules
             X(K{i})::rep => X(K{p})::rep @ k1*[X()::rep]
-            X(T{a})::rep => X(T{o}):rep @ k2*[Z()::rep]
+            X(T{a})::rep => X(T{o}):;rep @ k2*[Z()::rep]
             => Y(P{f})::rep @ 1/(1+([X()::rep])**4)
 
             #! inits
@@ -171,9 +171,9 @@ class TestModel(unittest.TestCase):
         self.model_with_complexes = """
             #! rules
             // commenting
-            //K{i}::X::XYZ::rep => K{p}::X::XYZ::rep @ k1*[X()::rep] // also here
-            X(T{a})::rep => X(T{o})::rep @ k2*[Z()::rep]
-            => Y(P{f})::rep @ 1/(1+([X()::rep])**4) // ** means power (^)
+            X(T{a}):XX::rep => X(T{o}):XX::rep @ k2*[X().X()::rep]
+            K{i}:X():XYZ::rep => K{p}:X():XYZ::rep @ k1*[X().Y().Z()::rep] // also here
+            => P{f}:XP::rep @ 1/(1+([X().P{_}::rep])**4) // ** means power (^)
 
             #! inits
             // here
@@ -188,40 +188,61 @@ class TestModel(unittest.TestCase):
             #! complexes
             XYZ = X().Y().Z() // a big complex
             XX = X().X()
+            XP = X().P{_}
             """
 
-    # def test_str(self):
-    #     model = self.model_parser.parse(self.model_str_1).data
-    #     back_to_str = repr(model)
-    #     parsed_again = self.model_parser.parse(back_to_str).data
-    #     self.assertEqual(model, parsed_again)
-    #
-    # def test_comments(self):
-    #     model_with_comments = self.model_parser.parse(self.model_with_comments)
-    #     model_without_comments = self.model_parser.parse(self.model_str_2).data
-    #
-    #     self.assertEqual(model_with_comments.data, model_without_comments)
-    #
-    # def test_parser(self):
-    #     self.assertEqual(self.model_parser.parse(self.model_str_1).data, self.model)
-    #
-    # def test_signatures(self):
-    #     model = self.model_parser.parse(self.model_str_2).data
-    #     self.assertEqual(model.atomic_signature, {'K': {'c', 'i', 'p'}, 'T': {'e', 'a', 'o', 'j'},
-    #                                               'P': {'g', 'f'}, 'N': {'l'}})
-    #     self.assertEqual(model.structure_signature, {'X': {'K', 'T'}, 'Y': {'P', 'N'}})
-    #
-    # def test_to_vector_model(self):
-    #     model = self.model_parser.parse(self.model_str_1).data
-    #     self.assertTrue(model.to_vector_model() == self.vm_1)
-    #
-    # def test_parser_errors(self):
-    #     self.assertEqual(self.model_parser.parse(self.model_wrong_1).data,
-    #                      {"unexpected": ":", "expected": {'::', '.'}, "line": 3, "column": 36})
-    #
-    #     self.assertEqual(self.model_parser.parse(self.model_wrong_2).data,
-    #                      {"unexpected": "=", "expected": {'#! inits', ']', '#! definitions', '=>', '@', 'INT', '+'},
-    #                       "line": 3, "column": 26})
+        self.model_without_complexes = """
+            #! rules
+            // commenting
+            X(T{a}).X()::rep => X(T{o}).X()::rep @ k2*[X().X()::rep]
+            X(K{i}).Y().Z()::rep => X(K{p}).Y().Z()::rep @ k1*[X().Y().Z()::rep] // also here
+            => X().P{f}::rep @ 1/(1+([X().P{_}::rep])**4) // ** means power (^)
+
+            #! inits
+            // here
+            2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+            Y(P{g}, N{l})::rep // comment just 1 item
+
+            #! definitions
+            // and
+            k1 = 0.05 // also
+            k2 = 0.12
+            """
+
+    def test_str(self):
+        model = self.model_parser.parse(self.model_str_1).data
+        back_to_str = repr(model)
+        parsed_again = self.model_parser.parse(back_to_str).data
+        self.assertEqual(model, parsed_again)
+
+    def test_comments(self):
+        model_with_comments = self.model_parser.parse(self.model_with_comments)
+        model_without_comments = self.model_parser.parse(self.model_str_2).data
+
+        self.assertEqual(model_with_comments.data, model_without_comments)
+
+    def test_parser(self):
+        self.assertEqual(self.model_parser.parse(self.model_str_1).data, self.model)
+
+    def test_signatures(self):
+        model = self.model_parser.parse(self.model_str_2).data
+        self.assertEqual(model.atomic_signature, {'K': {'c', 'i', 'p'}, 'T': {'e', 'a', 'o', 'j'},
+                                                  'P': {'g', 'f'}, 'N': {'l'}})
+        self.assertEqual(model.structure_signature, {'X': {'K', 'T'}, 'Y': {'P', 'N'}})
+
+    def test_to_vector_model(self):
+        model = self.model_parser.parse(self.model_str_1).data
+        self.assertTrue(model.to_vector_model() == self.vm_1)
+
+    def test_parser_errors(self):
+        self.assertEqual(self.model_parser.parse(self.model_wrong_1).data,
+                         {"unexpected": ";", "expected": {'NAME'}, "line": 3, "column": 37})
+
+        self.assertEqual(self.model_parser.parse(self.model_wrong_2).data,
+                         {"expected": {'#! inits', ']', '#! definitions', '=>', '@', 'INT', '+', 'NAME'},
+                          "line": 3, "column": 26, "unexpected": "="})
 
     def test_complex_names(self):
-        print(self.model_parser.parse(self.model_with_complexes).data)
+        model_abstract = self.model_parser.parse(self.model_with_complexes).data
+        model_base = self.model_parser.parse(self.model_without_complexes).data
+        self.assertEqual(model_abstract, model_base)
