@@ -250,7 +250,22 @@ class TestModel(unittest.TestCase):
             #! rules
             K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt + D(A{_})::cell @ 3*[K().B()::cyt]/2*v_1
             K().B()::cyt => K()::cyt + B()::cyt + D(A{_})::cell @ 3*[K().B()::cyt]/2*v_1
-            K().B()::cyt => K()::cyt + B()::cyt + D(A{_})::cell
+            K().K()::cyt => K()::cyt + K()::cyt
+            K(S{i}).K()::cyt => K(S{a})::cyt + K()::cyt
+            K(S{i}, T{p}).K()::cyt => K(S{a}, T{p})::cyt + K()::cyt
+
+            #! inits
+            2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+
+            #! definitions
+            v_1 = 0.05
+            k2 = 0.12
+            """
+
+        self.model_without_redundant = """
+            #! rules
+            K().B()::cyt => K()::cyt + B()::cyt + D(A{_})::cell @ 3*[K().B()::cyt]/2*v_1
+            K().K()::cyt => K()::cyt + K()::cyt
 
             #! inits
             2 X(K{c}, T{e}).X(K{c}, T{j})::rep
@@ -305,7 +320,8 @@ class TestModel(unittest.TestCase):
 
     def test_redundant(self):
         model = self.model_parser.parse(self.model_with_redundant).data
-        print(model)
-        print("\n", "*"*30, "\n")
         model.eliminate_redundant()
-        print(model)
+
+        model_eliminated = self.model_parser.parse(repr(model)).data
+        model_check = self.model_parser.parse(self.model_without_redundant).data
+        self.assertEqual(model_eliminated, model_check)

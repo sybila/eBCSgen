@@ -29,7 +29,7 @@ class Rule:
         self.complexes = complexes
         self.pairs = pairs
         self.rate = rate
-        self.comment = (False, "")
+        self.comment = (False, [])
 
     def __eq__(self, other: 'Rule'):
         return self.agents == other.agents and self.mid == other.mid and self.compartments == other.compartments and \
@@ -43,8 +43,10 @@ class Rule:
         rate = " @ " + str(self.rate) if self.rate else ""
         pre_comment, post_comment = "", ""
         if self.comment[1]:
-            pre_comment = "// " + self.comment[1] + " // " if self.comment[0] else ""
-            post_comment = " // " + self.comment[1] if not self.comment[0] else ""
+            comment = "// redundant #{" + ", ".join(list(map(str, self.comment[1]))) + "} "
+            pre_comment = comment + "// " if self.comment[0] else ""
+            post_comment = " " + comment if not self.comment[0] else ""
+
         return pre_comment + " + ".join(lhs.to_list_of_strings()) + " => " + " + ".join(rhs.to_list_of_strings()) \
                + rate + post_comment
 
