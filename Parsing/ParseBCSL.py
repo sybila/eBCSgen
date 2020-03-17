@@ -3,7 +3,7 @@ import json
 from numpy import inf
 import numpy as np
 from copy import deepcopy
-from lark import Lark, Transformer, Tree, Discard
+from lark import Lark, Transformer, Tree, Token
 from lark import UnexpectedCharacters, UnexpectedToken
 from lark.load_grammar import _TERMINAL_NAMES
 
@@ -75,7 +75,7 @@ GRAMMAR = r"""
 
     init: const? rate_complex (COMMENT)?
     definition: def_param "=" number (COMMENT)?
-    rule: side ARROW side ("@" rate)? (COMMENT)?
+    rule: side ARROW side ("@" rate)? (";" variable)? (COMMENT)?
     cmplx_dfn: cmplx_name "=" sequence (COMMENT)?
 
     side: (const? complex "+")* (const? complex)?
@@ -114,9 +114,12 @@ GRAMMAR = r"""
 
 EXTENDED_GRAMMAR = """
     abstract_sequence: atomic_complex | atomic_structure_complex | structure_complex
-    atomic_complex: atomic ":" cmplx_name
-    atomic_structure_complex: atomic ":" structure ":" cmplx_name
-    structure_complex: structure ":" cmplx_name
+    atomic_complex: atomic ":" (cmplx_name|VAR)
+    atomic_structure_complex: atomic ":" structure ":" (cmplx_name|VAR)
+    structure_complex: structure ":" (cmplx_name|VAR)
+
+    variable: VAR "=" "{" cmplx_name ("," cmplx_name)+ "}"
+    VAR: "?"
 """
 
 COMPLEX_GRAMMAR = """
@@ -139,6 +142,14 @@ COMPLEX_GRAMMAR = """
     %import common.DIGIT
 """
 
+class ReplaceVariables(Transformer):
+    def __init__(self, to_replace):
+        super(Transformer, self).__init__()
+        self.to_replace = to_replace
+
+    def VAR(self, matches):
+        return deepcopy(self.to_replace)
+
 # obtain complex definitions
 class ExtractComplexNames(Transformer):
     def __init__(self):
@@ -147,6 +158,19 @@ class ExtractComplexNames(Transformer):
 
     def cmplx_dfn(self, matches):
         self.complex_defns[str(matches[0].children[0])] = matches[1]
+
+    def rules(self, matches):
+        new_rules = [matches[0]]
+        for rule in matches[1:]:
+            if rule.children[-1].data == 'variable':
+                variables = rule.children[-1].children[1:]
+                for variable in variables:
+                    replacer = ReplaceVariables(variable)
+                    new_rule = Tree('rule', deepcopy(rule.children[:-1]))
+                    new_rules.append(replacer.transform(new_rule))
+            else:
+                new_rules.append(rule)
+        return Tree('rules', new_rules)
 
 # remove abstract syntax
 class TransformAbstractSyntax(Transformer):
@@ -221,7 +245,7 @@ class TreeToComplex(Transformer):
         for item in matches[0].children:
             sequence.append(item.children[0])
         compartment = matches[2]
-        return Tree("agent", [Complex(collections.Counter(sequence), compartment)])
+        return Tree("agent", [Complex(sequence, compartment)])
 
     def compartment(self, matches):
         return str(matches[0])
@@ -321,7 +345,8 @@ class Parser:
                                "RULES_START": "#! rules",
                                "INITS_START": "#! inits",
                                "DEFNS_START": "#! definitions",
-                               "CNAME": "NAME"
+                               "CNAME": "NAME",
+                               "VAR": "?"
                                })
 
     def replace(self, expected: set) -> set:
@@ -347,14 +372,14 @@ class Parser:
                                   "expected": self.replace(u.expected),
                                   "line": u.line, "column": u.column})
 
-        try:
-            complexer = ExtractComplexNames()
-            tree = complexer.transform(tree)
-            de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
-            tree = de_abstracter.transform(tree)
-            tree = TreeToComplex().transform(tree)
-            tree = TreeToObjects().transform(tree)
+        # try:
+        complexer = ExtractComplexNames()
+        tree = complexer.transform(tree)
+        de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
+        tree = de_abstracter.transform(tree)
+        tree = TreeToComplex().transform(tree)
+        tree = TreeToObjects().transform(tree)
 
-            return Result(True, tree.children[0])
-        except Exception as u:
-            return Result(False, "Logical error + " + str(u))
+        return Result(True, tree.children[0])
+        # except Exception as u:
+        #     return Result(False, "Logical error + " + str(u))

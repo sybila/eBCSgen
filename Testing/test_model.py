@@ -209,6 +209,43 @@ class TestModel(unittest.TestCase):
             k2 = 0.12
             """
 
+        self.model_with_variable = """
+            #! rules
+            // commenting
+            T{a}:X():?::rep => T{o}:X():?::rep @ k2*[X().X()::rep] ; ? = { XX, XY }
+            K{i}:X():XY::rep => K{p}:X():XY::rep @ k1*[X().Y().Z().X()::rep] // also here
+
+            #! inits
+            // here
+            2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+
+            #! definitions
+            // and
+            k1 = 0.05 // also
+            k2 = 0.12
+
+            #! complexes
+            XX = X().X()
+            XY = X().Y()
+            """
+
+        self.model_without_variable = """
+            #! rules
+            // commenting
+            X(K{i}).Y()::rep => X(K{p}).Y()::rep @ k1*[X().Y().Z().X()::rep]
+            X(T{a}).X()::rep => X(T{o}).X()::rep @ k2*[X().X()::rep]
+            X(T{a}).Y()::rep => X(T{o}).Y()::rep @ k2*[X().X()::rep]
+
+            #! inits
+            // here
+            2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+
+            #! definitions
+            // and
+            k1 = 0.05 // also
+            k2 = 0.12
+            """
+
     def test_str(self):
         model = self.model_parser.parse(self.model_str_1).data
         back_to_str = repr(model)
@@ -236,13 +273,18 @@ class TestModel(unittest.TestCase):
 
     def test_parser_errors(self):
         self.assertEqual(self.model_parser.parse(self.model_wrong_1).data,
-                         {"unexpected": ";", "expected": {'NAME'}, "line": 3, "column": 37})
+                         {"unexpected": ";", "expected": {'?', 'NAME'}, "line": 3, "column": 37})
 
         self.assertEqual(self.model_parser.parse(self.model_wrong_2).data,
-                         {"expected": {'#! inits', ']', '#! definitions', '=>', '@', 'INT', '+', 'NAME'},
+                         {"expected": {'#! inits', ']', '#! definitions', '=>', '@', 'INT', '+', 'NAME', ';'},
                           "line": 3, "column": 26, "unexpected": "="})
 
-    def test_complex_names(self):
+    def test_zooming_syntax(self):
         model_abstract = self.model_parser.parse(self.model_with_complexes).data
         model_base = self.model_parser.parse(self.model_without_complexes).data
+        self.assertEqual(model_abstract, model_base)
+
+    def test_variables(self):
+        model_abstract = self.model_parser.parse(self.model_with_variable).data
+        model_base = self.model_parser.parse(self.model_without_variable).data
         self.assertEqual(model_abstract, model_base)
