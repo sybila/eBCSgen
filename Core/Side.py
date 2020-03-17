@@ -56,6 +56,6 @@ class Side:
         :param other: given Side
         :return: True if they are compatible
         """
-        if len(self) != len(other):
+        if len(self) > len(other):
             return False
         return all([self.agents[i].compatible(other.agents[i]) for i in range(len(self))])

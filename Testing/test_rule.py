@@ -207,3 +207,15 @@ class TestRule(unittest.TestCase):
 
         rule_expr = "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt"
         self.assertEqual(self.parser.parse(rule_expr).data, self.rule_no_rate)
+
+    def test_compatible(self):
+        self.assertTrue(self.r1.compatible(self.r2))
+        self.assertFalse(self.r2.compatible(self.r1))
+
+        rule_expr_1 = "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt + D(B{_})::cell @ 3*[K()::cyt]/2*v_1"
+        rule_expr_2 = "K().B()::cyt => K()::cyt + B()::cyt + D(B{_})::cell @ 3*[K()::cyt]/2*v_1"
+        rule1 = self.parser.parse(rule_expr_1).data
+        rule2 = self.parser.parse(rule_expr_2).data
+
+        self.assertFalse(rule1.compatible(rule2))
+        self.assertTrue(rule2.compatible(rule1))

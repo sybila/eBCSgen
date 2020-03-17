@@ -100,5 +100,14 @@ class Rule:
             reactions.add(new_rule.to_reaction())
         return reactions
 
-    def compatible(self, other: 'Rule'):
-        pass
+    def compatible(self, other: 'Rule') -> bool:
+        """
+        Checks whether Rule is compatible (position-wise) with the other Rule.
+        Is done by formaly translating to Reactions (just a better object handling).
+
+        :param other: given Rule
+        :return: True if compatible
+        """
+        self_reaction = self.to_reaction()
+        other_reaction = other.to_reaction()
+        return self_reaction.compatible(other_reaction)

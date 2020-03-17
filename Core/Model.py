@@ -75,6 +75,12 @@ class Model:
     def eliminate_redundant(self):
         pass
 
+    def reduce_context(self):
+        pass
+
+    def static_non_reachability(self):
+        pass
+
     def network_free_simulation(self, options) -> list:
         # for this we need to be able to apply Rule on State
         pass
