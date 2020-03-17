@@ -142,7 +142,12 @@ COMPLEX_GRAMMAR = """
     %import common.DIGIT
 """
 
+
 class ReplaceVariables(Transformer):
+    """
+    This class is used to replace variables in rule (marked by ?) by
+    the given cmplx_name (so far limited only to that).
+    """
     def __init__(self, to_replace):
         super(Transformer, self).__init__()
         self.to_replace = to_replace
@@ -150,8 +155,13 @@ class ReplaceVariables(Transformer):
     def VAR(self, matches):
         return deepcopy(self.to_replace)
 
-# obtain complex definitions
+
 class ExtractComplexNames(Transformer):
+    """
+    Extracts definitions of cmplx_name from #! complexes part.
+
+    Also multiplies rule with variable to its instances using ReplaceVariables Transformer.
+    """
     def __init__(self):
         super(Transformer, self).__init__()
         self.complex_defns = dict()
@@ -172,8 +182,14 @@ class ExtractComplexNames(Transformer):
                 new_rules.append(rule)
         return Tree('rules', new_rules)
 
-# remove abstract syntax
+
 class TransformAbstractSyntax(Transformer):
+    """
+    Transformer to remove "zooming" syntax.
+
+    Divided to three special cases (declared below).
+    Based on replacing subtrees in parent trees.
+    """
     def __init__(self, complex_defns):
         super(Transformer, self).__init__()
         self.complex_defns = complex_defns
@@ -184,23 +200,32 @@ class TransformAbstractSyntax(Transformer):
     def abstract_sequence(self, matches):
         return matches[0]
 
-    # atomic:structure:complex
     def atomic_structure_complex(self, matches):
+        """
+        atomic:structure:complex
+        """
         structure = self.insert_atomic_to_struct(matches[0], matches[1])
         sequence = self.insert_struct_to_complex(structure, matches[2])
         return sequence
 
-    # atomic:complex
     def atomic_complex(self, matches):
+        """
+        atomic:complex
+        """
         sequence = self.insert_atomic_to_complex(matches[0], matches[1])
         return sequence
 
-    # structure:complex
     def structure_complex(self, matches):
+        """
+        structure:complex
+        """
         sequence = self.insert_struct_to_complex(matches[0], matches[1])
         return sequence
 
     def insert_atomic_to_struct(self, atomic, struct):
+        """
+        Adds or replaces atomic subtree in struct tree.
+        """
         if len(struct.children) == 2:
             struct.children[1].children.append(atomic)
         else:
@@ -208,6 +233,9 @@ class TransformAbstractSyntax(Transformer):
         return struct
 
     def insert_struct_to_complex(self, struct, complex):
+        """
+        Adds or replaces struct subtree in complex tree.
+        """
         for i in range(len(complex.children)):
             if self.get_name(struct) == self.get_name(complex.children[i].children[0]):
                 complex.children[i] = Tree('agent', [struct])
@@ -215,6 +243,9 @@ class TransformAbstractSyntax(Transformer):
         return complex
 
     def insert_atomic_to_complex(self, atomic, complex):
+        """
+        Adds or replaces atomic subtree in complex tree.
+        """
         for i in range(len(complex.children)):
             if self.get_name(atomic) == self.get_name(complex.children[i].children[0]):
                 complex.children[i] = Tree('agent', [atomic])
@@ -224,7 +255,12 @@ class TransformAbstractSyntax(Transformer):
     def get_name(self, agent):
         return str(agent.children[0].children[0])
 
+
 class TreeToComplex(Transformer):
+    """
+    Creates actual Complexes in rates of the rules - there it is safe,
+    order is not important. Does not apply to the rest of the rule!
+    """
     def state(self, matches):
         return "".join(map(str, matches))
 
@@ -255,6 +291,8 @@ class TreeToObjects(Transformer):
     """
     A transformer which is called on a tree in a bottom-up manner and transforms all subtrees/tokens it encounters.
     Note the defined methods have the same name as elements in the grammar above.
+
+    Creates the actual Model object after all the above transformers were applied.
     """
     def const(self, matches):
         return int(matches[0])
@@ -350,6 +388,12 @@ class Parser:
                                })
 
     def replace(self, expected: set) -> set:
+        """
+        Method used to replace expected tokens by their human-readable representations defined in self.terminals
+
+        :param expected: given set of expected tokens
+        :return: transformed tokens
+        """
         return set([self.terminals.get(item, item) for item in expected])
 
     def parse(self, expression: str) -> Result:
@@ -372,14 +416,14 @@ class Parser:
                                   "expected": self.replace(u.expected),
                                   "line": u.line, "column": u.column})
 
-        # try:
-        complexer = ExtractComplexNames()
-        tree = complexer.transform(tree)
-        de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
-        tree = de_abstracter.transform(tree)
-        tree = TreeToComplex().transform(tree)
-        tree = TreeToObjects().transform(tree)
+        try:
+            complexer = ExtractComplexNames()
+            tree = complexer.transform(tree)
+            de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
+            tree = de_abstracter.transform(tree)
+            tree = TreeToComplex().transform(tree)
+            tree = TreeToObjects().transform(tree)
 
-        return Result(True, tree.children[0])
-        # except Exception as u:
-        #     return Result(False, "Logical error + " + str(u))
+            return Result(True, tree.children[0])
+        except Exception as u:
+            return Result(False, "Logical error + " + str(u))
