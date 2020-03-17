@@ -52,8 +52,6 @@ class Model:
         First reactions are generated, then unique complexes are collected and finally both reactions and
         initial state are transformed to vector representation.
 
-        THIS SHOULD BE DONE IN PARALLEL !!!
-
         :return: VectorModel representation of the model
         """
         reactions = set()
@@ -73,7 +71,14 @@ class Model:
         return VectorModel(vector_reactions, init, ordering, self.bound)
 
     def eliminate_redundant(self):
-        pass
+        counter = 1
+        for rule_left in self.rules:
+            for rule_right in self.rules:
+                if id(rule_left) != id(rule_right):
+                    if rule_left.compatible(rule_right):
+                        rule_left.comment = (not self.all_rates, "redundant #{}".format(counter))
+                        rule_right.comment = (False, "redundant #{}".format(counter))
+                        counter += 1
 
     def reduce_context(self):
         pass

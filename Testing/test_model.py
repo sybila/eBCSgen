@@ -246,6 +246,20 @@ class TestModel(unittest.TestCase):
             k2 = 0.12
             """
 
+        self.model_with_redundant = """
+            #! rules
+            K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt + D(A{_})::cell @ 3*[K().B()::cyt]/2*v_1
+            K().B()::cyt => K()::cyt + B()::cyt + D(A{_})::cell @ 3*[K().B()::cyt]/2*v_1
+            K().B()::cyt => K()::cyt + B()::cyt + D(A{_})::cell
+
+            #! inits
+            2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+
+            #! definitions
+            v_1 = 0.05
+            k2 = 0.12
+            """
+
     def test_str(self):
         model = self.model_parser.parse(self.model_str_1).data
         back_to_str = repr(model)
@@ -288,3 +302,10 @@ class TestModel(unittest.TestCase):
         model_abstract = self.model_parser.parse(self.model_with_variable).data
         model_base = self.model_parser.parse(self.model_without_variable).data
         self.assertEqual(model_abstract, model_base)
+
+    def test_redundant(self):
+        model = self.model_parser.parse(self.model_with_redundant).data
+        print(model)
+        print("\n", "*"*30, "\n")
+        model.eliminate_redundant()
+        print(model)

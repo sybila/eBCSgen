@@ -21,7 +21,7 @@ class Rule:
         :param compartments: list assigning to each position a compartment (for each agent)
         :param complexes: list of pairs (from, to) indicating where the complex starts and ends
         :param pairs: entangled agents from LHS to RHS
-        :param rate: string representing expression (TBA shouldn't be string !!!)
+        :param rate: string representing expression
         """
         self.agents = agents
         self.mid = mid
@@ -29,7 +29,7 @@ class Rule:
         self.complexes = complexes
         self.pairs = pairs
         self.rate = rate
-        self.comment = (False, None)
+        self.comment = (False, "")
 
     def __eq__(self, other: 'Rule'):
         return self.agents == other.agents and self.mid == other.mid and self.compartments == other.compartments and \
@@ -41,8 +41,12 @@ class Rule:
     def __str__(self):
         lhs, rhs = self.create_complexes()
         rate = " @ " + str(self.rate) if self.rate else ""
-        return " + ".join(lhs.to_list_of_strings()) + " => " + " + ".join(rhs.to_list_of_strings()) \
-               + rate
+        pre_comment, post_comment = "", ""
+        if self.comment[1]:
+            pre_comment = "// " + self.comment[1] + " // " if self.comment[0] else ""
+            post_comment = " // " + self.comment[1] if not self.comment[0] else ""
+        return pre_comment + " + ".join(lhs.to_list_of_strings()) + " => " + " + ".join(rhs.to_list_of_strings()) \
+               + rate + post_comment
 
     def __lt__(self, other):
         return str(self) < str(other)
