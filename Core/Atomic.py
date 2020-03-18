@@ -77,3 +77,11 @@ class AtomicAgent:
             else:
                 result = {(self, None)}
         return result
+
+    def reduce_context(self):
+        """
+        Reduces context of AtomicAgent to minimum.
+
+        :return: new AtomicAgent with reduced context
+        """
+        return AtomicAgent(self.name, "_")

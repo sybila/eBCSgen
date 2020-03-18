@@ -275,6 +275,35 @@ class TestModel(unittest.TestCase):
             k2 = 0.12
             """
 
+        self.model_with_context = """
+            #! rules
+            K(S{i}).B(T{a})::cyt => K(S{i})::cyt + B(T{a})::cyt @ 3*[K(S{i}).B(T{a})::cyt]/2*v_1
+            A{p}.K(S{i},T{i})::cyt => A{i}::cyt + K(S{a},T{a})::cyt
+            K(S{i},T{i})::cyt => K(S{a},T{i})::cyt
+
+            #! inits
+            2 K(S{i}).B(T{a})::cyt
+            1 A{p}.K(S{i},T{i})::cyt
+
+            #! definitions
+            v_1 = 0.05
+            k2 = 0.12
+            """
+
+        self.model_without_context = """
+            #! rules
+            K().B()::cyt => K()::cyt + B()::cyt @ 3*[K().B()::cyt]/2*v_1
+            A{_}.K()::cyt => A{_}::cyt + K()::cyt
+
+            #! inits
+            2 K().B()::cyt
+            1 A{_}.K()::cyt
+
+            #! definitions
+            v_1 = 0.05
+            k2 = 0.12
+            """
+
     def test_str(self):
         model = self.model_parser.parse(self.model_str_1).data
         back_to_str = repr(model)
@@ -325,3 +354,10 @@ class TestModel(unittest.TestCase):
         model_eliminated = self.model_parser.parse(repr(model)).data
         model_check = self.model_parser.parse(self.model_without_redundant).data
         self.assertEqual(model_eliminated, model_check)
+
+    def test_reduce_context(self):
+        model = self.model_parser.parse(self.model_with_context).data
+        model.reduce_context()
+
+        model_check = self.model_parser.parse(self.model_without_context).data
+        self.assertEqual(model, model_check)

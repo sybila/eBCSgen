@@ -117,3 +117,24 @@ class Rule:
         self_reaction = self.to_reaction()
         other_reaction = other.to_reaction()
         return self_reaction.compatible(other_reaction)
+
+    def reduce_context(self):
+        """
+        Reduces context of Rule to minimum.
+        Includes both agents and Rate.
+
+        :return: new Rule with reduced context
+        """
+        new_agents = tuple([agent.reduce_context() for agent in self.agents])
+        new_rate = self.rate.reduce_context() if self.rate else None
+        return Rule(new_agents, self.mid, self.compartments, self.complexes, self.pairs, new_rate)
+
+    def is_meaningful(self) -> bool:
+        """
+        Checks whether the Rule does any change, i.e. is meaningful.
+        Done by translating to Reaction and comparing its sides.
+
+        :return: True if meaningful
+        """
+        reaction = self.to_reaction()
+        return not reaction.lhs == reaction.rhs

@@ -86,7 +86,22 @@ class Model:
                         counter += 1
 
     def reduce_context(self):
-        pass
+        """
+        Reduces context of the Model to the minimum.
+        Includes all rules and initial state.
+        """
+        new_rules = set()
+        for rule in self.rules:
+            new_rule = rule.reduce_context()
+            if new_rule.is_meaningful():
+                new_rules.add(new_rule)
+
+        new_init = collections.Counter()
+        for init in self.init:
+            new_init[init.reduce_context()] = self.init[init]
+
+        self.init = new_init
+        self.rules = new_rules
 
     def static_non_reachability(self):
         pass
