@@ -304,6 +304,35 @@ class TestModel(unittest.TestCase):
             k2 = 0.12
             """
 
+        self.model_reachable = """
+            #! rules
+            K(S{i}).B()::cyt => K(S{a})::cyt + B()::cyt @ 3*[K(S{i}).B()::cyt]/2*v_1
+            K(S{a})::cyt + A{i}::cyt => K(S{a}).A{i}::cyt
+            K().A{i}::cyt => K().A{a}::cyt
+
+            #! inits
+            2 K(S{i}).B()::cyt
+            1 A{i}::cyt
+
+            #! definitions
+            v_1 = 0.05
+            k2 = 0.12
+            """
+
+        self.model_nonreachable = """
+            #! rules
+            K(S{i}).B()::cyt => K(S{a})::cyt + B()::cyt @ 3*[K(S{i}).B()::cyt]/2*v_1
+            K(S{a})::cyt + A{i}::cyt => K(S{a}).A{i}::cyt
+
+            #! inits
+            2 K(S{i}).B()::cyt
+            1 A{i}::cyt
+
+            #! definitions
+            v_1 = 0.05
+            k2 = 0.12
+            """
+
     def test_str(self):
         model = self.model_parser.parse(self.model_str_1).data
         back_to_str = repr(model)
@@ -361,3 +390,14 @@ class TestModel(unittest.TestCase):
 
         model_check = self.model_parser.parse(self.model_without_context).data
         self.assertEqual(model, model_check)
+
+    def test_nonreachability(self):
+        complex_parser = Parser("rate_complex")
+        agent = "K(S{a}).A{a}::cyt"
+        complex = complex_parser.parse(agent).data.children[0]
+
+        model_reach = self.model_parser.parse(self.model_reachable).data
+        model_nonreach = self.model_parser.parse(self.model_nonreachable).data
+
+        self.assertTrue(model_reach.static_non_reachability(complex))
+        self.assertFalse(model_nonreach.static_non_reachability(complex))

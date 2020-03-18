@@ -138,3 +138,14 @@ class Rule:
         """
         reaction = self.to_reaction()
         return not reaction.lhs == reaction.rhs
+
+    def exists_compatible_agent(self, agent: Complex) -> bool:
+        """
+        Checks whether there exists a compatible agent in the rhs of the rule.
+
+        :param agent: given Complex agent
+        :return: True if exists compatible
+        """
+        reaction = self.to_reaction()
+        return reaction.rhs.exists_compatible_agent(agent)
+

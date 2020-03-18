@@ -1,5 +1,6 @@
 import collections
 
+from Core.Complex import Complex
 from Core.Side import Side
 from TS.State import State
 from TS.VectorModel import VectorModel
@@ -103,8 +104,14 @@ class Model:
         self.init = new_init
         self.rules = new_rules
 
-    def static_non_reachability(self):
-        pass
+    def static_non_reachability(self, agent: Complex) -> bool:
+        """
+        Checks whether there exists a rule with compatible agent in its rhs.
+
+        :param agent: given Complex agent
+        :return: True if exists compatible
+        """
+        return any(list(map(lambda a: a.exists_compatible_agent(agent), self.rules)))
 
     def network_free_simulation(self, options) -> list:
         # for this we need to be able to apply Rule on State

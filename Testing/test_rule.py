@@ -228,3 +228,13 @@ class TestRule(unittest.TestCase):
         rule2 = self.parser.parse(rule_expr_2).data
 
         self.assertEqual(rule1.reduce_context(), rule2)
+
+    def test_exists_compatible_agent(self):
+        complex_parser = Parser("rate_complex")
+        agent = "K(S{a}).A{a}::cyt"
+        complex = complex_parser.parse(agent).data.children[0]
+
+        rule_expr = "K().A{i}::cyt => K().A{a}::cyt"
+        rule = self.parser.parse(rule_expr).data
+
+        self.assertTrue(rule.exists_compatible_agent(complex))

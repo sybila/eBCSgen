@@ -1,5 +1,7 @@
 import collections
 import numpy as np
+
+from Core.Complex import Complex
 from TS.State import State
 
 
@@ -59,3 +61,12 @@ class Side:
         if len(self) > len(other):
             return False
         return all([self.agents[i].compatible(other.agents[i]) for i in range(len(self))])
+
+    def exists_compatible_agent(self, agent: Complex) -> bool:
+        """
+        Checks whether there exists a compatible agent in the Side.
+
+        :param agent: given Complex agent
+        :return: True if exists compatible
+        """
+        return any(list(map(lambda a: a.compatible(agent), self.agents)))
