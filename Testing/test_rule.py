@@ -219,3 +219,12 @@ class TestRule(unittest.TestCase):
 
         self.assertFalse(rule1.compatible(rule2))
         self.assertTrue(rule2.compatible(rule1))
+
+    def test_reduce_context(self):
+        rule_expr_1 = "K(S{u}).B{i}::cyt => K(S{p})::cyt + B{a}::cyt + D(B{_})::cell @ 3*[K(S{u}).B{i}::cyt]/2*v_1"
+        rule1 = self.parser.parse(rule_expr_1).data
+
+        rule_expr_2 = "K().B{_}::cyt => K()::cyt + B{_}::cyt + D()::cell @ 3*[K().B{_}::cyt]/2*v_1"
+        rule2 = self.parser.parse(rule_expr_2).data
+
+        self.assertEqual(rule1.reduce_context(), rule2)

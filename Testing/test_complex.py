@@ -19,11 +19,15 @@ class TestComplex(unittest.TestCase):
         self.s3 = StructureAgent("X", {self.a4})
         self.s4 = StructureAgent("A", {self.a2, self.a5})
         self.s5 = StructureAgent("A", {self.a6, self.a3})
+        self.s6 = StructureAgent("A", set())
 
         self.c1 = Complex([self.s1, self.s2, self.s2], "cyt")
         self.c2 = Complex([self.s3, self.s4, self.s5], "cyt")
         self.c3 = Complex([self.s2, self.s2, self.s1], "cyt")
         self.c4 = Complex([self.s2, self.s2, self.s1], "cell")
+
+        self.c5 = Complex([self.s2, self.s4, self.a1], "cell")
+        self.c6 = Complex([self.s6, self.s6, self.a4], "cell")
 
         self.large_c1 = Complex([self.s4] * 6 + [self.s3] * 5, "cell")
         self.large_c2 = Complex([self.s5] * 7 + [self.s3] * 6, "cell")
@@ -41,3 +45,6 @@ class TestComplex(unittest.TestCase):
         self.assertFalse(self.c1.compatible(self.c2))
         self.assertFalse(self.c2.compatible(self.c4))
         self.assertFalse(self.large_c1.compatible(self.large_c2))
+
+    def test_reduce_context(self):
+        self.assertEqual(self.c5.reduce_context(), self.c6)
