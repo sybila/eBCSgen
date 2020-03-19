@@ -21,7 +21,7 @@ class Rule:
         :param compartments: list assigning to each position a compartment (for each agent)
         :param complexes: list of pairs (from, to) indicating where the complex starts and ends
         :param pairs: entangled agents from LHS to RHS
-        :param rate: string representing expression (TBA shouldn't be string !!!)
+        :param rate: string representing expression
         """
         self.agents = agents
         self.mid = mid
@@ -29,7 +29,7 @@ class Rule:
         self.complexes = complexes
         self.pairs = pairs
         self.rate = rate
-        self.comment = (False, None)
+        self.comment = (False, [])
 
     def __eq__(self, other: 'Rule'):
         return self.agents == other.agents and self.mid == other.mid and self.compartments == other.compartments and \
@@ -41,8 +41,14 @@ class Rule:
     def __str__(self):
         lhs, rhs = self.create_complexes()
         rate = " @ " + str(self.rate) if self.rate else ""
-        return " + ".join(lhs.to_list_of_strings()) + " => " + " + ".join(rhs.to_list_of_strings()) \
-               + rate
+        pre_comment, post_comment = "", ""
+        if self.comment[1]:
+            comment = "// redundant #{" + ", ".join(list(map(str, self.comment[1]))) + "} "
+            pre_comment = comment + "// " if self.comment[0] else ""
+            post_comment = " " + comment if not self.comment[0] else ""
+
+        return pre_comment + " + ".join(lhs.to_list_of_strings()) + " => " + " + ".join(rhs.to_list_of_strings()) \
+               + rate + post_comment
 
     def __lt__(self, other):
         return str(self) < str(other)
@@ -100,5 +106,46 @@ class Rule:
             reactions.add(new_rule.to_reaction())
         return reactions
 
-    def compatible(self, other: 'Rule'):
-        pass
+    def compatible(self, other: 'Rule') -> bool:
+        """
+        Checks whether Rule is compatible (position-wise) with the other Rule.
+        Is done by formaly translating to Reactions (just a better object handling).
+
+        :param other: given Rule
+        :return: True if compatible
+        """
+        self_reaction = self.to_reaction()
+        other_reaction = other.to_reaction()
+        return self_reaction.compatible(other_reaction)
+
+    def reduce_context(self):
+        """
+        Reduces context of Rule to minimum.
+        Includes both agents and Rate.
+
+        :return: new Rule with reduced context
+        """
+        new_agents = tuple([agent.reduce_context() for agent in self.agents])
+        new_rate = self.rate.reduce_context() if self.rate else None
+        return Rule(new_agents, self.mid, self.compartments, self.complexes, self.pairs, new_rate)
+
+    def is_meaningful(self) -> bool:
+        """
+        Checks whether the Rule does any change, i.e. is meaningful.
+        Done by translating to Reaction and comparing its sides.
+
+        :return: True if meaningful
+        """
+        reaction = self.to_reaction()
+        return not reaction.lhs == reaction.rhs
+
+    def exists_compatible_agent(self, agent: Complex) -> bool:
+        """
+        Checks whether there exists a compatible agent in the rhs of the rule.
+
+        :param agent: given Complex agent
+        :return: True if exists compatible
+        """
+        reaction = self.to_reaction()
+        return reaction.rhs.exists_compatible_agent(agent)
+

@@ -35,3 +35,6 @@ class TestAtomic(unittest.TestCase):
                          {(self.a6, self.a6)})
         self.assertEqual(self.a4.add_context(-1, atomic_signature, structure_signature),
                          {(None, self.a6), (None, self.a7)})
+
+    def test_reduce_context(self):
+        self.assertEqual(self.a3.reduce_context(), self.a4)

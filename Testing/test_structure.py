@@ -26,6 +26,7 @@ class TestStructure(unittest.TestCase):
         self.s9 = StructureAgent("strA", {self.a5, self.a2})
         self.s10 = StructureAgent("strA", {self.a3, self.a6})
         self.s11 = StructureAgent("strA", {self.a5, self.a6})
+        self.s12 = StructureAgent("strA", set())
 
     def test_eq(self):
         self.assertEqual(self.s1, self.s5)
@@ -51,3 +52,6 @@ class TestStructure(unittest.TestCase):
                          {(self.s8, None), (self.s10, None)})
         self.assertEqual(self.s6.add_context(-1, atomic_signature, structure_signature),
                          {(None, self.s8), (None, self.s10)})
+
+    def test_reduce_context(self):
+        self.assertEqual(self.s11.reduce_context(), self.s12)

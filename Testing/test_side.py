@@ -39,6 +39,7 @@ class TestSide(unittest.TestCase):
         self.side4 = Side([self.c6, self.c1])
         self.side5 = Side([self.c5, self.c1])
         self.side6 = Side([self.c5, self.c1, self.c2])
+        self.side7 = Side([self.c6, self.c1, self.c3, self.c4])
 
     def test_eq(self):
         self.assertEqual(self.side2, self.side3)
@@ -51,6 +52,11 @@ class TestSide(unittest.TestCase):
         ordering = (self.c1, self.c2, self.c3, self.c4)
         self.assertEqual(self.side2.to_vector(ordering), State(np.array((0, 1, 1, 1))))
 
-    def test_comaptible(self):
+    def test_compatible(self):
         self.assertTrue(self.side5.compatible(self.side4))
+        self.assertTrue(self.side5.compatible(self.side7))
         self.assertFalse(self.side6.compatible(self.side4))
+
+    def test_exists_compatible_agent(self):
+        self.assertTrue(self.side1.exists_compatible_agent(self.c1))
+        self.assertFalse(self.side1.exists_compatible_agent(self.c3))

@@ -66,7 +66,21 @@ class Rate:
         transformer = SymbolicAgents()
         self.expression = transformer.transform(self.expression)
 
+    def reduce_context(self) -> 'Rate':
+        """
+        Reduces context of all Complexes to minimum.
+
+        :return: new Rate with reduced context
+        """
+        transformer = ContextReducer()
+        expression = transformer.transform(self.expression)
+        return Rate(expression)
+
 # Transformers for Tree
+
+class ContextReducer(Transformer):
+    def agent(self, matches):
+        return Tree("agent", [matches[0].reduce_context()])
 
 
 class SymbolicAgents(Transformer):

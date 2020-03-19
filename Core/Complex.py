@@ -55,3 +55,12 @@ class Complex:
                     if all([self_perm[i].compatible(other_perm[i]) for i in range(len(self_perm))]):
                         return True
         return False
+
+    def reduce_context(self) -> 'Complex':
+        """
+        Reduces context of Complex to minimum.
+
+        :return: new Complex with reduced context
+        """
+        new_agents = [agent.reduce_context() for agent in self.agents]
+        return Complex(new_agents, self.compartment)
