@@ -371,8 +371,7 @@ class Parser:
         grammar = "start: " + start + GRAMMAR + COMPLEX_GRAMMAR + EXTENDED_GRAMMAR
         self.parser = Lark(grammar, parser='lalr',
                            propagate_positions=False,
-                           maybe_placeholders=False,
-                           transformer=()
+                           maybe_placeholders=False
                            )
 
         self.terminals = dict((v, k) for k, v in _TERMINAL_NAMES.items())
@@ -398,6 +397,41 @@ class Parser:
 
     def parse(self, expression: str) -> Result:
         """
+        Main method for parsing, first syntax_check is called which checks syntax and if it is
+        correct, a parsed Tree is returned.
+
+        Then the tree is transformed using several Transformers in self.transform method.
+
+        :param expression: given string expression
+        :return: Result containing parsed object or error specification
+        """
+        result = self.syntax_check(expression)
+        if result.success:
+            return self.transform(result.data)
+        else:
+            return result
+
+    def transform(self, tree: Tree) -> Result:
+        """
+        Apply several transformers to construct BCSL object from given tree.
+
+        :param tree: given parsed Tree
+        :return: Result containing constructed BCSL object
+        """
+        try:
+            complexer = ExtractComplexNames()
+            tree = complexer.transform(tree)
+            de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
+            tree = de_abstracter.transform(tree)
+            tree = TreeToComplex().transform(tree)
+            tree = TreeToObjects().transform(tree)
+
+            return Result(True, tree.children[0])
+        except Exception as u:
+            return Result(False, {"error": str(u)})
+
+    def syntax_check(self, expression: str) -> Result:
+        """
         Main method for parsing, calls Lark.parse method and creates Result containing parsed
          object (according to designed 'start' in grammar) or dict with specified error in case
          the given expression cannot be parsed.
@@ -415,15 +449,4 @@ class Parser:
             return Result(False, {"unexpected": str(u.token),
                                   "expected": self.replace(u.expected),
                                   "line": u.line, "column": u.column})
-
-        try:
-            complexer = ExtractComplexNames()
-            tree = complexer.transform(tree)
-            de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
-            tree = de_abstracter.transform(tree)
-            tree = TreeToComplex().transform(tree)
-            tree = TreeToObjects().transform(tree)
-
-            return Result(True, tree.children[0])
-        except Exception as u:
-            return Result(False, "Logical error + " + str(u))
+        return Result(True, tree)
