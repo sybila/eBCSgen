@@ -1,10 +1,11 @@
-import sys
+import sys, os
 
 from flask import Flask, request
 from flask import make_response
 
-# this is hack, has to be resolved !!!
-sys.path.append('../')
+# this add to path eBCSgen home dir, so it can be called from anywhere
+sys.path.append(os.path.split(sys.path[0])[0])
+
 from Parsing.ParseBCSL import Parser
 
 app = Flask(__name__)
