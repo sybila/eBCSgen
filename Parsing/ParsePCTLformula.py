@@ -3,7 +3,7 @@ from lark import UnexpectedCharacters, UnexpectedToken
 from lark.load_grammar import _TERMINAL_NAMES
 
 from Core.Formula import Formula, AtomicProposition
-from Parsing.ParseBCSL import COMPLEX_GRAMMAR, TreeToComplex
+import Parsing.ParseBCSL
 
 
 GRAMMAR = """
@@ -64,11 +64,11 @@ class TreeToStrings(Transformer):
 
 class PCTLparser:
     def __init__(self):
-        grammar = GRAMMAR + COMPLEX_GRAMMAR
+        grammar = GRAMMAR + Parsing.ParseBCSL.COMPLEX_GRAMMAR
         self.parser = Lark(grammar, parser='lalr',
                            propagate_positions=False,
                            maybe_placeholders=False,
-                           transformer=TreeToComplex()
+                           transformer=Parsing.ParseBCSL.TreeToComplex()
                            )
 
         self.terminals = dict((v, k) for k, v in _TERMINAL_NAMES.items())

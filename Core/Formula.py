@@ -13,14 +13,15 @@ class Formula:
     def __str__(self):
         return "".join(tree_to_string(self.data))
 
-    def get_complexes(self) -> list:
+    def replace_complexes(self, ordering) -> 'Formula':
         """
-        Extracts all used Complexes from the Tree.
+        Replaces Complexes with PRISM name given my ordering.
 
-        :return: list of extracted Complexes
+        :return: new Formula with replaced Complexes
         """
-        APs = self.get_APs()
-        return list(map(lambda ap: ap.complex, APs))
+        replacetor = ComplexReplacetor(ordering)
+        data = replacetor.transform(self.data)
+        return Formula(True, data)
 
     def get_APs(self) -> list:
         """
@@ -28,7 +29,7 @@ class Formula:
 
         :return: list of Atomic Propositions
         """
-        extractor = ComplexExtractor()
+        extractor = APextractor()
         extractor.transform(self.data)
         return extractor.APs
 
@@ -64,7 +65,7 @@ class AtomicProposition:
         return self.complex == other.complex and self.sign == other.sign and self.number == other.number
 
 
-class ComplexExtractor(Transformer):
+class APextractor(Transformer):
     def __init__(self):
         super(Transformer, self).__init__()
         self.APs = []
@@ -80,3 +81,14 @@ class APreplacetor(Transformer):
 
     def ap(self, proposition):
         return Tree("ap", [self.replacements[proposition[0]]])
+
+
+class ComplexReplacetor(Transformer):
+    def __init__(self, ordering):
+        super(Transformer, self).__init__()
+        self.ordering = ordering
+
+    def ap(self, proposition):
+        ap = proposition[0]
+        ap.complex = ap.complex.to_PRISM_code(self.ordering.index(ap.complex))
+        return Tree("ap", [ap])

@@ -41,3 +41,6 @@ class TestComplex(unittest.TestCase):
         self.assertFalse(self.c1.compatible(self.c2))
         self.assertFalse(self.c2.compatible(self.c4))
         self.assertFalse(self.large_c1.compatible(self.large_c2))
+
+    def test_to_PRISM_code(self):
+        self.assertEqual(self.c1.to_PRISM_code(5), "VAR_5")

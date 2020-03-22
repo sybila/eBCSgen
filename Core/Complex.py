@@ -23,6 +23,15 @@ class Complex:
     def __hash__(self):
         return hash(str(self))
 
+    def to_PRISM_code(self, number: int) -> str:
+        """
+        Creates state variable name for PRISM model.
+
+        :param number: position in ordering
+        :return: PRISM variable name
+        """
+        return "VAR_" + str(number)
+
     def extend_signature(self, atomic_signature: dict, structure_signature: dict):
         """
         Extend given signatures by possibly new context.
