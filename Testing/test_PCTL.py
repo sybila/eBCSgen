@@ -1,6 +1,6 @@
 import unittest
 
-from Core.Formula import AtomicProposition
+import Core.Formula
 import Parsing.ParseBCSL
 from Parsing.ParsePCTLformula import PCTLparser
 
@@ -20,7 +20,7 @@ class TestPCTL(unittest.TestCase):
         self.complex_2 = complex_parser.parse("K(S{a},T{a}).B{o}::cyt").data.children[0]
         self.complex_3 = complex_parser.parse("K(S{a},T{i}).B{o}::cyt").data.children[0]
 
-        self.ap_1 = AtomicProposition(self.complex_1, " => ", "5")
+        self.ap_1 = Core.Formula.AtomicProposition(self.complex_1, " => ", "5")
 
     def test_parse(self):
         formula = self.parser.parse(self.formula_1)

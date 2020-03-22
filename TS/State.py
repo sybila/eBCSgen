@@ -1,5 +1,7 @@
 import numpy as np
 
+import Core.Formula
+
 
 class State:
     def __init__(self, sequence: np.array):
@@ -88,3 +90,13 @@ class State:
         :return: True if is special
         """
         return all([np.isinf(i) for i in self.sequence])
+
+    def check_AP(self, ap, ordering: tuple) -> bool:
+        """
+        Checks whether the State satisfies given AtomicProposition.
+
+        :param ap: given AtomicProposition
+        :param ordering: position of corresponding Complex
+        :return: True if satisfied
+        """
+        return eval(str(self.sequence[ordering.index(ap.complex)]) + ap.sign + str(ap.number))

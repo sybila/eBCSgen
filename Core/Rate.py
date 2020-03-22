@@ -2,7 +2,7 @@ import numpy as np
 import sympy
 from lark import Transformer, Tree
 
-from TS.State import State
+import TS.State
 
 
 class Rate:
@@ -35,7 +35,7 @@ class Rate:
         self.expression = vec.transform(self.expression)
         return vec.visited
 
-    def evaluate(self, state: State) -> float:
+    def evaluate(self, state) -> float:
         """
         Evaluates all occurrences of States to a float using Evaluater.
         It is done as intersection of particular state with given state
@@ -89,7 +89,7 @@ class Vectorizer(Transformer):
             if complex.compatible(self.ordering[i]):
                 result[i] = 1
 
-        result = State(result)
+        result = TS.State.State(result)
         self.visited.append(result)
         return Tree("agent", [result])
 
