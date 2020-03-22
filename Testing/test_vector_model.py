@@ -216,6 +216,21 @@ class TestVectorModel(unittest.TestCase):
             omega = 3
             """
 
+        self.model_with_sinks = \
+            """#! rules
+            K(S{u})::cyt => K(S{p})::cyt @ alpha*[K(S{u})::cyt]
+            K(S{p})::cyt + B{a}::cyt => K(S{p}).B{a}::cyt @ beta*[K(S{p})::cyt]*[B{a}::cyt]
+            B{a}::cyt => B{i}::cyt @ alpha*[B{_}::cyt]
+
+            #! inits
+            1 B{a}::cyt
+            1 K(S{u})::cyt
+
+            #! definitions
+            alpha = 10
+            beta = 5
+            """
+
     def test_compute_bound(self):
         self.assertEqual(self.vm_1.bound, 2)
 
@@ -305,4 +320,11 @@ class TestVectorModel(unittest.TestCase):
         generated_ts.save_to_json("Testing/TS_finished.json")
         loaded_ts = load_TS_from_json("Testing/interrupt_even_bigger_ts.json")
 
+        self.assertEqual(generated_ts, loaded_ts)
+
+    def test_handle_sinks(self):
+        model = self.model_parser.parse(self.model_with_sinks).data
+        vector_model = model.to_vector_model()
+        generated_ts = vector_model.generate_transition_system()
+        loaded_ts = load_TS_from_json("Testing/TS_with_sinks.json")
         self.assertEqual(generated_ts, loaded_ts)

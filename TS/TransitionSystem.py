@@ -68,17 +68,6 @@ class TransitionSystem:
         for edge in self.edges:
             edge.encode(self.states_encoding)
 
-    def new_edge(self, source: State, target: State, probability: float) -> Edge:
-        """
-        Added a new edge with code representations of given States.
-
-        :param source: origin state
-        :param target: target state
-        :param probability: probability of transition
-        :return: created Edge
-        """
-        return Edge(source, target, probability)
-
     def recode(self, new_encoding: dict):
         """
         Recodes the transition system according to the new encoding.
