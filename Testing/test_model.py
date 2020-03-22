@@ -61,7 +61,7 @@ class TestModel(unittest.TestCase):
 
         self.defs = {'k1': 0.05, 'k2': 0.12}
 
-        self.model = Model({self.r1, self.r2, self.r3}, self.inits, self.defs, None)
+        self.model = Model({self.r1, self.r2, self.r3}, self.inits, self.defs, set(), None)
         # model
 
         self.model_str_1 = """
@@ -167,6 +167,21 @@ class TestModel(unittest.TestCase):
             k2 = 0.12
             """
 
+        self.model_parametrised = """
+            #! rules
+            // commenting
+            X(K{i})::rep => X(K{p})::rep @ k1*[X()::rep] // also here
+            X(T{a})::rep => X(T{o})::rep @ k2*[Z()::rep]
+            => Y(P{f})::rep @ 1/(v_3+([X()::rep])**4) // ** means power (^)
+
+            #! inits
+            2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+            Y(P{g}, N{l})::rep // comment just 1 item
+
+            #! definitions
+            k1 = 0.05
+            """
+
     def test_str(self):
         model = self.model_parser.parse(self.model_str_1).data
         back_to_str = repr(model)
@@ -200,3 +215,7 @@ class TestModel(unittest.TestCase):
         self.assertEqual(self.model_parser.parse(self.model_wrong_2).data,
                          {"unexpected": "=", "expected": {'#! inits', ']', '#! definitions', '=>', '@', 'INT', '+'},
                           "line": 3, "column": 26})
+
+    def test_parametrised_model(self):
+        model = self.model_parser.parse(self.model_parametrised).data
+        self.assertTrue(len(model.params) == 2)

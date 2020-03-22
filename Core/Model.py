@@ -7,10 +7,11 @@ import subprocess
 
 
 class Model:
-    def __init__(self, rules: set, init: collections.Counter, definitions: dict, bound: int):
+    def __init__(self, rules: set, init: collections.Counter, definitions: dict, params: set, bound: int):
         self.rules = rules
         self.init = init
         self.definitions = definitions
+        self.params = params
         self.bound = bound
         self.all_rates = True
 

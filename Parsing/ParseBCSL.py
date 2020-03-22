@@ -9,7 +9,7 @@ from lark.load_grammar import _TERMINAL_NAMES
 
 from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
-from Core.Model import Model
+import Core.Model
 from Core.Rate import Rate
 from Core.Rule import Rule
 from Core.Structure import StructureAgent
@@ -156,6 +156,9 @@ class TreeToComplex(Transformer):
 
 
 class TreeToObjects(Transformer):
+    def __init__(self):
+        super(Transformer, self).__init__()
+        self.params = set()
     """
     A transformer which is called on a tree in a bottom-up manner and transforms all subtrees/tokens it encounters.
     Note the defined methods have the same name as elements in the grammar above.
@@ -228,8 +231,13 @@ class TreeToObjects(Transformer):
                 result[init[0].children[0]] = 1
         return result
 
+    def param(self, matches):
+        self.params.add(str(matches[0]))
+        return Tree("param", matches)
+
     def model(self, matches):
-        return Model(set(matches[0]), matches[1], matches[2], None)
+        params = self.params - set(matches[2].keys())
+        return Core.Model.Model(set(matches[0]), matches[1], matches[2], params, None)
 
 
 class Parser:
