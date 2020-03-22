@@ -10,6 +10,7 @@ class TransitionSystem:
         self.states_encoding = dict()  # State -> int
         self.edges = set()  # Edge objects: (int from, int to, probability), can be used for explicit Storm format
         self.ordering = ordering  # used to decode State to actual agents
+        self.init = int
 
         # for TS generating
         self.unprocessed = set()
@@ -48,13 +49,15 @@ class TransitionSystem:
         return set(map(hash, ts.edges)) == set(map(hash, other.edges))
         # return ts.edges == other.edges
 
-    def encode(self):
+    def encode(self, init: State):
         """
         Assigns a unique code to each State for storing purposes
         """
         for state in self.processed | self.unprocessed:
             if state not in self.states_encoding:
                 self.states_encoding[state] = len(self.states_encoding) + 1
+
+        self.init = self.states_encoding[init]
         self.processed = set()
         self.encode_edges()
 

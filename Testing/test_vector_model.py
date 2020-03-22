@@ -156,7 +156,7 @@ class TestVectorModel(unittest.TestCase):
                               Edge(states[12], states[4], omega / oa), Edge(states[12], states[4], alpha / oa)
                               }
 
-        self.test_ts.encode()
+        self.test_ts.encode(states[0])
 
         # bigger TS
 

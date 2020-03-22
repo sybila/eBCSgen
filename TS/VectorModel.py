@@ -194,6 +194,6 @@ class VectorModel:
         while any([worker.is_alive() for worker in workers]):
             time.sleep(1)
 
-        ts.encode()
+        ts.encode(self.init)
 
         return ts
