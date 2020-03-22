@@ -15,7 +15,6 @@ from TS.VectorReaction import VectorReaction
 
 class TestModel(unittest.TestCase):
     def setUp(self):
-
         # agents
 
         self.s1 = StructureAgent("X", set())
@@ -28,7 +27,7 @@ class TestModel(unittest.TestCase):
 
         #  rules
 
-        sequence_1 = (self.s1, )
+        sequence_1 = (self.s1,)
         mid_1 = 1
         compartments_1 = ["rep"]
         complexes_1 = [(0, 0)]
@@ -45,7 +44,7 @@ class TestModel(unittest.TestCase):
 
         self.r2 = Rule(sequence_2, mid_2, compartments_2, complexes_2, pairs_2, None)
 
-        sequence_3 = (self.s2, )
+        sequence_3 = (self.s2,)
         mid_3 = 0
         compartments_3 = ["rep"]
         complexes_3 = [(0, 0)]
@@ -77,7 +76,7 @@ class TestModel(unittest.TestCase):
         
         #! definitions
         k1 = 0.05
-        k2 = 0.12
+        k2 = 0.12   
         """
 
         self.model_parser = Parser("model")
@@ -201,4 +200,3 @@ class TestModel(unittest.TestCase):
         self.assertEqual(self.model_parser.parse(self.model_wrong_2).data,
                          {"unexpected": "=", "expected": {'#! inits', ']', '#! definitions', '=>', '@', 'INT', '+'},
                           "line": 3, "column": 26})
-

@@ -105,8 +105,121 @@ class TransitionSystem:
         with open(output_file, 'w') as json_file:
             json.dump(data, json_file, indent=4)
 
-    def save_to_PRISM_explicit(self, output_file):
-        pass
+    # nemozu byt stavy, ktore nemaju odchadzajuce hrany
+    def save_to_STORM_explicit(self, output_transitions, output_labels):
+
+        def has_outgoing_edges(state):
+            for edge in self.edges:
+                if edge.source == state: return True
+            return False
+
+        trans_file = open(output_transitions, "w+")
+        trans_file.write("dtmc\n")
+        for key, value in self.states_encoding.items():
+            if not has_outgoing_edges(value):
+                # !!! adding edge to existing TS
+                self.edges.add(Edge(value, value, 1))
+
+        for edge in self.order_edges_source():
+            trans_file.write(str(edge) + "\n")
+        trans_file.close()
+
+        label_file = open(output_labels, "w+")
+        label_file.write("#DECLARATION\ninit ")
+        # for agent in self.ordering:
+        #    label_file.write(str(agent) + " ")
+        label_file.write("deadlock\n#END\n0 init\n")
+        for state in self.states_encoding:
+            if state.is_hell():
+                print(state)
+                label_file.write(str(state.sequence) + "deadlock")
+        label_file.close()
+
+    def save_to_prism(self, output_prism, bound):
+        """
+        create prism file, DTMC representation of the bcs model
+
+        TODO
+        bound not correct?
+        unique variables generator
+        undefined parameters from rates
+        without space at the end of the line
+        """
+
+        def stateToString(state, apostrophed=False):
+            finalString = ""
+            for index in range(len(state)):
+                finalString += "(n" + str(index) + ("\'" if apostrophed else "") \
+                               + "=" + str(state[index]) + ")" + (" & " if index != len(state) - 1 else "")
+            # print(finalString)
+            return finalString
+
+        '''
+        def create_const(defs):
+            listOfConst = ""
+            for item in defs.items():
+                listOfConst += "const double " + item[0] + " = " + str(item[1]) + ";\n"
+            return listOfConst
+        '''
+
+        def code_transitions():
+            body = ""
+            if len(self.edges):
+                orderd_edges = self.order_edges_source()
+                print(orderd_edges)
+                print(self.states_encoding)
+                previous = None
+                for edge in orderd_edges:
+
+                    if self.decode_state(edge.source).is_hell():
+                        continue
+                    elif previous is None or previous.source != edge.source:
+                        #
+                        #from
+                        body += "\t[] " + stateToString(self.decode_state(edge.source).sequence) + " ->"
+                        #to
+                        body += " " + str(edge.probability) + " : " + stateToString(
+                            self.decode_state(edge.target).sequence, True) + ";\n"
+
+                    else:
+                        if body:
+                            body = body[:-2]
+                            body += " +"
+                        body += " " + str(edge.probability) + " : " + stateToString(
+                        self.decode_state(edge.target).sequence, True) + ";\n"
+                    previous = edge
+            return body
+
+        #TODO
+        def find_undefined_parameters():
+            unknown = set()
+            for prob in self.edges[2]:
+                print(prob)
+            return unknown
+
+        prism_file = open(output_prism, "w+")
+        prism_file.write("dtmc\n\n")
+        # constants = create_const(self.definitions)
+        prism_file.write("\n\nmodule bcs\n")
+        iterator = 0
+        for elem in self.decode_state(0).sequence:
+            prism_file.write("\t" + "n" + str(iterator) + " : [0.." \
+                             + str(bound) + "] init " + str(elem) + ";" \
+                             + " // " + str(self.ordering[iterator]) + "\n")
+
+        prism_file.write("\n" + code_transitions() + "\nendmodule\n")
+        prism_file.close()
+
+    def order_edges_source(self):
+        sorted_edges = list(self.edges)
+        sorted_edges.sort(key=take_source)
+        return sorted_edges
+
+    def decode_state(self, code):
+        if code > len(self.states_encoding):
+            return None
+        srt = sorted(self.states_encoding.items(), key=lambda item: item[1])[code]
+        return srt[0]
 
 
 def create_indices(ordering_1: tuple, ordering_2: tuple):
@@ -128,3 +241,7 @@ def create_indices(ordering_1: tuple, ordering_2: tuple):
         return True, np.array(result)
     else:
         return False, None
+
+
+def take_source(edge):
+    return edge.source

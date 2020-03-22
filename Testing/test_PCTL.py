@@ -1,6 +1,7 @@
 import unittest
 
 from Core.Formula import AtomicProposition
+from Core.Model import Model
 from Parsing.ParseBCSL import Parser
 from Parsing.ParsePCTLformula import PCTLparser
 

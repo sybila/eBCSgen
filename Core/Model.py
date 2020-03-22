@@ -1,8 +1,9 @@
 import collections
 
 from Core.Side import Side
-from TS.State import State
 from TS.VectorModel import VectorModel
+from Parsing.ParsePCTLformula import PCTLparser
+import subprocess
 
 
 class Model:
@@ -21,7 +22,7 @@ class Model:
 
     def __str__(self):
         return "Model:\n" + "\n".join(map(str, self.rules)) + "\n\n" + str(self.init) + "\n\n" + str(self.definitions) \
-            + "\n\n" + str(self.atomic_signature) + "\n" + str(self.structure_signature)
+               + "\n\n" + str(self.atomic_signature) + "\n" + str(self.structure_signature)
 
     def __repr__(self):
         return "#! rules\n" + "\n".join(map(str, self.rules)) + \
@@ -79,12 +80,41 @@ class Model:
         # for this we need to be able to apply Rule on State
         pass
 
-    def PCTL_model_checking(self, PCTL_formula) -> bool:
-        # check whether rate are "linear" -> create directly PRISM file
-        # otherwise generate TS and use its explicit representation for Storm
-        pass
+    def PCTL_model_checking(self, PCTL_formula):
+        ts = self.to_vector_model().generate_transition_system()
+        ts.save_to_STORM_explicit("explicit_transitions.tra", "explicit_labels.lab")
+        '''
+        command = "storm --explicit explicit_transitions.tra explicit_labels.lab --prop \"" + PCTL_formula + "\""
+        os.system(command)
+        '''
+        formula = PCTLparser().parse(PCTL_formula)
+        out = subprocess.Popen(
+            ['storm', '--explicit', 'explicit_transitions.tra', 'explicit_labels.lab', '--prop', formula.data],
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        stdout, stderr = out.communicate()
+        return stdout
 
-    def PCTL_synthesis(self, PCTL_formula) -> bool:
-        # check whether rate are "linear" -> create directly PRISM file
-        # otherwise generate TS and use its explicit representation for Storm
-        pass
+    # check whether rate are "linear" -> create directly PRISM file
+    # otherwise generate TS and use its explicit representation for Storm
+    def PCTL_synthesis(self, PCTL_formula):
+        ts = self.to_vector_model().generate_transition_system()
+        ts.save_to_prism("prism-parametric.pm", self.bound)
+        formula = PCTLparser().parse(PCTL_formula)
+        out = subprocess.Popen(
+            ['storm', '--prism', 'prism-parametric.pm', '--prop', formula.data],
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        stdout, stderr = out.communicate()
+        return stdout
+
+    # check whether model contain undefined parameter -> automaticaly create explicit files
+    def has_unknown_parameters(self) -> bool:
+        # check if there is undefined parameter in definitions
+        for value in self.definitions.values():
+            if value is None:
+                return True
+
+        # check if undefined parameters are in rates
+        for rule in self.rules:
+            if rule.rate.evaluate() is None:
+                return True
+        return False
