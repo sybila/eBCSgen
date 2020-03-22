@@ -11,6 +11,12 @@ class Edge:
     def __eq__(self, other: 'Edge'):
         return self.source == other.source and self.target == other.target and self.probability == other.probability
 
+    def __lt__(self, other: 'Edge'):
+        if self.source != other.source:
+            return self.source < other.source
+        else:
+            return self.target < other.target
+
     def __repr__(self):
         return str(self)
 

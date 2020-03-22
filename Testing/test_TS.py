@@ -81,3 +81,15 @@ class TestTransitionSystem(unittest.TestCase):
 
     def test_hash_edge(self):
         self.assertNotEqual(hash(Edge(1, 2, 0.3)), hash(Edge(2, 1, 0.3)))
+
+    def test_edge_comparision(self):
+        self.assertTrue(Edge(1, 2, 0.3) < Edge(2, 2, 0.3))
+        self.assertTrue(Edge(1, 2, 0.3) < Edge(1, 3, 0.3))
+        self.assertFalse(Edge(1, 2, 0.3) > Edge(2, 2, 0.3))
+        self.assertTrue(Edge(4, 0, 0.3) < Edge(5, 2, 0.3))
+
+    def test_sort_edges(self):
+        edges = {Edge(1, 2, 0.3), Edge(2, 2, 0.3), Edge(4, 0, 0.3), Edge(4, 1, 0.3), Edge(5, 2, 0.3), Edge(1, 3, 0.3)}
+        edges_sorted = [Edge(1, 2, 0.3), Edge(1, 3, 0.3), Edge(2, 2, 0.3),
+                        Edge(4, 0, 0.3), Edge(4, 1, 0.3), Edge(5, 2, 0.3)]
+        self.assertEqual(sorted(edges), edges_sorted)

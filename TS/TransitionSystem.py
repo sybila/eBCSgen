@@ -84,7 +84,7 @@ class TransitionSystem:
         :return: new TransitionSystem
         """
         # swap dictionary
-        old_encoding = {value: key for key, value in self.states_encoding.items()}
+        old_encoding = self.create_recoding()
         self.edges = set(map(lambda edge: edge.recode(old_encoding, new_encoding), self.edges))
 
     def save_to_json(self, output_file: str):
@@ -165,7 +165,7 @@ class TransitionSystem:
         def code_transitions():
             body = ""
             if len(self.edges):
-                orderd_edges = self.order_edges_source()
+                orderd_edges = sorted(self.edges)
                 print(orderd_edges)
                 print(self.states_encoding)
                 previous = None
@@ -210,10 +210,8 @@ class TransitionSystem:
         prism_file.write("\n" + code_transitions() + "\nendmodule\n")
         prism_file.close()
 
-    def order_edges_source(self):
-        sorted_edges = list(self.edges)
-        sorted_edges.sort(key=take_source)
-        return sorted_edges
+    def create_recoding(self):
+        return {value: key for key, value in self.states_encoding.items()}
 
     def decode_state(self, code):
         if code > len(self.states_encoding):
