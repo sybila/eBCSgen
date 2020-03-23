@@ -51,3 +51,7 @@ class TestState(unittest.TestCase):
         self.assertTrue(self.s1.check_AP(ap, ordering))
         ap = AtomicProposition(self.complex_2, ">", 2)
         self.assertFalse(self.s1.check_AP(ap, ordering))
+
+    def test_to_PRISM_string(self):
+        self.assertEqual(self.s1.to_PRISM_string(), "(VAR_0=1) & (VAR_1=2) & (VAR_2=3)")
+        self.assertEqual(self.s1.to_PRISM_string(True), "(VAR_0'=1) & (VAR_1'=2) & (VAR_2'=3)")

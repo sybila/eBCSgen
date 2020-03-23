@@ -83,12 +83,17 @@ class Model:
 
     def PCTL_model_checking(self, PCTL_formula):
         ts = self.to_vector_model().generate_transition_system()
+        formula = PCTLparser().parse(PCTL_formula)
+
+        # generate labels and give them to save_storm
+        APs = formula.get_APs()
+
         ts.save_to_STORM_explicit("explicit_transitions.tra", "explicit_labels.lab")
         '''
         command = "storm --explicit explicit_transitions.tra explicit_labels.lab --prop \"" + PCTL_formula + "\""
         os.system(command)
         '''
-        formula = PCTLparser().parse(PCTL_formula)
+
         out = subprocess.Popen(
             ['storm', '--explicit', 'explicit_transitions.tra', 'explicit_labels.lab', '--prop', formula.data],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -97,25 +102,19 @@ class Model:
 
     # check whether rate are "linear" -> create directly PRISM file
     # otherwise generate TS and use its explicit representation for Storm
-    def PCTL_synthesis(self, PCTL_formula):
+    def PCTL_synthesis(self, PCTL_formula, region):
         ts = self.to_vector_model().generate_transition_system()
         ts.save_to_prism("prism-parametric.pm", self.bound)
+
         formula = PCTLparser().parse(PCTL_formula)
+        formula = formula.replace_complexes(ts.ordering)
+
+
+        # missing region and other stuff
+        # storm-pars --prism parametric_die.pm --prop 'P<=0.5 [F s=7&d=1]'
+        #            --region "0<=p<=1,0<=q<=0.5,0.1<=r<=0.3" --refine 0.01 10 --printfullresult
         out = subprocess.Popen(
             ['storm', '--prism', 'prism-parametric.pm', '--prop', formula.data],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         stdout, stderr = out.communicate()
         return stdout
-
-    # check whether model contain undefined parameter -> automaticaly create explicit files
-    def has_unknown_parameters(self) -> bool:
-        # check if there is undefined parameter in definitions
-        for value in self.definitions.values():
-            if value is None:
-                return True
-
-        # check if undefined parameters are in rates
-        for rule in self.rules:
-            if rule.rate.evaluate() is None:
-                return True
-        return False

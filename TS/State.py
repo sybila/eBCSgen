@@ -100,3 +100,14 @@ class State:
         :return: True if satisfied
         """
         return eval(str(self.sequence[ordering.index(ap.complex)]) + ap.sign + str(ap.number))
+
+    def to_PRISM_string(self, apostrophe=False) -> str:
+        """
+        Creates string representation for PRISM file.
+
+        :param apostrophe: indicates whether variables should be with the apostrophe
+        :return: PRISM string representation
+        """
+        aps = "'" if apostrophe else ""
+        vars = list(map(lambda i: "(VAR_{}{}={})".format(i, aps, self.sequence[i]), range(len(self))))
+        return " & ".join(vars)
