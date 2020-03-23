@@ -104,11 +104,12 @@ class Model:
     # otherwise generate TS and use its explicit representation for Storm
     def PCTL_synthesis(self, PCTL_formula, region):
         ts = self.to_vector_model().generate_transition_system()
-        ts.save_to_prism("prism-parametric.pm", self.bound, self.params)
-
         formula = PCTLparser().parse(PCTL_formula)
-        formula = formula.replace_complexes(ts.ordering)
 
+        labels, prism_formulas = self.create_complex_labels(formula.get_complexes(), ts.ordering)
+        formula = formula.replace_complexes(labels)
+
+        ts.save_to_prism("prism-parametric.pm", self.bound, self.params, prism_formulas)
 
         # missing region and other stuff
         # storm-pars --prism parametric_die.pm --prop 'P<=0.5 [F s=7&d=1]'
@@ -118,3 +119,26 @@ class Model:
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         stdout, stderr = out.communicate()
         return stdout
+
+    def create_complex_labels(self, complexes: list, ordering: tuple):
+        """
+        Creates label for each unique Complex from Formula.
+        This covers two cases - ground and abstract Complexes.
+        For the abstract ones, a PRISM formula needs to be constructed as a sum
+            of all compatible complexes.
+
+        :param complexes: list of extracted complexes from Formula
+        :param ordering: given complex ordering of TS
+        :return: unique label for each Complex and list of PRISM formulas for abstract Complexes
+        """
+        labels = dict()
+        prism_formulas = list()
+        for complex in complexes:
+            if complex in ordering:
+                labels[complex] = complex.to_PRISM_code(ordering.index(complex))
+            else:
+                indices = complex.identify_compatible(ordering)
+                id = "ABSTRACT_VAR_" + "".join(list(map(str, indices)))
+                labels[complex] = id
+                prism_formulas.append(id + " = " + "+".join(["VAR_{}".format(i) for i in indices]))
+        return labels, prism_formulas

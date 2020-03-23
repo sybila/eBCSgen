@@ -219,3 +219,21 @@ class TestModel(unittest.TestCase):
     def test_parametrised_model(self):
         model = self.model_parser.parse(self.model_parametrised).data
         self.assertTrue(len(model.params) == 2)
+
+    def test_create_complex_labels(self):
+        model = Model(set(), collections.Counter(), dict(), set(), int)
+        complex_parser = Parser("rate_complex")
+        complex_1 = complex_parser.parse("K(S{i},T{a}).B{o}::cyt").data.children[0]
+        complex_2 = complex_parser.parse("K(S{a},T{a}).B{o}::cyt").data.children[0]
+        complex_3 = complex_parser.parse("K(S{a},T{i}).B{o}::cyt").data.children[0]
+        complex_abstract = complex_parser.parse("K(S{a}).B{_}::cyt").data.children[0]
+
+        ordering = (complex_1, complex_2, complex_3)
+        complexes = [complex_2, complex_abstract, complex_1]
+
+        result_labels = {complex_2: "VAR_1",complex_abstract: "ABSTRACT_VAR_12", complex_1: "VAR_0"}
+        result_formulas = ['ABSTRACT_VAR_12 = VAR_1+VAR_2']
+
+        labels, prism_formulas = model.create_complex_labels(complexes, ordering)
+        self.assertEqual(labels, result_labels)
+        self.assertEqual(prism_formulas, result_formulas)

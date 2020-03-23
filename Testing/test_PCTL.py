@@ -28,11 +28,15 @@ class TestPCTL(unittest.TestCase):
         formula = self.parser.parse(self.formula_2)
         self.assertEqual(self.formula_2, str(formula))
 
+    def test_get_complexes(self):
+        formula = self.parser.parse(self.formula_1)
+        self.assertEqual(formula.get_complexes(), [self.complex_1])
+
     def test_replace_complexes(self):
-        ordering = (self.complex_1, self.complex_2, self.complex_3)
+        labels = {self.complex_1: "VAR_0"}
         replaced_formula = "P =< 0.3(True U [VAR_0 => 5])"
         formula = self.parser.parse(self.formula_1)
-        self.assertEqual(str(formula.replace_complexes(ordering)), replaced_formula)
+        self.assertEqual(str(formula.replace_complexes(labels)), replaced_formula)
 
     def test_replace_APs(self):
         replacements = {self.ap_1: "label1"}

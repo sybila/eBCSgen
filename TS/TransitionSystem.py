@@ -165,17 +165,19 @@ class TransitionSystem:
                 label_file.write(str(state.sequence) + "deadlock")
         label_file.close()
 
-    def save_to_prism(self, output_prism, bound, params):
+    def save_to_prism(self, output_prism: str, bound: int, params: set, prism_formulas: list):
         """
-        create prism file, DTMC representation of the bcs model
+        Save the TransitionSystem as a PRISM file.
 
-        TODO
-        abstract agent from formula have to be defined using PRISM formula
+        :param output_prism: output file name
+        :param bound: given bound
+        :param params: set of present parameters
+        :param prism_formulas: definition of abstract Complexes
         """
         decoding = self.create_decoding()
 
         prism_file = open(output_prism, "w+")
-        prism_file.write("dtmc\n\nmodule bcs\n")
+        prism_file.write("dtmc\n\nmodule TS\n")
 
         # declare parameters
         prism_file.write("\n" + "\n".join(["\tconst double {};".format(param) for param in params]) +"\n")
@@ -188,7 +190,13 @@ class TransitionSystem:
 
         # write transitions
         transitions = self.edges_to_PRISM(decoding)
-        prism_file.write("\n" + "\n".join(transitions) + "\nendmodule\n")
+        prism_file.write("\n" + "\n".join(transitions))
+
+        prism_file.write("\nendmodule\n")
+
+        # write formulas (maybe its should be part of module!?)
+        prism_file.write("\n" + "\n".join(prism_formulas))
+
         prism_file.close()
 
     def edges_to_PRISM(self, decoding):

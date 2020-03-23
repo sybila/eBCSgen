@@ -122,7 +122,8 @@ endrewards
     def test_prism_file(self):
         # bound does not correspond to model 1
         self.die_ts.init = 6
-        self.die_ts.save_to_prism("prism_dtmc.pm", 7, {"p", "q"})
+        self.die_ts.save_to_prism("prism_dtmc.pm", 7, {"p", "q"}, ['ABSTRACT_VAR_12 = VAR_1+VAR_2',
+                                                                   'ABSTRACT_VAR_34 = VAR_3+VAR_4'])
         print(open("prism_dtmc.pm", "r").read())
         # self.assertEqual(open("prism_dtmc.pm", "r").read(), self.die_prism)
 
