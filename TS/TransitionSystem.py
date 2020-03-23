@@ -82,6 +82,14 @@ class TransitionSystem:
         for edge in self.edges:
             edge.encode(self.states_encoding)
 
+    def create_decoding(self) -> dict:
+        """
+        Swaps encoding dictionary for decoding purposes.
+
+        :return: swapped dictionary
+        """
+        return {value: key for key, value in self.states_encoding.items()}
+
     def recode(self, new_encoding: dict):
         """
         Recodes the transition system according to the new encoding.
@@ -90,7 +98,7 @@ class TransitionSystem:
         :return: new TransitionSystem
         """
         # swap dictionary
-        old_encoding = self.create_recoding()
+        old_encoding = self.create_decoding()
         self.edges = set(map(lambda edge: edge.recode(old_encoding, new_encoding), self.edges))
 
     def save_to_json(self, output_file: str):
@@ -111,8 +119,22 @@ class TransitionSystem:
         with open(output_file, 'w') as json_file:
             json.dump(data, json_file, indent=4)
 
-    # def iterate_edges(self):
+    def change_hell(self, bound):
+        """
+        Changes hell from inf to bound + 1.
 
+        TODO: maybe we could get rid of inf completely, by it is more clear for
+        debugging purposes
+
+        :param bound: given allowed bound
+        """
+        for key, value in self.states_encoding.items():
+            if key.is_inf:
+                del self.states_encoding[key]
+                hell = State(np.array([bound + 1] * len(key)))
+                hell.is_inf = True
+                self.states_encoding[hell] = value
+                break
 
     # nemozu byt stavy, ktore nemaju odchadzajuce hrany
     def save_to_STORM_explicit(self, output_transitions, output_labels):
@@ -155,22 +177,6 @@ class TransitionSystem:
         without space at the end of the line
         """
 
-        def stateToString(state, apostrophed=False):
-            finalString = ""
-            for index in range(len(state)):
-                finalString += "(n" + str(index) + ("\'" if apostrophed else "") \
-                               + "=" + str(state[index]) + ")" + (" & " if index != len(state) - 1 else "")
-            # print(finalString)
-            return finalString
-
-        '''
-        def create_const(defs):
-            listOfConst = ""
-            for item in defs.items():
-                listOfConst += "const double " + item[0] + " = " + str(item[1]) + ";\n"
-            return listOfConst
-        '''
-
         def code_transitions():
             body = ""
             if len(self.edges):
@@ -184,9 +190,9 @@ class TransitionSystem:
                         continue
                     elif previous is None or previous.source != edge.source:
                         #
-                        #from
+                        # from
                         body += "\t[] " + stateToString(self.decode_state(edge.source).sequence) + " ->"
-                        #to
+                        # to
                         body += " " + str(edge.probability) + " : " + stateToString(
                             self.decode_state(edge.target).sequence, True) + ";\n"
 
@@ -195,7 +201,7 @@ class TransitionSystem:
                             body = body[:-2]
                             body += " +"
                         body += " " + str(edge.probability) + " : " + stateToString(
-                        self.decode_state(edge.target).sequence, True) + ";\n"
+                            self.decode_state(edge.target).sequence, True) + ";\n"
                     previous = edge
             return body
 
@@ -212,14 +218,10 @@ class TransitionSystem:
         prism_file.write("\n" + code_transitions() + "\nendmodule\n")
         prism_file.close()
 
-    def create_recoding(self):
-        return {value: key for key, value in self.states_encoding.items()}
-
-    def decode_state(self, code):
-        if code > len(self.states_encoding):
-            return None
-        srt = sorted(self.states_encoding.items(), key=lambda item: item[1])[code]
-        return srt[0]
+    def edges_to_PRISM(self):
+        decoding = self.create_decoding()
+        for group in self:
+            print(group)
 
 
 def create_indices(ordering_1: tuple, ordering_2: tuple):

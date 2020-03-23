@@ -28,6 +28,8 @@ class TestTransitionSystem(unittest.TestCase):
         self.s2 = State(np.array((1, 2, 4)))
         self.s3 = State(np.array((1, 2, 5)))
         self.s4 = State(np.array((4, 2, 3)))
+        self.hell = State(np.array((np.inf, np.inf, np.inf)))
+        self.hell.is_inf = True
 
         self.s1_reordered = State(np.array((3, 1, 2)))
         self.s2_reordered = State(np.array((4, 1, 2)))
@@ -108,3 +110,12 @@ class TestTransitionSystem(unittest.TestCase):
         sorted_and_separated = [[Edge(0, 1, 0.5)], [Edge(1, 0, 0.3), Edge(1, 2, 0.8), Edge(1, 3, 0.2)],
                                 [Edge(3, 1, 0.9), Edge(3, 2, 0.1)]]
         self.assertEqual(list(iter(self.ts_bigger)), sorted_and_separated)
+
+    def test_change_hell(self):
+        ordering = (self.c1, self.c2, self.c3, self.c4)
+        ts = TransitionSystem(ordering)
+        ts.states_encoding = {self.s1: 1, self.s2: 2, self.s3: 0, self.hell: 3}
+        ts.change_hell(4)
+        new_hell = State(np.array([5, 5, 5]))
+        new_encoding = {self.s1: 1, self.s2: 2, self.s3: 0, new_hell: 3}
+        self.assertEqual(ts.states_encoding, new_encoding)
