@@ -1,7 +1,6 @@
 import subprocess
 import unittest
 
-from matplotlib import collections
 from sympy.printing.tests.test_numpy import np
 
 from Core.Model import Model
@@ -122,7 +121,8 @@ endrewards
     # TODO
     def test_prism_file(self):
         # bound does not correspond to model 1
-        self.die_ts.save_to_prism("prism_dtmc.pm", 7)
+        self.die_ts.init = 6
+        self.die_ts.save_to_prism("prism_dtmc.pm", 7, {"p", "q"})
         print(open("prism_dtmc.pm", "r").read())
         # self.assertEqual(open("prism_dtmc.pm", "r").read(), self.die_prism)
 

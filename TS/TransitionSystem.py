@@ -136,7 +136,6 @@ class TransitionSystem:
                 self.states_encoding[hell] = value
                 break
 
-    # nemozu byt stavy, ktore nemaju odchadzajuce hrany
     def save_to_STORM_explicit(self, output_transitions, output_labels):
 
         def has_outgoing_edges(state):
@@ -166,63 +165,45 @@ class TransitionSystem:
                 label_file.write(str(state.sequence) + "deadlock")
         label_file.close()
 
-    def save_to_prism(self, output_prism, bound):
+    def save_to_prism(self, output_prism, bound, params):
         """
         create prism file, DTMC representation of the bcs model
 
         TODO
-        bound not correct?
-        unique variables generator
-        undefined parameters from rates
-        without space at the end of the line
+        abstract agent from formula have to be defined using PRISM formula
         """
-
-        def code_transitions():
-            body = ""
-            if len(self.edges):
-                orderd_edges = sorted(self.edges)
-                print(orderd_edges)
-                print(self.states_encoding)
-                previous = None
-                for edge in orderd_edges:
-
-                    if self.decode_state(edge.source).is_hell():
-                        continue
-                    elif previous is None or previous.source != edge.source:
-                        #
-                        # from
-                        body += "\t[] " + stateToString(self.decode_state(edge.source).sequence) + " ->"
-                        # to
-                        body += " " + str(edge.probability) + " : " + stateToString(
-                            self.decode_state(edge.target).sequence, True) + ";\n"
-
-                    else:
-                        if body:
-                            body = body[:-2]
-                            body += " +"
-                        body += " " + str(edge.probability) + " : " + stateToString(
-                            self.decode_state(edge.target).sequence, True) + ";\n"
-                    previous = edge
-            return body
+        decoding = self.create_decoding()
 
         prism_file = open(output_prism, "w+")
-        prism_file.write("dtmc\n\n")
-        # constants = create_const(self.definitions)
-        prism_file.write("\n\nmodule bcs\n")
-        iterator = 0
-        for elem in self.decode_state(0).sequence:
-            prism_file.write("\t" + "n" + str(iterator) + " : [0.." \
-                             + str(bound) + "] init " + str(elem) + ";" \
-                             + " // " + str(self.ordering[iterator]) + "\n")
+        prism_file.write("dtmc\n\nmodule bcs\n")
 
-        prism_file.write("\n" + code_transitions() + "\nendmodule\n")
+        # declare parameters
+        prism_file.write("\n" + "\n".join(["\tconst double {};".format(param) for param in params]) +"\n")
+
+        # declare state variables
+        init = decoding[self.init]
+        vars = ["\tVAR_{} : [0..{}] init {}; // {}".format(i, bound+1, init.sequence[i], self.ordering[i])
+                for i in range(len(self.ordering))]
+        prism_file.write("\n" + "\n".join(vars) + "\n")
+
+        # write transitions
+        transitions = self.edges_to_PRISM(decoding)
+        prism_file.write("\n" + "\n".join(transitions) + "\nendmodule\n")
         prism_file.close()
 
-    def edges_to_PRISM(self):
-        decoding = self.create_decoding()
-        for group in self:
-            print(group)
+    def edges_to_PRISM(self, decoding):
+        """
+        Takes ordered edges grouped by source and for each group creates PRISM file representation
 
+        :return: list of strings for each group (source)
+        """
+        output = []
+        for group in self:
+            source = group[0].source
+            line = "\t[] " + decoding[source].to_PRISM_string() + " -> " + \
+                   " + ".join(list(map(lambda edge: edge.to_PRISM_string(decoding), group))) + ";"
+            output.append(line)
+        return output
 
 def create_indices(ordering_1: tuple, ordering_2: tuple):
     """

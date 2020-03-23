@@ -104,7 +104,7 @@ class Model:
     # otherwise generate TS and use its explicit representation for Storm
     def PCTL_synthesis(self, PCTL_formula, region):
         ts = self.to_vector_model().generate_transition_system()
-        ts.save_to_prism("prism-parametric.pm", self.bound)
+        ts.save_to_prism("prism-parametric.pm", self.bound, self.params)
 
         formula = PCTLparser().parse(PCTL_formula)
         formula = formula.replace_complexes(ts.ordering)

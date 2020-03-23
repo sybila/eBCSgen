@@ -62,6 +62,14 @@ class Edge:
         """
         return {'s': self.source, 't': self.target, 'p': self.probability}
 
+    def to_PRISM_string(self, decoding) -> str:
+        """
+        Creates string representation for PRISM file.
+
+        :return: PRISM string representation
+        """
+        return str(self.probability) + " : " + decoding[self.target].to_PRISM_string(True)
+
 
 def edge_from_dict(d: dict) -> Edge:
     """

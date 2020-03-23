@@ -15,7 +15,7 @@ class Formula:
 
     def replace_complexes(self, ordering) -> 'Formula':
         """
-        Replaces Complexes with PRISM name given my ordering.
+        Replaces Complexes with PRISM name given by ordering.
 
         :return: new Formula with replaced Complexes
         """
