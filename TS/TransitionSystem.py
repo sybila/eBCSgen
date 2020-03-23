@@ -136,7 +136,14 @@ class TransitionSystem:
                 self.states_encoding[hell] = value
                 break
 
-    def save_to_STORM_explicit(self, transitions_file, labels_file, labels):
+    def save_to_STORM_explicit(self, transitions_file: str, labels_file: str, labels: dict):
+        """
+        Save the TransitionSystem as explicit Storm file (no parameters).
+
+        :param transitions_file: file for transitions
+        :param labels_file: file for labels
+        :param labels: labels representing atomic propositions assigned to states
+        """
         trans_file = open(transitions_file, "w+")
         trans_file.write("dtmc\n")
 
@@ -144,31 +151,25 @@ class TransitionSystem:
             trans_file.write(str(edge) + "\n")
         trans_file.close()
 
-        # from here below not done
-
         label_file = open(labels_file, "w+")
-        label_file.write("#DECLARATION\ninit ")
-        # for agent in self.ordering:
-        #    label_file.write(str(agent) + " ")
-        label_file.write("deadlock\n#END\n0 init\n")
-        for state in self.states_encoding:
-            if state.is_inf: # probably shouldnt be deadlock
-                print(state)
-                label_file.write(str(state.sequence) + "deadlock")
+        unique_labels = list(map(str, set.union(*labels.values())))
+        label_file.write("#DECLARATION\n" + " ".join(unique_labels) + "\n#END\n")
+
+        label_file.write("\n".join(list(map(lambda state: str(state) + " " + " ".join(list(map(str, labels[state]))), labels))))
         label_file.close()
 
-    def save_to_prism(self, output_prism: str, bound: int, params: set, prism_formulas: list):
+    def save_to_prism(self, output_file: str, bound: int, params: set, prism_formulas: list):
         """
-        Save the TransitionSystem as a PRISM file.
+        Save the TransitionSystem as a PRISM file (parameters present).
 
-        :param output_prism: output file name
+        :param output_file: output file name
         :param bound: given bound
         :param params: set of present parameters
         :param prism_formulas: definition of abstract Complexes
         """
         decoding = self.create_decoding()
 
-        prism_file = open(output_prism, "w+")
+        prism_file = open(output_file, "w+")
         prism_file.write("dtmc\n\nmodule TS\n")
 
         # declare parameters

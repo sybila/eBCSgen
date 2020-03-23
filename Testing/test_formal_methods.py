@@ -63,7 +63,7 @@ module die
     s : [0..7] init 0;
     // value of the dice
     d : [0..6] init 0;
-    
+
     [] s=0 -> 0.5 : (s'=1) + 0.5 : (s'=2);
     [] s=1 -> 0.5 : (s'=3) + 0.5 : (s'=4);
     [] s=2 -> 0.5 : (s'=5) + 0.5 : (s'=6);
@@ -106,17 +106,24 @@ endrewards
 
     # TODO missing test for label file, ordering of target state does not correspond
     def test_explicit_file(self):
-        self.die_ts.save_to_STORM_explicit("explicit_transitions.tra", "explicit_labels.lab")
+        self.die_ts.init = 6
+        labels = {6: {'property_0', 'init'}, 11: {'property_0', 'property_1'},
+                  3: {'property_3', 'property_0'}, 8: {'property_1'}}
+        self.die_ts.save_to_STORM_explicit("explicit_transitions.tra", "explicit_labels.lab", labels)
+        with open('explicit_transitions.tra', 'r') as f:
+            print(f.read())
+        with open('explicit_labels.lab', 'r') as f:
+            print(f.read())
         # self.assertEqual(open("explicit_transitions.tra", "r").read(), self.die_transitions)
 
-    # TODO bcsl model for die example labeling file
-    def test_model_checking(self):
-        # model_checking1 = self.die_model.PCTL_model_checking(self.die_pctl1)
-        out = subprocess.Popen(
-            ['storm', '--explicit', 'die.tra', 'die.lab', '--prop', self.die_pctl1],
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        stdout, stderr = out.communicate()
-        # self.assertEqual(model_checking1, stdout)
+    # # TODO bcsl model for die example labeling file
+    # def test_model_checking(self):
+    #     # model_checking1 = self.die_model.PCTL_model_checking(self.die_pctl1)
+    #     out = subprocess.Popen(
+    #         ['storm', '--explicit', 'die.tra', 'die.lab', '--prop', self.die_pctl1],
+    #         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    #     stdout, stderr = out.communicate()
+    #     # self.assertEqual(model_checking1, stdout)
 
     # TODO
     def test_prism_file(self):
@@ -124,7 +131,9 @@ endrewards
         self.die_ts.init = 6
         self.die_ts.save_to_prism("prism_dtmc.pm", 7, {"p", "q"}, ['ABSTRACT_VAR_12 = VAR_1+VAR_2',
                                                                    'ABSTRACT_VAR_34 = VAR_3+VAR_4'])
-        print(open("prism_dtmc.pm", "r").read())
+        with open('prism_dtmc.pm', 'r') as f:
+            print(f.read())
+
         # self.assertEqual(open("prism_dtmc.pm", "r").read(), self.die_prism)
 
     # TODO

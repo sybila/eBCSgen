@@ -9,6 +9,7 @@ from Core.Complex import Complex
 from Core.Rule import Rule
 from Parsing.ParseBCSL import Parser
 from TS.State import State
+import TS.TransitionSystem
 from TS.VectorModel import VectorModel
 from TS.VectorReaction import VectorReaction
 import Core.Formula
@@ -262,10 +263,14 @@ class TestModel(unittest.TestCase):
         states_encoding = {s1: 1, s2: 2, s3: 3, s4: 4}
 
         result_AP_lables = {APs[0]: 'property_0', APs[1]: 'property_1'}
-        result_state_labels = {s1: {'property_0', 'property_1'},
-                               s3: {'property_0'},
-                               s4: {'property_0', 'property_1'}}
+        result_state_labels = {1: {'property_0', 'property_1'},
+                               3: {'property_0', 'init'},
+                               4: {'property_0', 'property_1'}}
 
-        state_labels, AP_lables = model.create_AP_labels(APs, states_encoding, ordering)
+        ts = TS.TransitionSystem.TransitionSystem(ordering)
+        ts.states_encoding = states_encoding
+        ts.init = 3
+
+        state_labels, AP_lables = model.create_AP_labels(APs, ts)
         self.assertEqual(state_labels, result_state_labels)
         self.assertEqual(AP_lables, result_AP_lables)

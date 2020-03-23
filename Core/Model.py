@@ -1,6 +1,7 @@
 import collections
 
 from Core.Side import Side
+from TS.TransitionSystem import TransitionSystem
 from TS.VectorModel import VectorModel
 from Parsing.ParsePCTLformula import PCTLparser
 import subprocess
@@ -87,7 +88,7 @@ class Model:
 
         # generate labels and give them to save_storm
         APs = formula.get_APs()
-        state_labels, AP_lables = self.create_AP_labels(APs, ts.states_encoding, ts.ordering)
+        state_labels, AP_lables = self.create_AP_labels(APs, ts)
         formula = formula.replace_APs(AP_lables)
 
         ts.save_to_STORM_explicit("explicit_transitions.tra", "explicit_labels.lab", state_labels)
@@ -146,24 +147,25 @@ class Model:
                                       " // " + str(complex))
         return labels, prism_formulas
 
-    def create_AP_labels(self, APs: list, states: dict, ordering: tuple):
+    def create_AP_labels(self, APs: list, ts: TransitionSystem):
         """
         Creates label for each AtomicProposition.
         Moreover, goes through all states in ts.states_encoding and validates whether they satisfy give
          APs - if so, the particular label is assigned to the state.
 
         :param APs: give AtomicProposition extracted from Formula
-        :param states: states_encoding from TS
-        :param ordering: ordering from TS
-        :return: dictionary of AP -> label and State -> set of labels
+        :param ts: given TS
+        :return: dictionary of State_code -> set of labels and AP -> label
         """
         AP_lables = dict()
         for ap in APs:
             AP_lables[ap] = "property_" + str(len(AP_lables))
 
         state_labels = dict()
-        for state in states.keys():
+        for state in ts.states_encoding.keys():
             for ap in APs:
-                if state.check_AP(ap, ordering):
-                    state_labels[state] = state_labels.get(state, set()) | {AP_lables[ap]}
+                if state.check_AP(ap, ts.ordering):
+                    state_labels[ts.states_encoding[state]] = \
+                        state_labels.get(ts.states_encoding[state], set()) | {AP_lables[ap]}
+        state_labels[ts.init] = state_labels.get(ts.init, set()) | {"init"}
         return state_labels, AP_lables
