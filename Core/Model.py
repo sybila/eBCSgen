@@ -87,8 +87,10 @@ class Model:
 
         # generate labels and give them to save_storm
         APs = formula.get_APs()
+        state_labels, AP_lables = self.create_AP_labels(APs, ts.states_encoding, ts.ordering)
+        formula = formula.replace_APs(AP_lables)
 
-        ts.save_to_STORM_explicit("explicit_transitions.tra", "explicit_labels.lab")
+        ts.save_to_STORM_explicit("explicit_transitions.tra", "explicit_labels.lab", state_labels)
         '''
         command = "storm --explicit explicit_transitions.tra explicit_labels.lab --prop \"" + PCTL_formula + "\""
         os.system(command)
@@ -140,5 +142,28 @@ class Model:
                 indices = complex.identify_compatible(ordering)
                 id = "ABSTRACT_VAR_" + "".join(list(map(str, indices)))
                 labels[complex] = id
-                prism_formulas.append(id + " = " + "+".join(["VAR_{}".format(i) for i in indices]))
+                prism_formulas.append(id + " = " + "+".join(["VAR_{}".format(i) for i in indices]) +
+                                      " // " + str(complex))
         return labels, prism_formulas
+
+    def create_AP_labels(self, APs: list, states: dict, ordering: tuple):
+        """
+        Creates label for each AtomicProposition.
+        Moreover, goes through all states in ts.states_encoding and validates whether they satisfy give
+         APs - if so, the particular label is assigned to the state.
+
+        :param APs: give AtomicProposition extracted from Formula
+        :param states: states_encoding from TS
+        :param ordering: ordering from TS
+        :return: dictionary of AP -> label and State -> set of labels
+        """
+        AP_lables = dict()
+        for ap in APs:
+            AP_lables[ap] = "property_" + str(len(AP_lables))
+
+        state_labels = dict()
+        for state in states.keys():
+            for ap in APs:
+                if state.check_AP(ap, ordering):
+                    state_labels[state] = state_labels.get(state, set()) | {AP_lables[ap]}
+        return state_labels, AP_lables

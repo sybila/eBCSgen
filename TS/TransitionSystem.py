@@ -123,7 +123,7 @@ class TransitionSystem:
         """
         Changes hell from inf to bound + 1.
 
-        TODO: maybe we could get rid of inf completely, by it is more clear for
+        TODO: maybe we could get rid of inf completely, but it is more clear for
         debugging purposes
 
         :param bound: given allowed bound
@@ -136,31 +136,23 @@ class TransitionSystem:
                 self.states_encoding[hell] = value
                 break
 
-    def save_to_STORM_explicit(self, output_transitions, output_labels):
-
-        def has_outgoing_edges(state):
-            for edge in self.edges:
-                if edge.source == state: return True
-            return False
-
-        trans_file = open(output_transitions, "w+")
+    def save_to_STORM_explicit(self, transitions_file, labels_file, labels):
+        trans_file = open(transitions_file, "w+")
         trans_file.write("dtmc\n")
-        for key, value in self.states_encoding.items():
-            if not has_outgoing_edges(value):
-                # !!! adding edge to existing TS
-                self.edges.add(Edge(value, value, 1))
 
-        for edge in self.order_edges_source():
+        for edge in sorted(self.edges):
             trans_file.write(str(edge) + "\n")
         trans_file.close()
 
-        label_file = open(output_labels, "w+")
+        # from here below not done
+
+        label_file = open(labels_file, "w+")
         label_file.write("#DECLARATION\ninit ")
         # for agent in self.ordering:
         #    label_file.write(str(agent) + " ")
         label_file.write("deadlock\n#END\n0 init\n")
         for state in self.states_encoding:
-            if state.is_hell():
+            if state.is_inf: # probably shouldnt be deadlock
                 print(state)
                 label_file.write(str(state.sequence) + "deadlock")
         label_file.close()
@@ -189,6 +181,7 @@ class TransitionSystem:
         prism_file.write("\n" + "\n".join(vars) + "\n")
 
         # write transitions
+        self.change_hell(bound)  # to get rid of inf
         transitions = self.edges_to_PRISM(decoding)
         prism_file.write("\n" + "\n".join(transitions))
 
@@ -232,7 +225,3 @@ def create_indices(ordering_1: tuple, ordering_2: tuple):
         return True, np.array(result)
     else:
         return False, None
-
-
-def take_source(edge):
-    return edge.source

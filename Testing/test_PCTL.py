@@ -39,7 +39,7 @@ class TestPCTL(unittest.TestCase):
         self.assertEqual(str(formula.replace_complexes(labels)), replaced_formula)
 
     def test_replace_APs(self):
-        replacements = {self.ap_1: "label1"}
-        replaced_formula = "P =< 0.3(True U label1)"
+        replacements = {self.ap_1: "property_0"}
+        replaced_formula = "P =< 0.3(True U property_0)"
         formula = self.parser.parse(self.formula_1)
         self.assertEqual(str(formula.replace_APs(replacements)), replaced_formula)

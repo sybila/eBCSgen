@@ -63,7 +63,7 @@ class State:
         :param state: given State
         :return: resulting summation
         """
-        return sum(self.sequence * state)
+        return sum(self * state)
 
     def to_ODE_string(self) -> str:
         """
@@ -95,11 +95,19 @@ class State:
         """
         Checks whether the State satisfies given AtomicProposition.
 
+        TBA : could be abstract !!!
+
         :param ap: given AtomicProposition
         :param ordering: position of corresponding Complex
         :return: True if satisfied
         """
-        return eval(str(self.sequence[ordering.index(ap.complex)]) + ap.sign + str(ap.number))
+        if ap.complex in ordering:
+            operand = str(self.sequence[ordering.index(ap.complex)])
+        else:
+            indices = ap.complex.identify_compatible(ordering)
+            state = State(np.array([1 if i in indices else 0 for i in range(len(ordering))]))
+            operand = str(self.filter_values(state))
+        return eval(operand + ap.sign + str(ap.number))
 
     def to_PRISM_string(self, apostrophe=False) -> str:
         """

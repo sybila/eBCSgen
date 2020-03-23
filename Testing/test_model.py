@@ -11,6 +11,7 @@ from Parsing.ParseBCSL import Parser
 from TS.State import State
 from TS.VectorModel import VectorModel
 from TS.VectorReaction import VectorReaction
+import Core.Formula
 
 
 class TestModel(unittest.TestCase):
@@ -232,8 +233,39 @@ class TestModel(unittest.TestCase):
         complexes = [complex_2, complex_abstract, complex_1]
 
         result_labels = {complex_2: "VAR_1",complex_abstract: "ABSTRACT_VAR_12", complex_1: "VAR_0"}
-        result_formulas = ['ABSTRACT_VAR_12 = VAR_1+VAR_2']
+        result_formulas = ['ABSTRACT_VAR_12 = VAR_1+VAR_2 // K(S{a}).B{_}::cyt']
 
         labels, prism_formulas = model.create_complex_labels(complexes, ordering)
         self.assertEqual(labels, result_labels)
         self.assertEqual(prism_formulas, result_formulas)
+
+    def test_create_AP_labels(self):
+        model = Model(set(), collections.Counter(), dict(), set(), int)
+
+        complex_parser = Parser("rate_complex")
+        complex_1 = complex_parser.parse("K(S{i},T{a}).B{o}::cyt").data.children[0]
+        complex_2 = complex_parser.parse("K(S{a},T{a}).B{o}::cyt").data.children[0]
+        complex_3 = complex_parser.parse("K(S{a},T{i}).B{o}::cyt").data.children[0]
+
+        complex_abstract = complex_parser.parse("K(S{a}).B{_}::cyt").data.children[0]
+
+        ordering = (complex_1, complex_2, complex_3)
+
+        APs = [Core.Formula.AtomicProposition(complex_abstract, " >= ", "3"),
+               Core.Formula.AtomicProposition(complex_1, " < ", 2)]
+
+        s1 = State(np.array((1, 2, 2)))
+        s2 = State(np.array((5, 1, 1)))
+        s3 = State(np.array((2, 4, 3)))
+        s4 = State(np.array((1, 4, 3)))
+
+        states_encoding = {s1: 1, s2: 2, s3: 3, s4: 4}
+
+        result_AP_lables = {APs[0]: 'property_0', APs[1]: 'property_1'}
+        result_state_labels = {s1: {'property_0', 'property_1'},
+                               s3: {'property_0'},
+                               s4: {'property_0', 'property_1'}}
+
+        state_labels, AP_lables = model.create_AP_labels(APs, states_encoding, ordering)
+        self.assertEqual(state_labels, result_state_labels)
+        self.assertEqual(AP_lables, result_AP_lables)
