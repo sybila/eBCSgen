@@ -82,7 +82,17 @@ class Model:
         # for this we need to be able to apply Rule on State
         pass
 
-    def PCTL_model_checking(self, PCTL_formula):
+    def PCTL_model_checking(self, PCTL_formula: str):
+        """
+        Model checking of given PCTL formula.
+
+        First transition system is generated, then Storm explicit file is generated and
+        appropriate PCTL formula issues resolved are (e.g. naming of agents). Finally,
+        Storm model checker is called and results are returned.
+
+        :param PCTL_formula: given PCTL formula
+        :return: output of Storm model checker
+        """
         ts = self.to_vector_model().generate_transition_system()
         formula = PCTLparser().parse(PCTL_formula)
 
@@ -92,6 +102,9 @@ class Model:
         formula = formula.replace_APs(AP_lables)
 
         ts.save_to_STORM_explicit("explicit_transitions.tra", "explicit_labels.lab", state_labels)
+
+        # TBD
+
         '''
         command = "storm --explicit explicit_transitions.tra explicit_labels.lab --prop \"" + PCTL_formula + "\""
         os.system(command)
@@ -105,7 +118,21 @@ class Model:
 
     # check whether rate are "linear" -> create directly PRISM file
     # otherwise generate TS and use its explicit representation for Storm
-    def PCTL_synthesis(self, PCTL_formula, region):
+    def PCTL_synthesis(self, PCTL_formula: str, region: str):
+        """
+        Parameter synthesis of given PCTL formula in given region.
+
+        First transition system is generated, PRISM file with encoded explicit TS is generated
+        and appropriate PCTL formula issues are resolved (e.g. naming of agents). Finally,
+        Storm model checker is called and results are returned.
+
+        Note: rates of the model could be checked on "linearity", then PRISM file could be maybe computed
+            directly with no need of TS generating.
+
+        :param PCTL_formula: given PCTL formula
+        :param region: string representation of region which will be checked by Storm
+        :return: output of Storm model checker
+        """
         ts = self.to_vector_model().generate_transition_system()
         formula = PCTLparser().parse(PCTL_formula)
 
@@ -113,6 +140,8 @@ class Model:
         formula = formula.replace_complexes(labels)
 
         ts.save_to_prism("prism-parametric.pm", self.bound, self.params, prism_formulas)
+
+        # TBD
 
         # missing region and other stuff
         # storm-pars --prism parametric_die.pm --prop 'P<=0.5 [F s=7&d=1]'
