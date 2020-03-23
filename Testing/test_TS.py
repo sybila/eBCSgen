@@ -27,6 +27,7 @@ class TestTransitionSystem(unittest.TestCase):
         self.s1 = State(np.array((1, 2, 3)))
         self.s2 = State(np.array((1, 2, 4)))
         self.s3 = State(np.array((1, 2, 5)))
+        self.s4 = State(np.array((4, 2, 3)))
 
         self.s1_reordered = State(np.array((3, 1, 2)))
         self.s2_reordered = State(np.array((4, 1, 2)))
@@ -65,6 +66,15 @@ class TestTransitionSystem(unittest.TestCase):
         self.ts_neq_3.states_encoding = {self.s1: 1, self.s2: 2, self.s3: 0}
         self.ts_neq_3.edges = {Edge(1, 2, 0.3), Edge(1, 0, 0.7), Edge(0, 2, 1)}
 
+        # test bigger TS
+
+        ordering = (self.c1, self.c2, self.c3, self.c4)
+
+        self.ts_bigger = TransitionSystem(ordering)
+        self.ts_bigger.states_encoding = {self.s1: 1, self.s2: 2, self.s3: 0, self.s4: 3}
+        self.ts_bigger.edges = {Edge(1, 2, 0.8), Edge(0, 1, 0.5), Edge(1, 0, 0.3),
+                                Edge(3, 1, 0.9), Edge(3, 2, 0.1), Edge(1, 3, 0.2)}
+
     def test_eq(self):
         self.assertEqual(self.ts_eq_1, self.ts_eq_2)
         self.assertEqual(self.ts_eq_1, self.ts_eq_3)
@@ -93,3 +103,8 @@ class TestTransitionSystem(unittest.TestCase):
         edges_sorted = [Edge(1, 2, 0.3), Edge(1, 3, 0.3), Edge(2, 2, 0.3),
                         Edge(4, 0, 0.3), Edge(4, 1, 0.3), Edge(5, 2, 0.3)]
         self.assertEqual(sorted(edges), edges_sorted)
+
+    def test_ts_iterator(self):
+        sorted_and_separated = [[Edge(0, 1, 0.5)], [Edge(1, 0, 0.3), Edge(1, 2, 0.8), Edge(1, 3, 0.2)],
+                                [Edge(3, 1, 0.9), Edge(3, 2, 0.1)]]
+        self.assertEqual(list(iter(self.ts_bigger)), sorted_and_separated)

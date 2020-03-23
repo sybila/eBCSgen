@@ -1,5 +1,6 @@
 import json
 import numpy as np
+from itertools import groupby
 
 from TS.Edge import Edge
 from TS.State import State
@@ -21,6 +22,19 @@ class TransitionSystem:
 
     def __repr__(self):
         return str(self)
+
+    def __iter__(self):
+        """
+        Used to iterate over equivalence classes (given by source) of sorted edges.
+        """
+        self.index = 0
+        edges = sorted(self.edges)
+        self.data = groupby(edges, key=lambda edge: edge.source)
+        return self
+
+    def __next__(self):
+        new = next(self.data)
+        return list(new[-1])
 
     def __eq__(self, other: 'TransitionSystem'):
         """
@@ -96,6 +110,9 @@ class TransitionSystem:
 
         with open(output_file, 'w') as json_file:
             json.dump(data, json_file, indent=4)
+
+    # def iterate_edges(self):
+
 
     # nemozu byt stavy, ktore nemaju odchadzajuce hrany
     def save_to_STORM_explicit(self, output_transitions, output_labels):
@@ -181,13 +198,6 @@ class TransitionSystem:
                         self.decode_state(edge.target).sequence, True) + ";\n"
                     previous = edge
             return body
-
-        #TODO
-        def find_undefined_parameters():
-            unknown = set()
-            for prob in self.edges[2]:
-                print(prob)
-            return unknown
 
         prism_file = open(output_prism, "w+")
         prism_file.write("dtmc\n\n")
