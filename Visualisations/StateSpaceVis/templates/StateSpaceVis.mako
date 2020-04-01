@@ -4,9 +4,10 @@ import json
 import sys
 from numpy import inf
 
-#from routes import url_for
-#prefix = url_for("/")
-#path = os.getcwd()
+# comment for testing
+from routes import url_for
+prefix = url_for("/")
+path = os.getcwd()
 %>
 
 <%
@@ -92,7 +93,7 @@ def write_reaction(edge_id, left_index, right_index, substrates, products, rate)
         edge_id, left_index, right_index, side_to_string(substrates), side_to_string(products), rate)
 
 
-def create_HTML_graph(filename): # just for testing, hda us used
+def create_HTML_graph(filename): # just for testing, hda is used
 def create_HTML_graph():
     output_file = firstpart
 
