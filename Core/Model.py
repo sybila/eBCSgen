@@ -152,6 +152,14 @@ class Model:
         stdout, stderr = out.communicate()
         return stdout
 
+    def save_to_STORM_explicit(self, transitions_file: str, labels_file: str, labels: dict):
+        ts = self.to_vector_model().generate_transition_system()
+        return ts.save_to_STORM_explicit(transitions_file, labels_file, labels)
+
+    def save_to_prism(self, output_file: str, prism_formulas: list):
+        ts = self.to_vector_model().generate_transition_system()
+        return ts.save_to_prism(output_file, self.bound, self.params, prism_formulas)
+
     def create_complex_labels(self, complexes: list, ordering: tuple):
         """
         Creates label for each unique Complex from Formula.
