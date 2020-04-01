@@ -1,64 +1,78 @@
 <%!
 import collections
 import json
-import os
-import glob
-from routes import url_for
+import sys
+from numpy import inf
 
-prefix = url_for("/")
-path = os.getcwd()
+#from routes import url_for
+#prefix = url_for("/")
+#path = os.getcwd()
 %>
 
 <%
-def values_to_int(my_dict):
+def to_counter(state, ordering):
     """
-    Transforms dict values from string to int.
+    Transforms given state to Counter using given ordering
 
-    :param my_dict: given dictionary
-    :return: new dictionary
+    :param state: str representation of state
+    :param ordering: enumeration of agents
+    :return: Counter representing the state
     """
-    for key in my_dict:
-        my_dict[key] = int(my_dict[key])
-    return my_dict
+    state = eval(state)
+    if state[0] == inf:
+        return inf
+    return +collections.Counter({ordering[i]: state[i] for i in range(len(ordering))})
 
 
-def construct_strings(multiset):
+def node_to_string(node):
     """
-    Creates string representation of given Counter
+    Creates string representation of Counter of agents.
 
-    :param multiset: given Counter
-    :return: string representation
+    :param node: given Counter of agents.
+    :return: string representation of Counter
     """
-    lst = list(map(lambda key: str(multiset[key]) + " " + key, multiset.keys()))
-    return " + ".join(lst)
+    if node == inf:
+        return "inf"
+    return "<br>".join([str(int(v)) + " " + str(k) for k, v in node.items()])
 
 
-def create_reaction(substrates, products):
+def side_to_string(side):
     """
-    From given substrates and products dictionaries creates a string representing the reaction
-
-    :param substrates: dict of substrates
-    :param products: dict of products
-    :return: two strings representing substrates and products, respectively
+    Another string representation of Counter, this time used as side in reaction
+    :param side: given Counter
+    :return: string representation of Counter
     """
-    substrates = collections.Counter(values_to_int(substrates))
-    products = collections.Counter(values_to_int(products))
-    left = substrates - products
-    right = products - substrates
-    return construct_strings(left), construct_strings(right)
+    if side == inf:
+        return "inf"
+    return " + ".join([str(int(v)) + " " + str(k) for k, v in side.items()])
 
 
-def write_entity(vertex_id, ID, label):
+def create_sides(lhs, rhs):
+    """
+    From given substrates and products counters creates their mutual differences
+
+    :param lhs: dict of substrates
+    :param rhs: dict of products
+    :return: two counters representing differences
+    """
+    if lhs == inf:
+        return inf, inf
+    if rhs == inf:
+        return collections.Counter(), inf
+    left = lhs - rhs
+    right = rhs - lhs
+    return left, right
+
+
+def write_node(ID, label):
     """
     Creates string representation of a node
 
-    :param vertex_id: ID of given node
-    :param ID: encoding of the node
+    :param ID: ID of given node
     :param label: enumeration of agents
     :return: string representation
     """
-    return "\t{id: " + str(vertex_id) + ", label: '" + str(vertex_id) + \
-           "', title: 'ID " + str(ID) + "', text: '" + str(label) + "'},\n"
+    return "\t{{id: {0}, label: '{0}', title: '{0}', text: '{1}'}},\n".format(ID, label)
 
 
 def write_reaction(edge_id, left_index, right_index, substrates, products, rate):
@@ -73,14 +87,16 @@ def write_reaction(edge_id, left_index, right_index, substrates, products, rate)
     :param rate: rate of the reaction (if any)
     :return: string representation
     """
-    rate = " @ " + rate if rate else ""
-    return "\t{id: " + str(edge_id) + ", from: " + str(left_index) + \
-           ", to: " + str(right_index) + ", arrows:'to', text: '" + \
-           str(substrates) + " => " + str(products) + rate + "'},\n"
+    rate = " @ " + str(rate) if rate else ""
+    return "\t{{id: {}, from: {}, to: {}, arrows: 'to', text: '{} => {}{}'}},\n".format(
+        edge_id, left_index, right_index, side_to_string(substrates), side_to_string(products), rate)
 
 
+def create_HTML_graph(filename): # just for testing, hda us used
 def create_HTML_graph():
     output_file = firstpart
+
+    # data = json.load(filename)
 
     data = ''.join(list(hda.datatype.dataprovider(
       hda, 
@@ -89,26 +105,22 @@ def create_HTML_graph():
       strip_newlines=True )))
     data = json.loads(data)
 
-    IDs = dict()
-    vertex_id = 0
-    for key, value in iter(data['nodes'].items()):
-        vertex_id += 1
-        label = ""
-        for k, v in iter(value.items()):
-            label += v + " " + k + "<br>"
-        output_file += write_entity(vertex_id, key, label)
-        IDs[key] = vertex_id 
+    ordering = data['ordering']
+    nodes = {int(key): to_counter(data['nodes'][key], ordering) for key in data['nodes'].keys()}
+
+    for id, state in nodes.items():
+        output_file += write_node(id, node_to_string(state))
 
     output_file += "\t]);\n\n\t// create an array with edges\n\tvar edges = new vis.DataSet([\n"
 
-    for edge_id, value in iter(data['edges'].items()):
-        substrates, products = create_reaction(data['nodes'][value['from']], 
-                                   data['nodes'][value['to']])
-        output_file += write_reaction(edge_id, IDs[value['from']], IDs[value['to']], 
-                                      substrates, products, value.get('rate', None))
-    initial = IDs[data['initial']]
+    for edge_id, edge in enumerate(data['edges'], 1):
+        substrates, products = create_sides(nodes[edge['s']], nodes[edge['t']])
+        output_file += write_reaction(edge_id, edge['s'], edge['t'],
+                                      substrates, products, edge.get('p', None))
+
+    initial = data['initial']
     output_file += secondpart_1
-    output_file += "    var fromNode = " + str(initial) + ";\n"
+    output_file += "\tvar fromNode = " + str(int(initial) + 1) + ";\n"
     output_file += secondpart_2
     return output_file
 
@@ -353,6 +365,10 @@ secondpart_2 = '''
 </body>
 </html>
 '''
+# for testing
+# filename = open('bigger_pMC.json', "r")
+# graph = create_HTML_graph(filename)
+
 graph = create_HTML_graph()
 %>
 
