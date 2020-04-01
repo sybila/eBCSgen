@@ -170,10 +170,11 @@ class TransitionSystem:
         decoding = self.create_decoding()
 
         prism_file = open(output_file, "w+")
-        prism_file.write("dtmc\n\nmodule TS\n")
+        prism_file.write("dtmc\n")
 
         # declare parameters
         prism_file.write("\n" + "\n".join(["\tconst double {};".format(param) for param in params]) +"\n")
+        prism_file.write("\nmodule TS\n")
 
         # declare state variables
         init = decoding[self.init]
@@ -183,13 +184,16 @@ class TransitionSystem:
 
         # write transitions
         self.change_hell(bound)  # to get rid of inf
+        print(self.states_encoding)
+        print(decoding) # without inf
         transitions = self.edges_to_PRISM(decoding)
+        print("transitions#: " ,transitions) # contains inf
         prism_file.write("\n" + "\n".join(transitions))
 
-        prism_file.write("\nendmodule\n")
-
         # write formulas (maybe its should be part of module!?)
-        prism_file.write("\n" + "\n".join(prism_formulas))
+        if prism_formulas:
+            prism_file.write("\n\t" + "\n".join(prism_formulas) + ";")
+        prism_file.write("\nendmodule\n")
 
         prism_file.close()
 
@@ -205,6 +209,7 @@ class TransitionSystem:
             line = "\t[] " + decoding[source].to_PRISM_string() + " -> " + \
                    " + ".join(list(map(lambda edge: edge.to_PRISM_string(decoding), group))) + ";"
             output.append(line)
+        print("edges to prism: ", output)
         return output
 
 def create_indices(ordering_1: tuple, ordering_2: tuple):
