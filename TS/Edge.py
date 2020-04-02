@@ -41,6 +41,16 @@ class Edge:
                     encoding_new[encoding_old[self.target]],
                     self.probability)
 
+    def add_rate(self, rate):
+        """
+        Adds given rate to self.probability.
+
+        Used when joining two Edges between the same nodes.
+
+        :param rate: given rate expression
+        """
+        self.probability += rate
+
     def normalise(self, factor):
         """
         Normalises rate to probability and converts it to float or string

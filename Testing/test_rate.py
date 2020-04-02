@@ -4,7 +4,7 @@ import sympy
 
 from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
-from Core.Rate import Rate
+import Core.Rate
 from Core.Structure import StructureAgent
 from Parsing.ParseBCSL import Parser
 from TS.State import State
@@ -39,11 +39,11 @@ class TestRate(unittest.TestCase):
         self.parser = Parser("rate")
         rate_expr = "3*[K()::cyt]/2*v_1"
 
-        self.rate_1 = Rate(self.parser.parse(rate_expr).data)
+        self.rate_1 = Core.Rate.Rate(self.parser.parse(rate_expr).data)
 
         rate_expr = "3*[K(T{i}).X()::cyt] + [K()::cyt]"
 
-        self.rate_2 = Rate(self.parser.parse(rate_expr).data)
+        self.rate_2 = Core.Rate.Rate(self.parser.parse(rate_expr).data)
 
         # states
 

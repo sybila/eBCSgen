@@ -111,11 +111,11 @@ class TestModel(unittest.TestCase):
         rate_2 = Rate(self.rate_parser.parse(rate_expr).data)
         rate_2.vectorize(ordering, {"k1": 0.05})
 
-        init = State(np.array([2.0, 1.0, 0.0]))
+        init = State(np.array([2, 1, 0]))
 
-        vector_reactions = {VectorReaction(State(np.array([0.0, 0.0, 0.0])), State(np.array([0.0, 1.0, 0.0])), rate_1),
-                            VectorReaction(State(np.array([1.0, 0.0, 0.0])), State(np.array([0.0, 0.0, 0.0])), rate_2),
-                            VectorReaction(State(np.array([0.0, 0.0, 1.0])), State(np.array([1.0, 0.0, 0.0])), None)}
+        vector_reactions = {VectorReaction(State(np.array([0, 0, 0])), State(np.array([0, 1, 0])), rate_1),
+                            VectorReaction(State(np.array([1, 0, 0])), State(np.array([0, 0, 0])), rate_2),
+                            VectorReaction(State(np.array([0, 0, 1])), State(np.array([1, 0, 0])), None)}
 
         self.vm_1 = VectorModel(vector_reactions, init, ordering, None)
 
@@ -207,6 +207,8 @@ class TestModel(unittest.TestCase):
 
     def test_to_vector_model(self):
         model = self.model_parser.parse(self.model_str_1).data
+        # print(model.to_vector_model())
+        # print(self.vm_1)
         self.assertTrue(model.to_vector_model() == self.vm_1)
 
     def test_parser_errors(self):

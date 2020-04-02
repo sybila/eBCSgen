@@ -1,4 +1,4 @@
-from Core.Rate import tree_to_string
+import Core.Rate
 from lark import Transformer, Tree
 
 
@@ -11,7 +11,7 @@ class Formula:
         self.data = data
 
     def __str__(self):
-        return "".join(tree_to_string(self.data))
+        return "".join(Core.Rate.tree_to_string(self.data))
 
     def get_complexes(self) -> list:
         """

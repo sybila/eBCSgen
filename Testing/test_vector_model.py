@@ -146,14 +146,14 @@ class TestVectorModel(unittest.TestCase):
                               Edge(states[4], states[4], 1),
                               Edge(states[5], states[6], omega / gob), Edge(states[5], states[7], beta / gob),
                               Edge(states[5], states[8], gamma / gob),
-                              Edge(states[6], states[4], omega / goab), Edge(states[6], states[4], alpha / goab),
+                              Edge(states[6], states[4], oa / goab),
                               Edge(states[6], states[9], gamma / goab), Edge(states[6], states[10], beta / goab),
                               Edge(states[7], states[10], omega / omega),
                               Edge(states[8], states[9], gamma / gamma),
-                              Edge(states[9], states[4], omega / oa), Edge(states[9], states[4], alpha / oa),
+                              Edge(states[9], states[4], 1),
                               Edge(states[10], states[4], omega / oa), Edge(states[10], states[11], alpha / oa),
                               Edge(states[11], states[12], omega / omega),
-                              Edge(states[12], states[4], omega / oa), Edge(states[12], states[4], alpha / oa)
+                              Edge(states[12], states[4], 1)
                               }
 
         self.test_ts.encode(states[0])

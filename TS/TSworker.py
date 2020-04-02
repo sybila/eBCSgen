@@ -26,7 +26,7 @@ class TSworker(threading.Thread):
             try:
                 state = self.ts.unprocessed.pop()
                 self.ts.processed.add(state)
-                edges = set()
+                unique_states = dict()
 
                 # special "hell" state
                 if state.is_inf:
@@ -37,7 +37,15 @@ class TSworker(threading.Thread):
                         if new_state and rate:
                             if new_state not in self.ts.processed:
                                 self.ts.unprocessed.add(new_state)
-                            edges.add(Edge(state, new_state, rate))
+
+                            # multiple arrows between two states are not allowed
+                            if new_state in unique_states:
+                                unique_states[new_state].add_rate(rate)
+                            else:
+                                edge = Edge(state, new_state, rate)
+                                unique_states[new_state] = edge
+
+                    edges = set(unique_states.values())
 
                     # normalise
                     factor = sum(list(map(lambda edge: edge.probability, edges)))
