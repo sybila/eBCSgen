@@ -167,7 +167,6 @@ class TransitionSystem:
         :param params: set of present parameters
         :param prism_formulas: definition of abstract Complexes
         """
-        decoding = self.create_decoding()
 
         prism_file = open(output_file, "w+")
         prism_file.write("dtmc\n")
@@ -176,6 +175,10 @@ class TransitionSystem:
         prism_file.write("\n" + "\n".join(["\tconst double {};".format(param) for param in params]) +"\n")
         prism_file.write("\nmodule TS\n")
 
+        # to get rid of inf
+        self.change_hell(bound)
+        decoding = self.create_decoding()
+
         # declare state variables
         init = decoding[self.init]
         vars = ["\tVAR_{} : [0..{}] init {}; // {}".format(i, bound+1, init.sequence[i], self.ordering[i])
@@ -183,11 +186,7 @@ class TransitionSystem:
         prism_file.write("\n" + "\n".join(vars) + "\n")
 
         # write transitions
-        self.change_hell(bound)  # to get rid of inf
-        print(self.states_encoding)
-        print(decoding) # without inf
         transitions = self.edges_to_PRISM(decoding)
-        print("transitions#: " ,transitions) # contains inf
         prism_file.write("\n" + "\n".join(transitions))
 
         # write formulas (maybe its should be part of module!?)
@@ -209,7 +208,6 @@ class TransitionSystem:
             line = "\t[] " + decoding[source].to_PRISM_string() + " -> " + \
                    " + ".join(list(map(lambda edge: edge.to_PRISM_string(decoding), group))) + ";"
             output.append(line)
-        print("edges to prism: ", output)
         return output
 
 def create_indices(ordering_1: tuple, ordering_2: tuple):
