@@ -66,7 +66,8 @@ def write_node(ID, label):
     :param label: enumeration of agents
     :return: string representation
     """
-    return "\t{{id: {0}, label: '{0}', title: '{0}', text: '{1}'}},\n".format(ID, label)
+    node_class = "hell" if label == "inf" else 'ok'
+    return "\t{{id: {0}, label: '{0}', class: '{2}', title: '{0}', text: '{1}'}},\n".format(ID, label, node_class)
 
 
 def write_reaction(edge_id, left_index, right_index, substrates, products, rate):
@@ -122,9 +123,10 @@ firstpart = \
 
     <style type="text/css">
         #mynetwork {
-            width: 100%;
+            width: 94%;
             height: 100%;
-            border: 1px solid lightgray;
+            border: 1px solid #000;
+            float: left;
         }
         #rectangle {
             text-align: center;
@@ -134,7 +136,7 @@ firstpart = \
             position:absolute;
             top:1px;
             left:1px;
-            width: 100%;
+            width: 94%;
             height: 93%;
             background-color:rgba(200,200,200,0.8);
             -webkit-transition: all 0.5s ease;
@@ -204,14 +206,114 @@ firstpart = \
         }
         body {
             height: 90%;
-            border:1px solid #000;
+        }
+
+         /* The switch - the box around the slider */
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 60px;
+          height: 34px;
+        }
+
+        /* Hide default HTML checkbox */
+        .switch input {
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+
+        /* The slider */
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: #ccc;
+          -webkit-transition: .4s;
+          transition: .4s;
+        }
+
+        .slider:before {
+          position: absolute;
+          content: "";
+          height: 26px;
+          width: 26px;
+          left: 4px;
+          bottom: 4px;
+          background-color: white;
+          -webkit-transition: .4s;
+          transition: .4s;
+        }
+
+        input:checked + .slider {
+          background-color: #2196F3;
+        }
+
+        input:focus + .slider {
+          box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked + .slider:before {
+          -webkit-transform: translateX(26px);
+          -ms-transform: translateX(26px);
+          transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+          border-radius: 34px;
+        }
+
+        .slider.round:before {
+          border-radius: 50%;
+        }
+
+        aside {
+            float: right;
+            width: 5%;
         }
     </style>
 </head>
 <body>
 
 <div id="mynetwork"></div>
-<div id="rectangle"style="width:100%;border:1px solid #000;"> </div>
+
+<aside>
+    <table>
+        <tr>
+            <label>border</label>
+        </tr>
+        <tr>
+            <label class="switch">
+              <input type="checkbox" id='border'>
+              <span class="slider round"></span>
+            </label>
+        </tr>
+        <tr>
+            <label>loops</label>
+        </tr>
+        <tr>
+            <label class="switch">
+              <input type="checkbox" id="loops">
+              <span class="slider round"></span>
+            </label>
+        </tr>
+        <tr>
+            <label>hell</label>
+        </tr>
+        <tr>
+            <label class="switch">
+              <input type="checkbox" id="hell">
+              <span class="slider round"></span>
+            </label>
+        </tr>
+    </table>
+</aside>
+
+<div id="rectangle"style="width:94%;border:1px solid #000;"> </div>
 <div id="loadingBar">
         <div class="outerBorder">
             <div id="text">0%</div>
@@ -232,10 +334,7 @@ secondpart_1 = '''
 
     // create a network
     var container = document.getElementById('mynetwork');
-    var data = {
-        nodes: nodes,
-        edges: edges
-    };
+
     var options = {
         layout: {improvedLayout: true},
         physics: {
@@ -278,6 +377,37 @@ secondpart_1 = '''
         multiselect: true
         }
     };
+
+    // data filters
+    hell_filter = document.getElementById('hell')
+
+    let nodeClass = ''
+    const nodesFilter = (node) => {
+        switch(nodeClass) {
+            case('hell'):
+                return (node.class === 'ok') || (node.class === 'border')
+            default:
+                return true
+        }
+    }
+
+    const nodesView = new vis.DataView(nodes, { filter: nodesFilter })
+    // const edgesView = new vis.DataView(edges, { filter: edgesFilter })
+
+    hell_filter.addEventListener('change', (e) => {
+        if (hell_filter.checked){
+            nodeClass = 'hell'
+        } else {
+            nodeClass = 'ok'
+        }
+        nodesView.refresh()
+    })
+
+    data = {
+            nodes: nodesView,
+            edges: edges
+        };
+
     var network = new vis.Network(container, data, options);
     var stabil = true;
 '''
