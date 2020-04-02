@@ -1,5 +1,6 @@
 import collections
 import itertools
+from copy import copy
 
 from Core import Rate
 from Core.Complex import Complex
@@ -70,7 +71,7 @@ class Rule:
         :return: created Reaction
         """
         lhs, rhs = self.create_complexes()
-        return Reaction(lhs, rhs, self.rate)
+        return Reaction(lhs, rhs, copy(self.rate))
 
     def create_reactions(self, atomic_signature: dict, structure_signature: dict) -> set:
         """

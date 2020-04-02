@@ -63,6 +63,7 @@ class Model:
         unique_complexes = set()
         for rule in self.rules:
             reactions |= rule.create_reactions(self.atomic_signature, self.structure_signature)
+
         for reaction in reactions:
             unique_complexes |= set(reaction.lhs.to_counter()) | set(reaction.rhs.to_counter())
         unique_complexes |= set(self.init)
@@ -133,13 +134,14 @@ class Model:
         :param region: string representation of region which will be checked by Storm
         :return: output of Storm model checker
         """
-        ts = self.to_vector_model().generate_transition_system()
+        vm = self.to_vector_model()
+        ts = vm.generate_transition_system()
         formula = PCTLparser().parse(PCTL_formula)
 
         labels, prism_formulas = self.create_complex_labels(formula.get_complexes(), ts.ordering)
         formula = formula.replace_complexes(labels)
 
-        ts.save_to_prism("prism-parametric.pm", self.bound, self.params, prism_formulas)
+        ts.save_to_prism("prism-parametric.pm", vm.bound, self.params, prism_formulas)
 
         # TBD
 

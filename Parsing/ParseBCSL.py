@@ -80,7 +80,7 @@ GRAMMAR = r"""
     complex: sequence DOUBLE_COLON compartment
 
     !rate : fun "/" fun | fun
-    !fun: const | param | rate_agent | fun "+" fun | fun "*" fun | fun POW const | "(" fun ")"
+    !fun: const | param | rate_agent | fun "+" fun | fun "-" fun | fun "*" fun | fun POW const | "(" fun ")"
 
     !rate_agent: "[" rate_complex "]"
 
