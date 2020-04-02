@@ -40,7 +40,7 @@ class Side:
         :param ordering: sequence of complex agents
         :return: State representing vector
         """
-        vector = np.zeros(len(ordering))
+        vector = np.zeros(len(ordering), dtype=int)
         multiset = self.to_counter()
         for agent in list(multiset):
             vector[ordering.index(agent)] = multiset[agent]
