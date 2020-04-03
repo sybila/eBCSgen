@@ -58,7 +58,7 @@ def create_sides(lhs, rhs):
     return left, right
 
 
-def write_node(ID, label):
+def write_node(ID, label, node_class):
     """
     Creates string representation of a node
 
@@ -66,8 +66,10 @@ def write_node(ID, label):
     :param label: enumeration of agents
     :return: string representation
     """
-    node_class = "hell" if label == "inf" else 'ok'
-    return "\t{{id: {0}, label: '{0}', class: '{2}', title: '{0}', text: '{1}'}},\n".format(ID, label, node_class)
+    if label == "inf":
+        node_class = "hell"
+    return "\t\t{{id: {0}, label: '{0}', class: '{2}', shape: 'ellipse', title: '{0}', text: '{1}'}},\n".format(
+        ID, label, node_class)
 
 
 def write_reaction(edge_id, left_index, right_index, substrates, products, rate):
@@ -83,7 +85,7 @@ def write_reaction(edge_id, left_index, right_index, substrates, products, rate)
     :return: string representation
     """
     rate = " @ " + str(rate) if rate else ""
-    return "\t{{id: {}, from: {}, to: {}, arrows: 'to', text: '{} => {}{}'}},\n".format(
+    return "\t\t{{id: {}, from: {}, to: {}, arrows: 'to', text: '{} => {}{}'}},\n".format(
         edge_id, left_index, right_index, side_to_string(substrates), side_to_string(products), rate)
 
 
@@ -95,15 +97,23 @@ def create_HTML_graph(data):
     ordering = data['ordering']
     nodes = {int(key): to_counter(data['nodes'][key], ordering) for key in data['nodes'].keys()}
 
+    border_nodes = set()
+
+    edges = []
+    for edge_id, edge in enumerate(data['edges'], 1):
+        substrates, products = create_sides(nodes[edge['s']], nodes[edge['t']])
+        edges.append((edge_id, edge['s'], edge['t'], substrates, products, edge.get('p', None)))
+        if products == inf and substrates != inf:
+            border_nodes.add(edge['s'])
+
     for id, state in nodes.items():
-        output_file += write_node(id, node_to_string(state))
+        node_class = "border" if id in border_nodes else "default"
+        output_file += write_node(id, node_to_string(state), node_class)
 
     output_file += "\t]);\n\n\t// create an array with edges\n\tvar edges = new vis.DataSet([\n"
 
-    for edge_id, edge in enumerate(data['edges'], 1):
-        substrates, products = create_sides(nodes[edge['s']], nodes[edge['t']])
-        output_file += write_reaction(edge_id, edge['s'], edge['t'],
-                                      substrates, products, edge.get('p', None))
+    for edge in edges:
+        output_file += write_reaction(*edge)
 
     initial = data['initial']
     output_file += secondpart_1
@@ -288,7 +298,7 @@ firstpart = \
         </tr>
         <tr>
             <label class="switch">
-              <input type="checkbox" id='border'>
+              <input type="checkbox" name="check" id='border_nodes'>
               <span class="slider round"></span>
             </label>
         </tr>
@@ -297,7 +307,7 @@ firstpart = \
         </tr>
         <tr>
             <label class="switch">
-              <input type="checkbox" id="loops">
+              <input type="checkbox" name="check" id="loop_edges">
               <span class="slider round"></span>
             </label>
         </tr>
@@ -306,7 +316,7 @@ firstpart = \
         </tr>
         <tr>
             <label class="switch">
-              <input type="checkbox" id="hell">
+              <input type="checkbox" name="check" id="hell_node">
               <span class="slider round"></span>
             </label>
         </tr>
@@ -326,7 +336,7 @@ firstpart = \
 <script type="text/javascript">
 setTimeout(function () {
     // create an array with nodes
-        var nodes = new vis.DataSet([
+    var nodes = new vis.DataSet([
 '''
 
 secondpart_1 = '''
@@ -379,29 +389,30 @@ secondpart_1 = '''
     };
 
     // data filters
-    hell_filter = document.getElementById('hell')
+    hell_filter = document.getElementById('hell_node')
+    loops_filter = document.getElementById('loop_edges')
+    border_filter = document.getElementById('border_nodes')
 
-    let nodeClass = ''
+    let noHell = false
     const nodesFilter = (node) => {
-        switch(nodeClass) {
-            case('hell'):
-                return (node.class === 'ok') || (node.class === 'border')
-            default:
-                return true
+        if (noHell) {
+            return (node.class != 'hell')
+        } else {
+            return true
         }
     }
 
-    const nodesView = new vis.DataView(nodes, { filter: nodesFilter })
-    // const edgesView = new vis.DataView(edges, { filter: edgesFilter })
+    var nodesView = new vis.DataView(nodes, { filter: nodesFilter })
 
+    // remove hell
     hell_filter.addEventListener('change', (e) => {
         if (hell_filter.checked){
-            nodeClass = 'hell'
+            noHell = true
         } else {
-            nodeClass = 'ok'
+            noHell = false
         }
         nodesView.refresh()
-    })
+    });
 
     data = {
             nodes: nodesView,
@@ -409,6 +420,44 @@ secondpart_1 = '''
         };
 
     var network = new vis.Network(container, data, options);
+
+    [border_filter, loops_filter].forEach(function (arrayItem) {
+        // change border states and remove self-loops
+        arrayItem.addEventListener('change', (e) => {
+            var border_nodes = nodesView.get({filter: function (item){
+                    return (item.class == 'border')
+                }})
+
+            var no_self_loops = edges.get({filter: function (item){
+                    return (item.from != item.to)
+                }})
+
+            if (border_filter.checked){
+                for (index = 0; index < border_nodes.length; index++) {
+                    border_nodes[index].shape = "box"
+                }
+            } else {
+                for (index = 0; index < border_nodes.length; index++) {
+                    border_nodes[index].shape = "ellipse"
+               }
+            }
+
+            if (loops_filter.checked){
+                use_edges = no_self_loops
+            } else {
+                use_edges = edges
+            }
+
+            nodes.update(border_nodes)
+                nodesView = new vis.DataView(nodes, { filter: nodesFilter })
+                data = {
+                    nodes: nodesView,
+                    edges: use_edges
+                };
+                network.setData(data)
+        });
+    })
+
     var stabil = true;
 '''
 
