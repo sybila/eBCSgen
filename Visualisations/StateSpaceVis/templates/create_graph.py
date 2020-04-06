@@ -285,6 +285,18 @@ firstpart = \
             float: right;
             width: 5%;
         }
+
+        table {
+          border-collapse: collapse;
+        }
+
+        td.switch_td {
+          padding-bottom: 6px;
+        }
+
+        .switch_button {
+          border-bottom: 2px solid black;
+        }
     </style>
 </head>
 <body>
@@ -293,33 +305,47 @@ firstpart = \
 
 <aside>
     <table>
+      <tbody>
         <tr>
-            <label>border</label>
+          <td>
+            <img src="border.png" alt="border states" style="display: block; width: 60px;">
+          </td>
         </tr>
-        <tr>
+        <tr class="switch_button">
+          <td class="switch_td">
             <label class="switch">
               <input type="checkbox" name="check" id='border_nodes'>
               <span class="slider round"></span>
             </label>
+          </td>
         </tr>
         <tr>
-            <label>loops</label>
+          <td>
+            <img src="loop.png" alt="self-loop" style="display: block; width: 60px;">
+          </td>
         </tr>
-        <tr>
+        <tr class="switch_button">
+          <td class="switch_td">
             <label class="switch">
               <input type="checkbox" name="check" id="loop_edges">
               <span class="slider round"></span>
             </label>
+          </td>
         </tr>
         <tr>
-            <label>hell</label>
+          <td>
+            <img src="fire.png" alt="hell state" style="display: block; width: 60px;">
+          </td>
         </tr>
         <tr>
+          <td class="switch_td">
             <label class="switch">
               <input type="checkbox" name="check" id="hell_node">
               <span class="slider round"></span>
             </label>
+          </td>
         </tr>
+      </tbody>
     </table>
 </aside>
 
