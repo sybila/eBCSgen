@@ -94,32 +94,30 @@ class Model:
         :param PCTL_formula: given PCTL formula
         :return: output of Storm model checker
         """
-        ts = self.to_vector_model().generate_transition_system()
+
+        vm = self.to_vector_model()
+        self.bound = vm.bound
+        ts = vm.generate_transition_system()
         formula = PCTLparser().parse(PCTL_formula)
+        if not formula.success:
+            return formula.data
 
         # generate labels and give them to save_storm
         APs = formula.get_APs()
         state_labels, AP_lables = self.create_AP_labels(APs, ts)
         formula = formula.replace_APs(AP_lables)
-
         ts.save_to_STORM_explicit("explicit_transitions.tra", "explicit_labels.lab", state_labels)
 
-        # TBD
-
-        '''
-        command = "storm --explicit explicit_transitions.tra explicit_labels.lab --prop \"" + PCTL_formula + "\""
-        os.system(command)
-        '''
-
         out = subprocess.Popen(
-            ['storm', '--explicit', 'explicit_transitions.tra', 'explicit_labels.lab', '--prop', formula.data],
+            ['storm', '--explicit', 'explicit_transitions.tra', 'explicit_labels.lab', '--prop', str(formula)],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         stdout, stderr = out.communicate()
         return stdout
 
+
     # check whether rate are "linear" -> create directly PRISM file
     # otherwise generate TS and use its explicit representation for Storm
-    def PCTL_synthesis(self, PCTL_formula: str, region: str):
+    def PCTL_synthesis(self, PCTL_formula: str):
         """
         Parameter synthesis of given PCTL formula in given region.
 
@@ -135,8 +133,11 @@ class Model:
         :return: output of Storm model checker
         """
         vm = self.to_vector_model()
+        self.bound = vm.bound
         ts = vm.generate_transition_system()
         formula = PCTLparser().parse(PCTL_formula)
+        if not formula.success:
+            return formula.data
 
         labels, prism_formulas = self.create_complex_labels(formula.get_complexes(), ts.ordering)
         formula = formula.replace_complexes(labels)
@@ -149,7 +150,7 @@ class Model:
         # storm-pars --prism parametric_die.pm --prop 'P<=0.5 [F s=7&d=1]'
         #            --region "0<=p<=1,0<=q<=0.5,0.1<=r<=0.3" --refine 0.01 10 --printfullresult
         out = subprocess.Popen(
-            ['storm', '--prism', 'prism-parametric.pm', '--prop', formula.data],
+            ['storm-pars', '--prism', 'prism-parametric.pm', '--prop', str(formula.data)],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         stdout, stderr = out.communicate()
         return stdout
@@ -201,6 +202,7 @@ class Model:
             AP_lables[ap] = "property_" + str(len(AP_lables))
 
         state_labels = dict()
+        ts.change_hell(self.bound)
         for state in ts.states_encoding.keys():
             for ap in APs:
                 if state.check_AP(ap, ts.ordering):

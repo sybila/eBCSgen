@@ -155,7 +155,8 @@ class TransitionSystem:
         unique_labels = list(map(str, set.union(*labels.values())))
         label_file.write("#DECLARATION\n" + " ".join(unique_labels) + "\n#END\n")
 
-        label_file.write("\n".join(list(map(lambda state: str(state) + " " + " ".join(list(map(str, labels[state]))), labels))))
+        label_file.write(
+            "\n".join(list(map(lambda state: str(state) + " " + " ".join(list(map(str, labels[state]))), labels))))
         label_file.close()
 
     def save_to_prism(self, output_file: str, bound: int, params: set, prism_formulas: list):
@@ -172,16 +173,15 @@ class TransitionSystem:
         prism_file.write("dtmc\n")
 
         # declare parameters
-        prism_file.write("\n" + "\n".join(["\tconst double {};".format(param) for param in params]) +"\n")
+        prism_file.write("\n" + "\n".join(["\tconst double {};".format(param) for param in params]) + "\n")
         prism_file.write("\nmodule TS\n")
 
         # to get rid of inf
-        self.change_hell(bound)
         decoding = self.create_decoding()
 
         # declare state variables
         init = decoding[self.init]
-        vars = ["\tVAR_{} : [0..{}] init {}; // {}".format(i, bound+1, init.sequence[i], self.ordering[i])
+        vars = ["\tVAR_{} : [0..{}] init {}; // {}".format(i, bound + 1, init.sequence[i], self.ordering[i])
                 for i in range(len(self.ordering))]
         prism_file.write("\n" + "\n".join(vars) + "\n")
 
@@ -209,6 +209,7 @@ class TransitionSystem:
                    " + ".join(list(map(lambda edge: edge.to_PRISM_string(decoding), group))) + ";"
             output.append(line)
         return output
+
 
 def create_indices(ordering_1: tuple, ordering_2: tuple):
     """
