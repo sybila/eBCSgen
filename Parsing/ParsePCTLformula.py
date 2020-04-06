@@ -8,29 +8,37 @@ import Parsing.ParseBCSL
 
 GRAMMAR = """
     start: state_formula
-    !state_formula: TRUE | ap | state_formula AND state_formula | NOT state_formula | prob "(" path_formula ")"
-    !path_formula: NEXT state_formula | state_formula UNTIL state_formula | FUTURE state_formula
+    !state_formula: TRUE | ap | state_formula (AND|OR) state_formula | NOT state_formula | prob | brackets
+    !path_formula: NEXT state_formula | state_formula UNTIL state_formula | FUTURE state_formula | GLOBAL state_formula
 
+    !brackets: "(" state_formula ")"
     TRUE: "True"
     NOT: "!"
     AND: "&"
     OR: "|"
-    !prob: "P" sign number | "P=?"
+    !prob: ( pq | pneq ) LB path_formula RB
     NEXT: "X"
     UNTIL: "U"
     FUTURE: "F"
+    GLOBAL: "G"
 
-    ap: "[" rate_complex sign_ap number "]"
+    ap: rate_complex sign_ap number
     sign: e_sign | ne_sign
     e_sign.1: GE | LE
     ne_sign.0: L | G
     sign_ap: EQ | sign
+
+    !pq.1: "P" "=" "?"
+    !pneq.0: "P" sign number
 
     EQ: "="
     GE: ">="
     G: ">"
     LE: "<="
     L: "<"
+
+    LB: "["
+    RB: "]"
 
     number: NUMBER
 
@@ -42,6 +50,9 @@ GRAMMAR = """
 class TreeToStrings(Transformer):
     def _extend_ws(self, matches):
         return " " + str(matches) + " "
+
+    def LB(self, matches):
+        return " " + str(matches)
 
     def sign_ap(self, matches):
         if type(matches[0]) == str:

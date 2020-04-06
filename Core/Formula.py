@@ -64,7 +64,7 @@ class AtomicProposition:
         return str(self)
 
     def __str__(self):
-        return "[" + str(self.complex) + self.sign + str(self.number) + "]"
+        return str(self.complex) + self.sign + str(self.number)
 
     def __hash__(self):
         return hash(str(self))
