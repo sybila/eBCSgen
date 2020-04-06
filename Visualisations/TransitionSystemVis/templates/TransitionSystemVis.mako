@@ -1,9 +1,16 @@
+<%!
 import collections
 import json
 import sys
 from numpy import inf
 
+# comment for testing
+from routes import url_for
+prefix = url_for("/")
+path = os.getcwd()
+%>
 
+<%
 def to_counter(state, ordering):
     """
     Transforms given state to Counter using given ordering
@@ -123,7 +130,7 @@ def create_HTML_graph(data):
 
 
 firstpart = \
-    '''<!doctype html>
+'''<!doctype html>
 <html>
 <head>
     <title>Network | Interaction events</title>
@@ -308,7 +315,7 @@ firstpart = \
       <tbody>
         <tr>
           <td>
-            <img src="border.png" alt="border states" style="display: block; width: 60px;">
+            <img src="../static/icons/border.png" alt="border states" style="display: block; width: 60px;">
           </td>
         </tr>
         <tr class="switch_button">
@@ -321,7 +328,7 @@ firstpart = \
         </tr>
         <tr>
           <td>
-            <img src="loop.png" alt="self-loop" style="display: block; width: 60px;">
+            <img src="../static/icons/loop.png" alt="self-loop" style="display: block; width: 60px;">
           </td>
         </tr>
         <tr class="switch_button">
@@ -334,7 +341,7 @@ firstpart = \
         </tr>
         <tr>
           <td>
-            <img src="fire.png" alt="hell state" style="display: block; width: 60px;">
+            <img src="../static/icons/fire.png" alt="hell state" style="display: block; width: 60px;">
           </td>
         </tr>
         <tr>
@@ -556,8 +563,11 @@ secondpart_2 = '''
 </body>
 </html>
 '''
+# for testing
+# filename = open('bigger_pMC.json', "r")
+# graph = create_HTML_graph(filename)
 
-filename = open(sys.argv[-1], "r")
+graph = create_HTML_graph()
+%>
 
-graph = create_HTML_graph(filename)
-print(graph)
+${graph}

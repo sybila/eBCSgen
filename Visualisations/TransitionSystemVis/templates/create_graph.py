@@ -1,16 +1,9 @@
-<%!
 import collections
 import json
 import sys
 from numpy import inf
 
-# comment for testing
-from routes import url_for
-prefix = url_for("/")
-path = os.getcwd()
-%>
 
-<%
 def to_counter(state, ordering):
     """
     Transforms given state to Counter using given ordering
@@ -65,7 +58,7 @@ def create_sides(lhs, rhs):
     return left, right
 
 
-def write_node(ID, label):
+def write_node(ID, label, node_class):
     """
     Creates string representation of a node
 
@@ -73,7 +66,10 @@ def write_node(ID, label):
     :param label: enumeration of agents
     :return: string representation
     """
-    return "\t{{id: {0}, label: '{0}', title: '{0}', text: '{1}'}},\n".format(ID, label)
+    if label == "inf":
+        node_class = "hell"
+    return "\t\t{{id: {0}, label: '{0}', class: '{2}', shape: 'ellipse', title: '{0}', text: '{1}'}},\n".format(
+        ID, label, node_class)
 
 
 def write_reaction(edge_id, left_index, right_index, substrates, products, rate):
@@ -89,35 +85,35 @@ def write_reaction(edge_id, left_index, right_index, substrates, products, rate)
     :return: string representation
     """
     rate = " @ " + str(rate) if rate else ""
-    return "\t{{id: {}, from: {}, to: {}, arrows: 'to', text: '{} => {}{}'}},\n".format(
+    return "\t\t{{id: {}, from: {}, to: {}, arrows: 'to', text: '{} => {}{}'}},\n".format(
         edge_id, left_index, right_index, side_to_string(substrates), side_to_string(products), rate)
 
 
-def create_HTML_graph(filename): # just for testing, hda is used
-def create_HTML_graph():
+def create_HTML_graph(data):
     output_file = firstpart
 
-    # data = json.load(filename)
-
-    data = ''.join(list(hda.datatype.dataprovider(
-      hda, 
-      'line', 
-      strip_lines=True, 
-      strip_newlines=True )))
-    data = json.loads(data)
+    data = json.load(data)  # loads !!
 
     ordering = data['ordering']
     nodes = {int(key): to_counter(data['nodes'][key], ordering) for key in data['nodes'].keys()}
 
+    border_nodes = set()
+
+    edges = []
+    for edge_id, edge in enumerate(data['edges'], 1):
+        substrates, products = create_sides(nodes[edge['s']], nodes[edge['t']])
+        edges.append((edge_id, edge['s'], edge['t'], substrates, products, edge.get('p', None)))
+        if products == inf and substrates != inf:
+            border_nodes.add(edge['s'])
+
     for id, state in nodes.items():
-        output_file += write_node(id, node_to_string(state))
+        node_class = "border" if id in border_nodes else "default"
+        output_file += write_node(id, node_to_string(state), node_class)
 
     output_file += "\t]);\n\n\t// create an array with edges\n\tvar edges = new vis.DataSet([\n"
 
-    for edge_id, edge in enumerate(data['edges'], 1):
-        substrates, products = create_sides(nodes[edge['s']], nodes[edge['t']])
-        output_file += write_reaction(edge_id, edge['s'], edge['t'],
-                                      substrates, products, edge.get('p', None))
+    for edge in edges:
+        output_file += write_reaction(*edge)
 
     initial = data['initial']
     output_file += secondpart_1
@@ -127,7 +123,7 @@ def create_HTML_graph():
 
 
 firstpart = \
-'''<!doctype html>
+    '''<!doctype html>
 <html>
 <head>
     <title>Network | Interaction events</title>
@@ -137,9 +133,10 @@ firstpart = \
 
     <style type="text/css">
         #mynetwork {
-            width: 100%;
+            width: 94%;
             height: 100%;
-            border: 1px solid lightgray;
+            border: 1px solid #000;
+            float: left;
         }
         #rectangle {
             text-align: center;
@@ -149,7 +146,7 @@ firstpart = \
             position:absolute;
             top:1px;
             left:1px;
-            width: 100%;
+            width: 94%;
             height: 93%;
             background-color:rgba(200,200,200,0.8);
             -webkit-transition: all 0.5s ease;
@@ -214,19 +211,145 @@ firstpart = \
             background: rgb(0, 173, 246); /* Old browsers */
             box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
         }
-        html { 
+        html {
             height: 100%;
         }
-        body { 
+        body {
             height: 90%;
-            border:1px solid #000;
+        }
+
+         /* The switch - the box around the slider */
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 60px;
+          height: 34px;
+        }
+
+        /* Hide default HTML checkbox */
+        .switch input {
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+
+        /* The slider */
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: #ccc;
+          -webkit-transition: .4s;
+          transition: .4s;
+        }
+
+        .slider:before {
+          position: absolute;
+          content: "";
+          height: 26px;
+          width: 26px;
+          left: 4px;
+          bottom: 4px;
+          background-color: white;
+          -webkit-transition: .4s;
+          transition: .4s;
+        }
+
+        input:checked + .slider {
+          background-color: #2196F3;
+        }
+
+        input:focus + .slider {
+          box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked + .slider:before {
+          -webkit-transform: translateX(26px);
+          -ms-transform: translateX(26px);
+          transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+          border-radius: 34px;
+        }
+
+        .slider.round:before {
+          border-radius: 50%;
+        }
+
+        aside {
+            float: right;
+            width: 5%;
+        }
+
+        table {
+          border-collapse: collapse;
+        }
+
+        td.switch_td {
+          padding-bottom: 6px;
+        }
+
+        .switch_button {
+          border-bottom: 2px solid black;
         }
     </style>
 </head>
 <body>
 
 <div id="mynetwork"></div>
-<div id="rectangle"style="width:100%;border:1px solid #000;"> </div>
+
+<aside>
+    <table>
+      <tbody>
+        <tr>
+          <td>
+            <img src="../static/icons/border.png" alt="border states" style="display: block; width: 60px;">
+          </td>
+        </tr>
+        <tr class="switch_button">
+          <td class="switch_td">
+            <label class="switch">
+              <input type="checkbox" name="check" id='border_nodes'>
+              <span class="slider round"></span>
+            </label>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <img src="../static/icons/loop.png" alt="self-loop" style="display: block; width: 60px;">
+          </td>
+        </tr>
+        <tr class="switch_button">
+          <td class="switch_td">
+            <label class="switch">
+              <input type="checkbox" name="check" id="loop_edges">
+              <span class="slider round"></span>
+            </label>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <img src="../static/icons/fire.png" alt="hell state" style="display: block; width: 60px;">
+          </td>
+        </tr>
+        <tr>
+          <td class="switch_td">
+            <label class="switch">
+              <input type="checkbox" name="check" id="hell_node">
+              <span class="slider round"></span>
+            </label>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+</aside>
+
+<div id="rectangle"style="width:94%;border:1px solid #000;"> </div>
 <div id="loadingBar">
         <div class="outerBorder">
             <div id="text">0%</div>
@@ -239,7 +362,7 @@ firstpart = \
 <script type="text/javascript">
 setTimeout(function () {
     // create an array with nodes
-        var nodes = new vis.DataSet([
+    var nodes = new vis.DataSet([
 '''
 
 secondpart_1 = '''
@@ -247,10 +370,7 @@ secondpart_1 = '''
 
     // create a network
     var container = document.getElementById('mynetwork');
-    var data = {
-        nodes: nodes,
-        edges: edges
-    };
+
     var options = {
         layout: {improvedLayout: true},
         physics: {
@@ -293,7 +413,77 @@ secondpart_1 = '''
         multiselect: true
         }
     };
+
+    // data filters
+    hell_filter = document.getElementById('hell_node')
+    loops_filter = document.getElementById('loop_edges')
+    border_filter = document.getElementById('border_nodes')
+
+    let noHell = false
+    const nodesFilter = (node) => {
+        if (noHell) {
+            return (node.class != 'hell')
+        } else {
+            return true
+        }
+    }
+
+    var nodesView = new vis.DataView(nodes, { filter: nodesFilter })
+
+    // remove hell
+    hell_filter.addEventListener('change', (e) => {
+        if (hell_filter.checked){
+            noHell = true
+        } else {
+            noHell = false
+        }
+        nodesView.refresh()
+    });
+
+    data = {
+            nodes: nodesView,
+            edges: edges
+        };
+
     var network = new vis.Network(container, data, options);
+
+    [border_filter, loops_filter].forEach(function (arrayItem) {
+        // change border states and remove self-loops
+        arrayItem.addEventListener('change', (e) => {
+            var border_nodes = nodesView.get({filter: function (item){
+                    return (item.class == 'border')
+                }})
+
+            var no_self_loops = edges.get({filter: function (item){
+                    return (item.from != item.to)
+                }})
+
+            if (border_filter.checked){
+                for (index = 0; index < border_nodes.length; index++) {
+                    border_nodes[index].shape = "box"
+                }
+            } else {
+                for (index = 0; index < border_nodes.length; index++) {
+                    border_nodes[index].shape = "ellipse"
+               }
+            }
+
+            if (loops_filter.checked){
+                use_edges = no_self_loops
+            } else {
+                use_edges = edges
+            }
+
+            nodes.update(border_nodes)
+                nodesView = new vis.DataView(nodes, { filter: nodesFilter })
+                data = {
+                    nodes: nodesView,
+                    edges: use_edges
+                };
+                network.setData(data)
+        });
+    })
+
     var stabil = true;
 '''
 
@@ -366,11 +556,8 @@ secondpart_2 = '''
 </body>
 </html>
 '''
-# for testing
-# filename = open('bigger_pMC.json', "r")
-# graph = create_HTML_graph(filename)
 
-graph = create_HTML_graph()
-%>
+filename = open(sys.argv[-1], "r")
 
-${graph}
+graph = create_HTML_graph(filename)
+print(graph)
