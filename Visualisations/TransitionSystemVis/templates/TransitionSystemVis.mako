@@ -99,7 +99,10 @@ def write_reaction(edge_id, left_index, right_index, substrates, products, rate)
 def create_HTML_graph(data):
     output_file = firstpart
 
-    data = json.load(data)  # loads !!
+    data = ''.join(list(hda.datatype.dataprovider(hda, 'line', strip_lines=True, strip_newlines=True)))
+    data = json.loads(data)
+
+    # data = json.load(data)
 
     ordering = data['ordering']
     nodes = {int(key): to_counter(data['nodes'][key], ordering) for key in data['nodes'].keys()}
