@@ -90,7 +90,7 @@ class PCTLparser:
         self.terminals.update({"NEXT": "X",
                                "UNTIL": "U",
                                "FUTURE": "F",
-                               "sign": "<, >, =<, =>"
+                               "EQ": "=", "GE": ">=", "G": ">", "LE": "<=", "L": "<"
                                })
 
     def replace(self, expected: set) -> set:
