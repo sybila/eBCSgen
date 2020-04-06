@@ -15,13 +15,22 @@ GRAMMAR = """
     NOT: "!"
     AND: "&"
     OR: "|"
-    !prob: "P" SIGN number | "P=?"
+    !prob: "P" sign number | "P=?"
     NEXT: "X"
     UNTIL: "U"
     FUTURE: "F"
 
-    ap: "[" rate_complex SIGN number "]"
-    SIGN: "<" | ">" | "=<" | "=>"
+    ap: "[" rate_complex sign_ap number "]"
+    sign: e_sign | ne_sign
+    e_sign.1: GE | LE
+    ne_sign.0: L | G
+    sign_ap: EQ | sign
+
+    EQ: "="
+    GE: ">="
+    G: ">"
+    LE: "<="
+    L: "<"
 
     number: NUMBER
 
@@ -34,8 +43,14 @@ class TreeToStrings(Transformer):
     def _extend_ws(self, matches):
         return " " + str(matches) + " "
 
-    def SIGN(self, matches):
-        return self._extend_ws(matches)
+    def sign_ap(self, matches):
+        if type(matches[0]) == str:
+            return matches[0]
+        else:
+            return self._extend_ws(matches[0])
+
+    def sign(self, matches):
+        return self._extend_ws(matches[0].children[0])
 
     def AND(self, matches):
         return self._extend_ws(matches)
@@ -74,7 +89,8 @@ class PCTLparser:
         self.terminals = dict((v, k) for k, v in _TERMINAL_NAMES.items())
         self.terminals.update({"NEXT": "X",
                                "UNTIL": "U",
-                               "FUTURE": "F"
+                               "FUTURE": "F",
+                               "sign": "<, >, =<, =>"
                                })
 
     def replace(self, expected: set) -> set:

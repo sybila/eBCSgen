@@ -9,8 +9,9 @@ class TestPCTL(unittest.TestCase):
     def setUp(self):
 
         self.parser = PCTLparser()
-        self.formula_1 = "P =< 0.3(True U [K(S{i},T{a}).B{o}::cyt => 5])"
+        self.formula_1 = "P <= 0.3(True U [K(S{i},T{a}).B{o}::cyt >= 5])"
         self.formula_2 = "P=?(F [K(S{i},T{a}).B{o}::cyt > 0.33])"
+        self.formula_3 = "P > 0.5(F [K(S{i},T{a}).B{o}::cyt = 2])"
 
         # parse complex
 
@@ -20,13 +21,15 @@ class TestPCTL(unittest.TestCase):
         self.complex_2 = complex_parser.parse("K(S{a},T{a}).B{o}::cyt").data.children[0]
         self.complex_3 = complex_parser.parse("K(S{a},T{i}).B{o}::cyt").data.children[0]
 
-        self.ap_1 = Core.Formula.AtomicProposition(self.complex_1, " => ", "5")
+        self.ap_1 = Core.Formula.AtomicProposition(self.complex_1, " >= ", "5")
 
     def test_parse(self):
         formula = self.parser.parse(self.formula_1)
         self.assertEqual(self.formula_1, str(formula))
         formula = self.parser.parse(self.formula_2)
         self.assertEqual(self.formula_2, str(formula))
+        formula = self.parser.parse(self.formula_3)
+        self.assertEqual(self.formula_3, str(formula))
 
     def test_get_complexes(self):
         formula = self.parser.parse(self.formula_1)
@@ -34,12 +37,12 @@ class TestPCTL(unittest.TestCase):
 
     def test_replace_complexes(self):
         labels = {self.complex_1: "VAR_0"}
-        replaced_formula = "P =< 0.3(True U [VAR_0 => 5])"
+        replaced_formula = "P <= 0.3(True U [VAR_0 >= 5])"
         formula = self.parser.parse(self.formula_1)
         self.assertEqual(str(formula.replace_complexes(labels)), replaced_formula)
 
     def test_replace_APs(self):
         replacements = {self.ap_1: "property_0"}
-        replaced_formula = "P =< 0.3(True U property_0)"
+        replaced_formula = "P <= 0.3(True U property_0)"
         formula = self.parser.parse(self.formula_1)
         self.assertEqual(str(formula.replace_APs(replacements)), replaced_formula)
