@@ -318,7 +318,7 @@ firstpart = \
       <tbody>
         <tr>
           <td>
-            <img src="../static/icons/border.png" alt="border states" style="display: block; width: 60px;">
+            <img src="static/icons/border.png" alt="border states" style="display: block; width: 60px;">
           </td>
         </tr>
         <tr class="switch_button">
@@ -331,7 +331,7 @@ firstpart = \
         </tr>
         <tr>
           <td>
-            <img src="../static/icons/loop.png" alt="self-loop" style="display: block; width: 60px;">
+            <img src="static/icons/loop.png" alt="self-loop" style="display: block; width: 60px;">
           </td>
         </tr>
         <tr class="switch_button">
@@ -344,7 +344,7 @@ firstpart = \
         </tr>
         <tr>
           <td>
-            <img src="../static/icons/fire.png" alt="hell state" style="display: block; width: 60px;">
+            <img src="static/icons/fire.png" alt="hell state" style="display: block; width: 60px;">
           </td>
         </tr>
         <tr>
