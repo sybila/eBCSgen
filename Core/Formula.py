@@ -88,7 +88,7 @@ class APreplacetor(Transformer):
         self.replacements = replacements
 
     def ap(self, proposition):
-        return Tree("ap", ['\\"' + self.replacements[proposition[0]] + '\\"'])
+        return Tree("ap", ['\"' + self.replacements[proposition[0]] + '\"'])
 
 
 class ComplexReplacetor(Transformer):

@@ -177,6 +177,7 @@ class TransitionSystem:
         prism_file.write("\nmodule TS\n")
 
         # to get rid of inf
+        self.change_hell(bound)
         decoding = self.create_decoding()
 
         # declare state variables

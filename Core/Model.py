@@ -94,7 +94,7 @@ class Model:
         :param PCTL_formula: given PCTL formula
         :return: output of Storm model checker
         """
-
+        path = "Testing/"
         vm = self.to_vector_model()
         self.bound = vm.bound
         ts = vm.generate_transition_system()
@@ -104,20 +104,18 @@ class Model:
 
         # generate labels and give them to save_storm
         APs = formula.get_APs()
-        state_labels, AP_lables = self.create_AP_labels(APs, ts)
-        formula = formula.replace_APs(AP_lables)
-        ts.save_to_STORM_explicit("explicit_transitions.tra", "explicit_labels.lab", state_labels)
-
+        state_labels, AP_labeles = self.create_AP_labels(APs, ts)
+        formula = formula.replace_APs(AP_labeles)
+        ts.save_to_STORM_explicit(path + "explicit_transitions.tra", path + "explicit_labels.lab", state_labels)
         out = subprocess.Popen(
-            ['storm', '--explicit', 'explicit_transitions.tra', 'explicit_labels.lab', '--prop', str(formula)],
+            ['storm', '--explicit', path + 'explicit_transitions.tra', path + 'explicit_labels.lab', '--prop', str(formula)],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         stdout, stderr = out.communicate()
         return stdout
 
-
     # check whether rate are "linear" -> create directly PRISM file
     # otherwise generate TS and use its explicit representation for Storm
-    def PCTL_synthesis(self, PCTL_formula: str):
+    def PCTL_synthesis(self, PCTL_formula: str, region: str):
         """
         Parameter synthesis of given PCTL formula in given region.
 
@@ -132,6 +130,7 @@ class Model:
         :param region: string representation of region which will be checked by Storm
         :return: output of Storm model checker
         """
+        path = "Testing/"
         vm = self.to_vector_model()
         self.bound = vm.bound
         ts = vm.generate_transition_system()
@@ -142,15 +141,15 @@ class Model:
         labels, prism_formulas = self.create_complex_labels(formula.get_complexes(), ts.ordering)
         formula = formula.replace_complexes(labels)
 
-        ts.save_to_prism("prism-parametric.pm", vm.bound, self.params, prism_formulas)
+        ts.save_to_prism(path + "prism-parametric.pm", vm.bound, self.params, prism_formulas)
 
-        # TBD
-
-        # missing region and other stuff
         # storm-pars --prism parametric_die.pm --prop 'P<=0.5 [F s=7&d=1]'
         #            --region "0<=p<=1,0<=q<=0.5,0.1<=r<=0.3" --refine 0.01 10 --printfullresult
+        # refine nejako nefunguje
+        # TODO zmaz si moju cestu prosim :)
         out = subprocess.Popen(
-            ['storm-pars', '--prism', 'prism-parametric.pm', '--prop', str(formula.data)],
+            ['/home/lukrecia/programFiles/storm/build/bin/storm-pars', '--prism', path + 'prism-parametric.pm',
+             '--prop', str(formula), '--region', region, '--printfullresult'],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         stdout, stderr = out.communicate()
         return stdout
