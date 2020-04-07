@@ -109,7 +109,8 @@ endrewards
         self.die_ts.init = 6
         labels = {6: {'property_0', 'init'}, 11: {'property_0', 'property_1'},
                   3: {'property_3', 'property_0'}, 8: {'property_1'}}
-        self.die_ts.save_to_STORM_explicit("explicit_transitions.tra", "explicit_labels.lab", labels)
+        APs = {'smth0': 'property_0', 'smth1': 'property_1', 'smth2': 'property_2', 'smth3': 'property_3', }
+        self.die_ts.save_to_STORM_explicit("explicit_transitions.tra", "explicit_labels.lab", labels, APs)
         with open('explicit_transitions.tra', 'r') as f:
             print(f.read())
         with open('explicit_labels.lab', 'r') as f:

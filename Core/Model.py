@@ -8,12 +8,11 @@ import subprocess
 
 
 class Model:
-    def __init__(self, rules: set, init: collections.Counter, definitions: dict, params: set, bound: int):
+    def __init__(self, rules: set, init: collections.Counter, definitions: dict, params: set):
         self.rules = rules
         self.init = init
         self.definitions = definitions
         self.params = params
-        self.bound = bound
         self.all_rates = True
 
         # autocomplete
@@ -48,7 +47,7 @@ class Model:
             atomic_signature, structure_signature = agent.extend_signature(atomic_signature, structure_signature)
         return atomic_signature, structure_signature
 
-    def to_vector_model(self) -> VectorModel:
+    def to_vector_model(self, bound: int = None) -> VectorModel:
         """
         Creates vector representation of the model.
 
@@ -57,6 +56,7 @@ class Model:
 
         THIS SHOULD BE DONE IN PARALLEL !!!
 
+        :param bound: given bound
         :return: VectorModel representation of the model
         """
         reactions = set()
@@ -74,7 +74,7 @@ class Model:
         for reaction in reactions:
             vector_reactions.add(reaction.to_vector(ordering, self.definitions))
 
-        return VectorModel(vector_reactions, init, ordering, self.bound)
+        return VectorModel(vector_reactions, init, ordering, bound)
 
     def eliminate_redundant(self):
         pass
@@ -83,7 +83,7 @@ class Model:
         # for this we need to be able to apply Rule on State
         pass
 
-    def PCTL_model_checking(self, PCTL_formula: str):
+    def PCTL_model_checking(self, PCTL_formula: str, bound: int = None):
         """
         Model checking of given PCTL formula.
 
@@ -92,11 +92,11 @@ class Model:
         Storm model checker is called and results are returned.
 
         :param PCTL_formula: given PCTL formula
+        :param bound: given bound
         :return: output of Storm model checker
         """
         path = "Testing/"
-        vm = self.to_vector_model()
-        self.bound = vm.bound
+        vm = self.to_vector_model(bound)
         ts = vm.generate_transition_system()
         formula = PCTLparser().parse(PCTL_formula)
         if not formula.success:
@@ -104,18 +104,18 @@ class Model:
 
         # generate labels and give them to save_storm
         APs = formula.get_APs()
-        state_labels, AP_labeles = self.create_AP_labels(APs, ts)
+        state_labels, AP_labeles = self.create_AP_labels(APs, ts, vm.bound)
         formula = formula.replace_APs(AP_labeles)
-        ts.save_to_STORM_explicit(path + "explicit_transitions.tra", path + "explicit_labels.lab", state_labels)
-        out = subprocess.Popen(
-            ['storm', '--explicit', path + 'explicit_transitions.tra', path + 'explicit_labels.lab', '--prop', str(formula)],
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        stdout, stderr = out.communicate()
+        ts.save_to_STORM_explicit(path + "exp_transitions.tra", path + "exp_labels.lab", state_labels, AP_labeles)
+
+        command = "storm --explicit {0} {1} --prop '{2}'"
+        command = subprocess.Popen(command.format(path + 'exp_transitions.tra', path + 'exp_labels.lab', formula),
+                                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+
+        stdout, stderr = command.communicate()
         return stdout
 
-    # check whether rate are "linear" -> create directly PRISM file
-    # otherwise generate TS and use its explicit representation for Storm
-    def PCTL_synthesis(self, PCTL_formula: str, region: str):
+    def PCTL_synthesis(self, PCTL_formula: str, region: str, bound: int = None):
         """
         Parameter synthesis of given PCTL formula in given region.
 
@@ -128,11 +128,11 @@ class Model:
 
         :param PCTL_formula: given PCTL formula
         :param region: string representation of region which will be checked by Storm
+        :param bound: given bound
         :return: output of Storm model checker
         """
-        path = "Testing/"
-        vm = self.to_vector_model()
-        self.bound = vm.bound
+        path = "/tmp/"
+        vm = self.to_vector_model(bound)
         ts = vm.generate_transition_system()
         formula = PCTLparser().parse(PCTL_formula)
         if not formula.success:
@@ -143,24 +143,25 @@ class Model:
 
         ts.save_to_prism(path + "prism-parametric.pm", vm.bound, self.params, prism_formulas)
 
-        # storm-pars --prism parametric_die.pm --prop 'P<=0.5 [F s=7&d=1]'
-        #            --region "0<=p<=1,0<=q<=0.5,0.1<=r<=0.3" --refine 0.01 10 --printfullresult
-        # refine nejako nefunguje
-        # TODO zmaz si moju cestu prosim :)
-        out = subprocess.Popen(
-            ['/home/lukrecia/programFiles/storm/build/bin/storm-pars', '--prism', path + 'prism-parametric.pm',
-             '--prop', str(formula), '--region', region, '--printfullresult'],
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        stdout, stderr = out.communicate()
+        command_region = "storm-pars --prism {0} --prop '{1}' --region '{2}' --refine 0.01 10 --printfullresult"
+        command_no_region = "storm-pars --prism {0} --prop '{1}'"
+
+        if region:
+            command = subprocess.Popen(command_region.format(path + 'prism-parametric.pm', formula, region),
+                                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        else:
+            command = subprocess.Popen(command_no_region.format(path + 'prism-parametric.pm', formula),
+                                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        stdout, stderr = command.communicate()
         return stdout
 
-    def save_to_STORM_explicit(self, transitions_file: str, labels_file: str, labels: dict):
-        ts = self.to_vector_model().generate_transition_system()
-        return ts.save_to_STORM_explicit(transitions_file, labels_file, labels)
-
-    def save_to_prism(self, output_file: str, prism_formulas: list):
-        ts = self.to_vector_model().generate_transition_system()
-        return ts.save_to_prism(output_file, self.bound, self.params, prism_formulas)
+    # def save_to_STORM_explicit(self, transitions_file: str, labels_file: str, labels: dict):
+    #     ts = self.to_vector_model().generate_transition_system()
+    #     ts.save_to_STORM_explicit(transitions_file, labels_file, labels)
+    #
+    # def save_to_prism(self, output_file: str, prism_formulas: list):
+    #     ts = self.to_vector_model().generate_transition_system()
+    #     ts.save_to_prism(output_file, self.bound, self.params, prism_formulas)
 
     def create_complex_labels(self, complexes: list, ordering: tuple):
         """
@@ -183,10 +184,10 @@ class Model:
                 id = "ABSTRACT_VAR_" + "".join(list(map(str, indices)))
                 labels[complex] = id
                 prism_formulas.append(id + " = " + "+".join(["VAR_{}".format(i) for i in indices]) +
-                                      " // " + str(complex))
+                                      "; // " + str(complex))
         return labels, prism_formulas
 
-    def create_AP_labels(self, APs: list, ts: TransitionSystem):
+    def create_AP_labels(self, APs: list, ts: TransitionSystem, bound: int):
         """
         Creates label for each AtomicProposition.
         Moreover, goes through all states in ts.states_encoding and validates whether they satisfy give
@@ -194,6 +195,7 @@ class Model:
 
         :param APs: give AtomicProposition extracted from Formula
         :param ts: given TS
+        :param bound: given bound
         :return: dictionary of State_code -> set of labels and AP -> label
         """
         AP_lables = dict()
@@ -201,7 +203,7 @@ class Model:
             AP_lables[ap] = "property_" + str(len(AP_lables))
 
         state_labels = dict()
-        ts.change_hell(self.bound)
+        ts.change_hell(bound)
         for state in ts.states_encoding.keys():
             for ap in APs:
                 if state.check_AP(ap, ts.ordering):

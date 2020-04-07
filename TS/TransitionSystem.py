@@ -136,7 +136,7 @@ class TransitionSystem:
                 self.states_encoding[hell] = value
                 break
 
-    def save_to_STORM_explicit(self, transitions_file: str, labels_file: str, labels: dict):
+    def save_to_STORM_explicit(self, transitions_file: str, labels_file: str, state_labels: dict, AP_labels):
         """
         Save the TransitionSystem as explicit Storm file (no parameters).
 
@@ -152,11 +152,11 @@ class TransitionSystem:
         trans_file.close()
 
         label_file = open(labels_file, "w+")
-        unique_labels = list(map(str, set.union(*labels.values())))
+        unique_labels = ['init'] + list(map(str, AP_labels.values()))
         label_file.write("#DECLARATION\n" + " ".join(unique_labels) + "\n#END\n")
 
-        label_file.write(
-            "\n".join(list(map(lambda state: str(state) + " " + " ".join(list(map(str, labels[state]))), labels))))
+        label_file.write("\n".join([str(state) + " " + " ".join(list(map(str, state_labels[state])))
+                                    for state in sorted(state_labels)]))
         label_file.close()
 
     def save_to_prism(self, output_file: str, bound: int, params: set, prism_formulas: list):
@@ -190,10 +190,11 @@ class TransitionSystem:
         transitions = self.edges_to_PRISM(decoding)
         prism_file.write("\n" + "\n".join(transitions))
 
-        # write formulas (maybe its should be part of module!?)
+        prism_file.write("\nendmodule\n\n")
+
+        # write formulas
         if prism_formulas:
-            prism_file.write("\n\t" + "\n".join(prism_formulas) + ";")
-        prism_file.write("\nendmodule\n")
+            prism_file.write("\n\tformula " + "\n".join(prism_formulas))
 
         prism_file.close()
 

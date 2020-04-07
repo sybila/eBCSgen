@@ -107,7 +107,8 @@ class State:
             indices = ap.complex.identify_compatible(ordering)
             state = State(np.array([1 if i in indices else 0 for i in range(len(ordering))]))
             operand = str(self.filter_values(state))
-        return eval(operand + ap.sign + str(ap.number))
+        sign = "==" if ap.sign == " = " else ap.sign
+        return eval(operand + sign + str(ap.number))
 
     def to_PRISM_string(self, apostrophe=False) -> str:
         """

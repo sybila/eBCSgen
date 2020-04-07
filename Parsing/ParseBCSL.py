@@ -237,7 +237,7 @@ class TreeToObjects(Transformer):
 
     def model(self, matches):
         params = self.params - set(matches[2].keys())
-        return Core.Model.Model(set(matches[0]), matches[1], matches[2], params, None)
+        return Core.Model.Model(set(matches[0]), matches[1], matches[2], params)
 
 
 class Parser:

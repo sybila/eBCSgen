@@ -63,7 +63,7 @@ class TestModel(unittest.TestCase):
 
         self.defs = {'k1': 0.05, 'k2': 0.12}
 
-        self.model = Model({self.r1, self.r2, self.r3}, self.inits, self.defs, set(), None)
+        self.model = Model({self.r1, self.r2, self.r3}, self.inits, self.defs, set())
         # model
 
         self.model_str_1 = """
@@ -225,7 +225,7 @@ class TestModel(unittest.TestCase):
         self.assertTrue(len(model.params) == 2)
 
     def test_create_complex_labels(self):
-        model = Model(set(), collections.Counter(), dict(), set(), int)
+        model = Model(set(), collections.Counter(), dict(), set())
         complex_parser = Parser("rate_complex")
         complex_1 = complex_parser.parse("K(S{i},T{a}).B{o}::cyt").data.children[0]
         complex_2 = complex_parser.parse("K(S{a},T{a}).B{o}::cyt").data.children[0]
@@ -236,14 +236,14 @@ class TestModel(unittest.TestCase):
         complexes = [complex_2, complex_abstract, complex_1]
 
         result_labels = {complex_2: "VAR_1",complex_abstract: "ABSTRACT_VAR_12", complex_1: "VAR_0"}
-        result_formulas = ['ABSTRACT_VAR_12 = VAR_1+VAR_2 // K(S{a}).B{_}::cyt']
+        result_formulas = ['ABSTRACT_VAR_12 = VAR_1+VAR_2; // K(S{a}).B{_}::cyt']
 
         labels, prism_formulas = model.create_complex_labels(complexes, ordering)
         self.assertEqual(labels, result_labels)
         self.assertEqual(prism_formulas, result_formulas)
 
     def test_create_AP_labels(self):
-        model = Model(set(), collections.Counter(), dict(), set(), int)
+        model = Model(set(), collections.Counter(), dict(), set())
 
         complex_parser = Parser("rate_complex")
         complex_1 = complex_parser.parse("K(S{i},T{a}).B{o}::cyt").data.children[0]
@@ -273,6 +273,6 @@ class TestModel(unittest.TestCase):
         ts.states_encoding = states_encoding
         ts.init = 3
 
-        state_labels, AP_lables = model.create_AP_labels(APs, ts)
+        state_labels, AP_lables = model.create_AP_labels(APs, ts, 0)
         self.assertEqual(state_labels, result_state_labels)
         self.assertEqual(AP_lables, result_AP_lables)
