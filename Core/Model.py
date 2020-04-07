@@ -95,7 +95,7 @@ class Model:
         :param bound: given bound
         :return: output of Storm model checker
         """
-        path = "Testing/"
+        path = "/tmp/"
         vm = self.to_vector_model(bound)
         ts = vm.generate_transition_system()
         formula = PCTLparser().parse(PCTL_formula)
@@ -154,14 +154,6 @@ class Model:
                                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         stdout, stderr = command.communicate()
         return stdout
-
-    # def save_to_STORM_explicit(self, transitions_file: str, labels_file: str, labels: dict):
-    #     ts = self.to_vector_model().generate_transition_system()
-    #     ts.save_to_STORM_explicit(transitions_file, labels_file, labels)
-    #
-    # def save_to_prism(self, output_file: str, prism_formulas: list):
-    #     ts = self.to_vector_model().generate_transition_system()
-    #     ts.save_to_prism(output_file, self.bound, self.params, prism_formulas)
 
     def create_complex_labels(self, complexes: list, ordering: tuple):
         """
