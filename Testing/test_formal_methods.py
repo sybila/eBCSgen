@@ -73,15 +73,15 @@ class TestFormalMethods(unittest.TestCase):
     # test second model --> tumor
     def test_tumor_modelchecking_1(self):
         model_parsed = self.model_parser.parse(self.tumor).data
-        ts = model_parsed.to
+        vm = model_parsed.to_vector_model()
+        ts = vm.generate_transition_system()
+        print(ts)
         result = model_parsed.PCTL_model_checking("P=? [F T(P{m})::x>2 & T(P{i})::x>=0 & T(P{i})::x<2]")
-        print("model checking 1", result)
-        self.assertTrue("Result (initial states)" in str(result))
+        print(result)
+        self.assertTrue("Result" in str(result))
 
-    def test_tumor_modelchecking_2(self):
-        model_parsed = self.model_parser.parse(self.tumor).data
         result = model_parsed.PCTL_model_checking("P > 0.5 [F T(P{m})::x>2]")
-        self.assertTrue("Result (initial states)" in str(result))
+        self.assertTrue("Result" in str(result))
 
     def test_tumor_modelchecking_wrong_formula(self):
         model_parsed = self.model_parser.parse(self.tumor).data
@@ -91,16 +91,20 @@ class TestFormalMethods(unittest.TestCase):
 
     def test_parameter_synthesis(self):
         model_parsed = self.model_parser.parse(self.tumor_parametric).data
-        result = model_parsed.PCTL_synthesis("P=? [F T(P{m})::x>2]", "0<=d2<=2")
-        print("param_synthesis_tumor: ", result)
+        result = model_parsed.PCTL_synthesis("P=? [F T(P{m})::x>2]", None)
         self.assertTrue("Result" in str(result))
 
-    """    def test_parametric_model(self):
+    # test model 2
+    def test_parametric_model(self):
         model_parsed = self.model_parser.parse(self.model).data
-        ts = model_parsed.to_vector_model().generate_transition_system()
-        ts.save_to_prism("prism-parametric.pm", 2, {"q"}, [])
-        out = model_parsed.PCTL_synthesis("P=<0.3 (F [X().Y{_}::rep => 1])", "")
-        self.assertTrue("Result (for initial states)" in str(out))"""
+
+        result = model_parsed.PCTL_synthesis("P<=0.3 [F X().Y{_}::rep >= 1]", None)
+        print("1.....", result)
+        #self.assertTrue("Result (initial states)" in str(result))
+
+        result = model_parsed.PCTL_synthesis("P=? [F X().Y{_}::rep >= 1]", None)
+        print("2.....", result)
+        self.assertTrue("Result (initial states)" in str(result))
 
     def test_synthesis_simple(self):
         model_str = """
@@ -116,8 +120,7 @@ class TestFormalMethods(unittest.TestCase):
         #! definitions
         k2 = 5
         """
-        model_parser = Parser("model")
-        model = model_parser.parse(model_str).data
+        model = self.model_parser.parse(model_str).data
         formula = 'P <= 0.5[F X()::rep = 1]'
         region = '0<=k1<=1'
         output = model.PCTL_synthesis(formula, region)
@@ -142,8 +145,7 @@ class TestFormalMethods(unittest.TestCase):
         #! definitions
         k2 = 0.05 // also comment
         """
-        model_parser = Parser("model")
-        model = model_parser.parse(model_str).data
+        model = self.model_parser.parse(model_str).data
         formula = 'P <= 0.5[F X()::rep = 1]'
         region = '0<=k1<=1'
         output = model.PCTL_synthesis(formula, region)
@@ -168,8 +170,7 @@ class TestFormalMethods(unittest.TestCase):
         k2 = 5
         k1 = 2
         """
-        model_parser = Parser("model")
-        model = model_parser.parse(model_str).data
+        model = self.model_parser.parse(model_str).data
         formula = 'P <= 0.5[F X()::rep=1]'
         output = model.PCTL_model_checking(formula)
         self.assertTrue("Result (for initial states)" in str(output))
@@ -194,8 +195,7 @@ class TestFormalMethods(unittest.TestCase):
         k2 = 0.05 // also comment
         k1 = 2
         """
-        model_parser = Parser("model")
-        model = model_parser.parse(model_str).data
+        model = self.model_parser.parse(model_str).data
         formula = 'P >= 0.5[F X()::rep=1]'
         output = model.PCTL_model_checking(formula)
         self.assertTrue("Result (for initial states)" in str(output))
