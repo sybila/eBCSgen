@@ -1,0 +1,39 @@
+<tool id="Simulation" name="Simulation" version="1.0.0">
+	<description>- simulate given model</description>
+	<command>python3 /home/xtrojak/eBCSgen/Callables/Simulation.py
+        --model '$model'
+        --output '$output'
+        --deterministic '$type.deterministic_choice'
+        --runs '$type.num_of_runs'
+        --max_time '$max_time'
+        --volume '$type.volume'
+    </command>
+
+	<inputs>
+		<param format="bcs" name="model" type="data" label="Model"/>
+		<conditional name="type">
+			<param name="deterministic_choice" type="select" label="Choose stochastic or deterministic:">
+				<option value="False" selected="true">Stochastic</option>
+				<option value="True">Deterministic</option>
+			</param>
+			<when value="False">
+                <param name="num_of_runs" size="4" type="integer" value="1" label="Number of total runs:"/>
+                <param name="volume" size="4" type="integer" value="1" hidden="true"/>
+			</when>
+			<when value="True">
+				<param name="num_of_runs" size="4" type="integer" value="1" hidden="true"/>
+				<param name="volume" size="4" type="integer" value="0" label="Volume (liters):"/>
+			</when>
+		</conditional>
+		<param name="max_time" size="4" type="integer" value="1" label="Maximum simulation time:"/>
+	</inputs>
+
+	<outputs>
+		<data format="csv" name="output" />
+	</outputs>
+
+	<tests>
+		<test>
+		</test>
+	</tests>
+</tool>
