@@ -10,7 +10,7 @@
     </command>
 
 	<inputs>
-		<param format="bcs" name="model" type="data" label="Model"/>
+		<param format="bcs" name="model" type="data" label="Model file" help="Provide a .bcs file"/>
 		<conditional name="type">
 			<param name="deterministic_choice" type="select" label="Choose stochastic or deterministic:">
 				<option value="False" selected="true">Stochastic</option>

@@ -7,11 +7,10 @@
       --transition_file '$adv.transition_file'
       --max_time '$adv.max_time'
       --max_size '$adv.max_size'
-
-      '$input_model' '$output' '$bounds'</command>
+  </command>
 
   <inputs>
-    <param format="bcs" name="$model" type="data" label="Model file" help="Provide a .bcs file"/>
+    <param format="bcs" name="model" type="data" label="Model file" help="Provide a .bcs file"/>
     <param name="bounds" size="4" type="integer" value="" label="Bound [optional]" optional="true"/>
       <section name="adv" title="Advanced Options" expanded="false">
           <param name="max_time" size="4" type="float" value="" label="Maximal computation time [optional]" optional="true"/>
