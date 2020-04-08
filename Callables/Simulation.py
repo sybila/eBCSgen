@@ -13,13 +13,15 @@ usage: Simulation.py [-h] --model MODEL --output OUTPUT --deterministic
 
 Simulation
 
-optional arguments:
-  -h, --help            show this help message and exit
+arguments:
   --model MODEL
   --output OUTPUT
   --deterministic DETERMINISTIC
   --runs RUNS
   --max_time MAX_TIME
+
+optional arguments:
+  -h, --help            show this help message and exit
   --volume VOLUME
 """
 
