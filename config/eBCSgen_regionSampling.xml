@@ -15,7 +15,6 @@
 
   <inputs>
     <param format="txt" name="storm_file" type="data" label="Storm results file"/>
-    <param name="bounds" size="4" type="integer" value="" label="Bound [optional]" optional="true"/>
 
     <repeat name="regions" title="Regions">
         <param name="param" value="" type="text" label="Parameter:"/>
