@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-`Python 3+` with packages `pandas`, `numpy`, `scipy`, `lark`, `itertools`, `collections` (all installable using `pip`)
+`Python 3+` with packages `pandas`, `numpy`, `scipy`, `lark`, `lark-parser`, `sympy`, `itertools`, `collections` (all installable using `pip`)
 
 ## Testing
 
