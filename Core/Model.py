@@ -3,7 +3,7 @@ import collections
 from Core.Side import Side
 from TS.TransitionSystem import TransitionSystem
 from TS.VectorModel import VectorModel
-from Parsing.ParsePCTLformula import PCTLparser
+import Parsing.ParsePCTLformula
 import subprocess
 
 
@@ -98,7 +98,7 @@ class Model:
         path = "/tmp/"
         vm = self.to_vector_model(bound)
         ts = vm.generate_transition_system()
-        formula = PCTLparser().parse(PCTL_formula)
+        formula = Parsing.ParsePCTLformula.PCTLparser().parse(PCTL_formula)
         if not formula.success:
             return formula.data
 
@@ -134,7 +134,7 @@ class Model:
         path = "/tmp/"
         vm = self.to_vector_model(bound)
         ts = vm.generate_transition_system()
-        formula = PCTLparser().parse(PCTL_formula)
+        formula = Parsing.ParsePCTLformula.PCTLparser().parse(PCTL_formula)
         if not formula.success:
             return formula.data
 

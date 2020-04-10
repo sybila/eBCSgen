@@ -88,7 +88,7 @@ class TestFormalMethods(unittest.TestCase):
         self.die_pctl_parametric = "P=? [F VAR_0=7&VAR_1=1]"
         self.die_pctl1 = "P=? [F VAR_0=7&VAR_1=1 || F VAR_0=7&VAR_1<4]"  # 0.3333333333 not used
         self.die_pctl2 = "P<=0.15 [F VAR_0=7&VAR_1=1]"  # false not used
-        self.result = 0.1666666667
+        self.result = 0.166666667
 
     # Test explicit files (die model). Checking equality with example files
     def test_die_explicit_tra(self):
@@ -109,7 +109,6 @@ class TestFormalMethods(unittest.TestCase):
             our_lab = our_lab[1].split("#END")
             if len(our_lab) != 2:
                 self.fail("#END key is missing")
-        print(our_lab)
         # test declaration part
         self.assertSetEqual(set(our_lab[0].split()), {"init", "one", "done"})
 
@@ -132,31 +131,6 @@ class TestFormalMethods(unittest.TestCase):
             our_prism = re.sub(r"\s+", "", f.read(), flags=re.UNICODE)
         self.assertEqual(test_prism, our_prism)
 
-    # test model checking with prism and explicit files
-    def test_prism_modelchecking(self):
-        prism_out = subprocess.Popen(
-            ['storm', '--prism', path + 'die_prism.pm', '--prop', self.die_pctl_prism],
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        stdout, stderr = prism_out.communicate()
-        result = get_storm_result(str(stdout))
-        if result == "ERROR":
-            self.fail(stdout)
-        else:
-            self.assertEqual(result, str(self.result), "Prism model checking .... done")
-
-    def test_explicit_modelchecking(self):
-        explicit_out = subprocess.Popen(
-            ['storm', '--explicit', path + 'die_explicit.tra', path + 'die_explicit.lab', '--prop',
-             self.die_pctl_explicit],
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        stdout, stderr = explicit_out.communicate()
-        result = get_storm_result(str(stdout))
-        if result == "ERROR":
-            self.fail(stdout)
-        else:
-            self.assertEqual(result, str(self.result), "Explicit model checking .... done")
-
-    # test parametric prism file
     def test_prism_parametric(self):
         self.die_ts_parametric.save_to_prism(path + "die_prism_parametric.pm", 6, {"p"}, [])
         with open(path + "parametric_die.pm") as f:
@@ -164,17 +138,3 @@ class TestFormalMethods(unittest.TestCase):
         with open(path + "die_prism_parametric.pm") as f:
             our_prism = re.sub(r"\s+", "", f.read(), flags=re.UNICODE)
         self.assertEqual(test_prism, our_prism)
-
-    # test result from parameter synthesis
-    def test_parameter_synthesis(self):
-        stdout = subprocess.check_output('/home/lukrecia/programFiles/storm/build/bin/storm-pars --prism '
-                                         + path + 'die_prism_parametric.pm --prop \"'
-                                         + self.die_pctl_parametric + "\"",
-                                         shell=True)
-
-        if "ERROR" in str(stdout):
-            self.fail(stdout)
-        else:
-            result = str(stdout).split("Result (initial states): ")
-            result = result[1].split("\\n")
-            self.assertEqual(result[0], "((p)^2)/(p+1)", "Parameter synthesis .... done")

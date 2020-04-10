@@ -1,24 +1,12 @@
 import unittest
 
-from matplotlib import collections
-from sympy.printing.tests.test_numpy import np
-
-from Core.Model import Model
-from Parsing.ParsePCTLformula import PCTLparser
-from TS.Edge import Edge
-from TS.State import State
-from TS.TransitionSystem import TransitionSystem
-from Core.Structure import StructureAgent
-from Core.Complex import Complex
-from Core.Rule import Rule
+import Parsing.ParsePCTLformula
 from Parsing.ParseBCSL import Parser
-from TS.State import State
-import re
 
 
 class TestFormalMethods(unittest.TestCase):
     def setUp(self):
-        self.parser = PCTLparser()
+        self.parser = Parsing.ParsePCTLformula.PCTLparser()
         self.model_parser = Parser("model")
         self.model = """
             #! rules
@@ -70,14 +58,9 @@ class TestFormalMethods(unittest.TestCase):
             d1 = 0.8
         """
 
-    # test second model --> tumor
-    def test_tumor_modelchecking_1(self):
+    def test_tumor_modelchecking(self):
         model_parsed = self.model_parser.parse(self.tumor).data
-        vm = model_parsed.to_vector_model()
-        ts = vm.generate_transition_system()
-        print(ts)
         result = model_parsed.PCTL_model_checking("P=? [F T(P{m})::x>2 & T(P{i})::x>=0 & T(P{i})::x<2]")
-        print(result)
         self.assertTrue("Result" in str(result))
 
         result = model_parsed.PCTL_model_checking("P > 0.5 [F T(P{m})::x>2]")
@@ -94,16 +77,13 @@ class TestFormalMethods(unittest.TestCase):
         result = model_parsed.PCTL_synthesis("P=? [F T(P{m})::x>2]", None)
         self.assertTrue("Result" in str(result))
 
-    # test model 2
     def test_parametric_model(self):
         model_parsed = self.model_parser.parse(self.model).data
 
-        result = model_parsed.PCTL_synthesis("P<=0.3 [F X().Y{_}::rep >= 1]", None)
-        print("1.....", result)
-        #self.assertTrue("Result (initial states)" in str(result))
+        result = model_parsed.PCTL_synthesis("P<=0.3 [F X().Y{_}::rep >= 1]", '0<=q<=1')
+        self.assertTrue("Result (initial states)" in str(result))
 
         result = model_parsed.PCTL_synthesis("P=? [F X().Y{_}::rep >= 1]", None)
-        print("2.....", result)
         self.assertTrue("Result (initial states)" in str(result))
 
     def test_synthesis_simple(self):
