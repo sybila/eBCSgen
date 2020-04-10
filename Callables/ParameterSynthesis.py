@@ -7,10 +7,10 @@ sys.path.append(os.path.split(sys.path[0])[0])
 from Parsing.ParseBCSL import Parser
 
 """
-usage: ModelChecking.py [-h] --model MODEL --output OUTPUT [--bound BOUND]
-                        --formula FORMULA
+usage: ParameterSynthesis.py [-h] --model MODEL --output OUTPUT
+                             [--bound BOUND] --formula FORMULA --region REGION
 
-Model checking
+Parameter synthesis
 
 arguments:
   --model MODEL
@@ -20,14 +20,16 @@ arguments:
 optional arguments:
   -h, --help         show this help message and exit
   --bound BOUND
+  --region REGION
 
 """
 
-args_parser = argparse.ArgumentParser(description='Model checking')
+args_parser = argparse.ArgumentParser(description='Parameter synthesis')
 args_parser.add_argument('--model', type=str, required=True)
 args_parser.add_argument('--output', type=str, required=True)
 args_parser.add_argument('--bound', type=int)
 args_parser.add_argument('--formula', type=str, required=True)
+args_parser.add_argument('--region', type=str)
 
 args = args_parser.parse_args()
 
@@ -40,7 +42,7 @@ if args.bound:
 else:
     bound = None
 
-result = model.PCTL_model_checking(args.formula, bound)
+result = model.PCTL_synthesis(args.formula, args.region, bound)
 f = open(args.output, "w")
 f.write(result.decode("utf-8"))
 f.close()
