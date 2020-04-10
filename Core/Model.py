@@ -144,10 +144,13 @@ class Model:
         APs = formula.get_APs()
         state_labels, AP_labeles = self.create_AP_labels(APs, ts, vm.bound)
         formula = formula.replace_APs(AP_labeles)
-        ts.save_to_STORM_explicit(path + "exp_transitions.tra", path + "exp_labels.lab", state_labels, AP_labeles)
+        transitions_file = path + "exp_transitions.tra"
+        labels_file = path + "exp_labels.lab"
+        ts.save_to_STORM_explicit(transitions_file, labels_file, state_labels, AP_labeles)
 
         command = "storm --explicit {0} {1} --prop '{2}'"
-        result = call_storm(command.format(path + 'exp_transitions.tra', path + 'exp_labels.lab', formula))
+        result = call_storm(command.format(transitions_file, labels_file, formula),
+                            [transitions_file, labels_file])
         return result
 
     def PCTL_synthesis(self, PCTL_formula: str, region: str, bound: int = None):
@@ -176,15 +179,17 @@ class Model:
         labels, prism_formulas = self.create_complex_labels(formula.get_complexes(), ts.ordering)
         formula = formula.replace_complexes(labels)
 
-        ts.save_to_prism(path + "prism-parametric.pm", vm.bound, self.params, prism_formulas)
+        prism_file = path + "prism-parametric.pm"
+
+        ts.save_to_prism(prism_file, vm.bound, self.params, prism_formulas)
 
         command_region = "storm-pars --prism {0} --prop '{1}' --region '{2}' --refine 0.01 10 --printfullresult"
         command_no_region = "storm-pars --prism {0} --prop '{1}'"
 
         if region:
-            result = call_storm(command_region.format(path + 'prism-parametric.pm', formula, region))
+            result = call_storm(command_region.format(prism_file, formula, region), [prism_file])
         else:
-            result = call_storm(command_no_region.format(path + 'prism-parametric.pm', formula))
+            result = call_storm(command_no_region.format(prism_file, formula), [prism_file])
         return result
 
     def create_complex_labels(self, complexes: list, ordering: tuple):
@@ -237,7 +242,7 @@ class Model:
         return state_labels, AP_lables
 
 
-def call_storm(command: str):
+def call_storm(command: str, files: list):
     """
     Calls Storm model checker either locally (if available) or on the remote server.
 
@@ -250,10 +255,14 @@ def call_storm(command: str):
         stdout, stderr = command.communicate()
         return stdout
     else:
-        import paramiko
+        import paramiko, scp
         ssh = paramiko.SSHClient()
         ssh.load_system_host_keys()
         ssh.connect("psyche07.fi.muni.cz", username="biodivine")
+
+        tunnel = scp.SCPClient(ssh.get_transport())
+        for file in files:
+            tunnel.put(file, file)
 
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
         return ssh_stdout.read()
