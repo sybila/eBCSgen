@@ -267,4 +267,5 @@ def call_storm(command: str, files: list):
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
         output = ssh_stdout.read()
         ssh.close()
+        del ssh, ssh_stdin, ssh_stdout, ssh_stderr
         return output
