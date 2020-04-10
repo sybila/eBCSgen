@@ -124,7 +124,7 @@ class TestModel(unittest.TestCase):
         self.model_wrong_1 = \
             """#! rules
             X(K{i})::rep => X(K{p})::rep @ k1*[X()::rep]
-            X(T{a})::rep => X(T{o}):rep @ k2*[Z()::rep]
+            X(T{a})::rep => X(T{o}):;rep @ k2*[Z()::rep]
             => Y(P{f})::rep @ 1/(1+([X()::rep])**4)
 
             #! inits
@@ -168,7 +168,172 @@ class TestModel(unittest.TestCase):
             k1 = 0.05 // also
             k2 = 0.12
             """
+        
+        self.model_with_complexes = """
+            #! rules
+            // commenting
+            X(T{a}):XX::rep => X(T{o}):XX::rep @ k2*[X().X()::rep]
+            K{i}:X():XYZ::rep => K{p}:X():XYZ::rep @ k1*[X().Y().Z()::rep] // also here
+            => P{f}:XP::rep @ 1/(1+([X().P{_}::rep])**4) // ** means power (^)
 
+            #! inits
+            // here
+            2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+            Y(P{g}, N{l})::rep // comment just 1 item
+
+            #! definitions
+            // and
+            k1 = 0.05 // also
+            k2 = 0.12
+
+            #! complexes
+            XYZ = X().Y().Z() // a big complex
+            XX = X().X()
+            XP = X().P{_}
+            """
+
+        self.model_without_complexes = """
+            #! rules
+            // commenting
+            X(T{a}).X()::rep => X(T{o}).X()::rep @ k2*[X().X()::rep]
+            X(K{i}).Y().Z()::rep => X(K{p}).Y().Z()::rep @ k1*[X().Y().Z()::rep] // also here
+            => X().P{f}::rep @ 1/(1+([X().P{_}::rep])**4) // ** means power (^)
+
+            #! inits
+            // here
+            2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+            Y(P{g}, N{l})::rep // comment just 1 item
+
+            #! definitions
+            // and
+            k1 = 0.05 // also
+            k2 = 0.12
+            """
+
+        self.model_with_variable = """
+            #! rules
+            // commenting
+            T{a}:X():?::rep => T{o}:X():?::rep @ k2*[X().X()::rep] ; ? = { XX, XY }
+            K{i}:X():XY::rep => K{p}:X():XY::rep @ k1*[X().Y().Z().X()::rep] // also here
+
+            #! inits
+            // here
+            2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+
+            #! definitions
+            // and
+            k1 = 0.05 // also
+            k2 = 0.12
+
+            #! complexes
+            XX = X().X()
+            XY = X().Y()
+            """
+
+        self.model_without_variable = """
+            #! rules
+            // commenting
+            X(K{i}).Y()::rep => X(K{p}).Y()::rep @ k1*[X().Y().Z().X()::rep]
+            X(T{a}).X()::rep => X(T{o}).X()::rep @ k2*[X().X()::rep]
+            X(T{a}).Y()::rep => X(T{o}).Y()::rep @ k2*[X().X()::rep]
+
+            #! inits
+            // here
+            2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+
+            #! definitions
+            // and
+            k1 = 0.05 // also
+            k2 = 0.12
+            """
+
+        self.model_with_redundant = """
+            #! rules
+            K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt + D(A{_})::cell @ 3*[K().B()::cyt]/2*v_1
+            K().B()::cyt => K()::cyt + B()::cyt + D(A{_})::cell @ 3*[K().B()::cyt]/2*v_1
+            K().K()::cyt => K()::cyt + K()::cyt
+            K(S{i}).K()::cyt => K(S{a})::cyt + K()::cyt
+            K(S{i}, T{p}).K()::cyt => K(S{a}, T{p})::cyt + K()::cyt
+
+            #! inits
+            2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+
+            #! definitions
+            v_1 = 0.05
+            k2 = 0.12
+            """
+
+        self.model_without_redundant = """
+            #! rules
+            K().B()::cyt => K()::cyt + B()::cyt + D(A{_})::cell @ 3*[K().B()::cyt]/2*v_1
+            K().K()::cyt => K()::cyt + K()::cyt
+
+            #! inits
+            2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+
+            #! definitions
+            v_1 = 0.05
+            k2 = 0.12
+            """
+
+        self.model_with_context = """
+            #! rules
+            K(S{i}).B(T{a})::cyt => K(S{i})::cyt + B(T{a})::cyt @ 3*[K(S{i}).B(T{a})::cyt]/2*v_1
+            A{p}.K(S{i},T{i})::cyt => A{i}::cyt + K(S{a},T{a})::cyt
+            K(S{i},T{i})::cyt => K(S{a},T{i})::cyt
+
+            #! inits
+            2 K(S{i}).B(T{a})::cyt
+            1 A{p}.K(S{i},T{i})::cyt
+
+            #! definitions
+            v_1 = 0.05
+            k2 = 0.12
+            """
+
+        self.model_without_context = """
+            #! rules
+            K().B()::cyt => K()::cyt + B()::cyt @ 3*[K().B()::cyt]/2*v_1
+            A{_}.K()::cyt => A{_}::cyt + K()::cyt
+
+            #! inits
+            2 K().B()::cyt
+            1 A{_}.K()::cyt
+
+            #! definitions
+            v_1 = 0.05
+            k2 = 0.12
+            """
+
+        self.model_reachable = """
+            #! rules
+            K(S{i}).B()::cyt => K(S{a})::cyt + B()::cyt @ 3*[K(S{i}).B()::cyt]/2*v_1
+            K(S{a})::cyt + A{i}::cyt => K(S{a}).A{i}::cyt
+            K().A{i}::cyt => K().A{a}::cyt
+
+            #! inits
+            2 K(S{i}).B()::cyt
+            1 A{i}::cyt
+
+            #! definitions
+            v_1 = 0.05
+            k2 = 0.12
+            """
+
+        self.model_nonreachable = """
+            #! rules
+            K(S{i}).B()::cyt => K(S{a})::cyt + B()::cyt @ 3*[K(S{i}).B()::cyt]/2*v_1
+            K(S{a})::cyt + A{i}::cyt => K(S{a}).A{i}::cyt
+
+            #! inits
+            2 K(S{i}).B()::cyt
+            1 A{i}::cyt
+
+            #! definitions
+            v_1 = 0.05
+            k2 = 0.12
+            """
+        
         self.model_parametrised = """
             #! rules
             // commenting
@@ -212,13 +377,48 @@ class TestModel(unittest.TestCase):
         self.assertTrue(model.to_vector_model() == self.vm_1)
 
     def test_parser_errors(self):
-        self.model_parser.parse(self.model_wrong_1)
         self.assertEqual(self.model_parser.parse(self.model_wrong_1).data,
-                         {"unexpected": ":", "expected": {'::', '.'}, "line": 3, "column": 36})
+                         {"unexpected": ";", "expected": {'?', 'NAME'}, "line": 3, "column": 37})
 
         self.assertEqual(self.model_parser.parse(self.model_wrong_2).data,
-                         {"unexpected": "=", "expected": {'#! inits', ']', '#! definitions', '=>', '@', 'INT', '+'},
-                          "line": 3, "column": 26})
+                         {"expected": {'#! inits', ']', '#! definitions', '=>', '@', 'INT', '+', 'NAME', ';'},
+                          "line": 3, "column": 26, "unexpected": "="})
+
+    def test_zooming_syntax(self):
+        model_abstract = self.model_parser.parse(self.model_with_complexes).data
+        model_base = self.model_parser.parse(self.model_without_complexes).data
+        self.assertEqual(model_abstract, model_base)
+
+    def test_variables(self):
+        model_abstract = self.model_parser.parse(self.model_with_variable).data
+        model_base = self.model_parser.parse(self.model_without_variable).data
+        self.assertEqual(model_abstract, model_base)
+
+    def test_redundant(self):
+        model = self.model_parser.parse(self.model_with_redundant).data
+        model.eliminate_redundant()
+
+        model_eliminated = self.model_parser.parse(repr(model)).data
+        model_check = self.model_parser.parse(self.model_without_redundant).data
+        self.assertEqual(model_eliminated, model_check)
+
+    def test_reduce_context(self):
+        model = self.model_parser.parse(self.model_with_context).data
+        model.reduce_context()
+
+        model_check = self.model_parser.parse(self.model_without_context).data
+        self.assertEqual(model, model_check)
+
+    def test_nonreachability(self):
+        complex_parser = Parser("rate_complex")
+        agent = "K(S{a}).A{a}::cyt"
+        complex = complex_parser.parse(agent).data.children[0]
+
+        model_reach = self.model_parser.parse(self.model_reachable).data
+        model_nonreach = self.model_parser.parse(self.model_nonreachable).data
+        
+        self.assertTrue(model_reach.static_non_reachability(complex))
+        self.assertFalse(model_nonreach.static_non_reachability(complex))
 
     def test_parametrised_model(self):
         model = self.model_parser.parse(self.model_parametrised).data

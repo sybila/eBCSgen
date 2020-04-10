@@ -83,3 +83,9 @@ class TestRate(unittest.TestCase):
         self.rate_2.vectorize(ordering, dict())
         self.rate_2.to_symbolic()
         self.assertEqual(str(self.rate_2), "3*(y[2] + y[3])+(y[0] + y[1])")
+
+    def test_reduce_context(self):
+        rate_expr = "3*[K(S{i})::cyt]/2*v_1"
+        rate = Rate(self.parser.parse(rate_expr).data)
+
+        self.assertEqual(rate.reduce_context(), self.rate_1)

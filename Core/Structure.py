@@ -118,3 +118,11 @@ class StructureAgent:
             return agents
         else:
             return {(None, self)} if other == -1 else {(self, None)}
+
+    def reduce_context(self):
+        """
+        Reduces context of StructureAgent to minimum.
+
+        :return: new StructureAgent with reduced context
+        """
+        return StructureAgent(self.name, set())

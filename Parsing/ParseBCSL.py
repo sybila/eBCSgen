@@ -3,7 +3,7 @@ import json
 from numpy import inf
 import numpy as np
 from copy import deepcopy
-from lark import Lark, Transformer, Tree, Discard
+from lark import Lark, Transformer, Tree, Token
 from lark import UnexpectedCharacters, UnexpectedToken
 from lark.load_grammar import _TERMINAL_NAMES
 
@@ -66,18 +66,20 @@ class SideHelper:
 
 
 GRAMMAR = r"""
-    model: rules inits definitions
+    model: rules inits definitions (complexes)?
 
     rules: RULES_START (rule|COMMENT)+
     inits: INITS_START (init|COMMENT)+
     definitions: DEFNS_START (definition|COMMENT)+
+    complexes: COMPLEXES_START (cmplx_dfn|COMMENT)+
 
     init: const? rate_complex (COMMENT)?
     definition: def_param "=" number (COMMENT)?
-    rule: side ARROW side ("@" rate)? (COMMENT)?
+    rule: side ARROW side ("@" rate)? (";" variable)? (COMMENT)?
+    cmplx_dfn: cmplx_name "=" sequence (COMMENT)?
 
     side: (const? complex "+")* (const? complex)?
-    complex: sequence DOUBLE_COLON compartment
+    complex: (abstract_sequence|sequence) DOUBLE_COLON compartment
 
     !rate : fun "/" fun | fun
     !fun: const | param | rate_agent | fun "+" fun | fun "-" fun | fun "*" fun | fun POW const | "(" fun ")"
@@ -92,7 +94,9 @@ GRAMMAR = r"""
     RULES_START: "#! rules"
     INITS_START: "#! inits"
     DEFNS_START: "#! definitions"
+    COMPLEXES_START: "#! complexes"
 
+    cmplx_name: CNAME
     param: CNAME
     def_param : CNAME
     number: NUMBER
@@ -106,6 +110,16 @@ GRAMMAR = r"""
     %import common.WS
     %ignore WS
     %ignore COMMENT
+"""
+
+EXTENDED_GRAMMAR = """
+    abstract_sequence: atomic_complex | atomic_structure_complex | structure_complex
+    atomic_complex: atomic ":" (cmplx_name|VAR)
+    atomic_structure_complex: atomic ":" structure ":" (cmplx_name|VAR)
+    structure_complex: structure ":" (cmplx_name|VAR)
+
+    variable: VAR "=" "{" cmplx_name ("," cmplx_name)+ "}"
+    VAR: "?"
 """
 
 COMPLEX_GRAMMAR = """
@@ -128,7 +142,125 @@ COMPLEX_GRAMMAR = """
     %import common.DIGIT
 """
 
+
+class ReplaceVariables(Transformer):
+    """
+    This class is used to replace variables in rule (marked by ?) by
+    the given cmplx_name (so far limited only to that).
+    """
+    def __init__(self, to_replace):
+        super(Transformer, self).__init__()
+        self.to_replace = to_replace
+
+    def VAR(self, matches):
+        return deepcopy(self.to_replace)
+
+
+class ExtractComplexNames(Transformer):
+    """
+    Extracts definitions of cmplx_name from #! complexes part.
+
+    Also multiplies rule with variable to its instances using ReplaceVariables Transformer.
+    """
+    def __init__(self):
+        super(Transformer, self).__init__()
+        self.complex_defns = dict()
+
+    def cmplx_dfn(self, matches):
+        self.complex_defns[str(matches[0].children[0])] = matches[1]
+
+    def rules(self, matches):
+        new_rules = [matches[0]]
+        for rule in matches[1:]:
+            if rule.children[-1].data == 'variable':
+                variables = rule.children[-1].children[1:]
+                for variable in variables:
+                    replacer = ReplaceVariables(variable)
+                    new_rule = Tree('rule', deepcopy(rule.children[:-1]))
+                    new_rules.append(replacer.transform(new_rule))
+            else:
+                new_rules.append(rule)
+        return Tree('rules', new_rules)
+
+
+class TransformAbstractSyntax(Transformer):
+    """
+    Transformer to remove "zooming" syntax.
+
+    Divided to three special cases (declared below).
+    Based on replacing subtrees in parent trees.
+    """
+    def __init__(self, complex_defns):
+        super(Transformer, self).__init__()
+        self.complex_defns = complex_defns
+
+    def cmplx_name(self, matches):
+        return deepcopy(self.complex_defns[str(matches[0])])
+
+    def abstract_sequence(self, matches):
+        return matches[0]
+
+    def atomic_structure_complex(self, matches):
+        """
+        atomic:structure:complex
+        """
+        structure = self.insert_atomic_to_struct(matches[0], matches[1])
+        sequence = self.insert_struct_to_complex(structure, matches[2])
+        return sequence
+
+    def atomic_complex(self, matches):
+        """
+        atomic:complex
+        """
+        sequence = self.insert_atomic_to_complex(matches[0], matches[1])
+        return sequence
+
+    def structure_complex(self, matches):
+        """
+        structure:complex
+        """
+        sequence = self.insert_struct_to_complex(matches[0], matches[1])
+        return sequence
+
+    def insert_atomic_to_struct(self, atomic, struct):
+        """
+        Adds or replaces atomic subtree in struct tree.
+        """
+        if len(struct.children) == 2:
+            struct.children[1].children.append(atomic)
+        else:
+            struct.children.append(Tree('composition', [atomic]))
+        return struct
+
+    def insert_struct_to_complex(self, struct, complex):
+        """
+        Adds or replaces struct subtree in complex tree.
+        """
+        for i in range(len(complex.children)):
+            if self.get_name(struct) == self.get_name(complex.children[i].children[0]):
+                complex.children[i] = Tree('agent', [struct])
+                break
+        return complex
+
+    def insert_atomic_to_complex(self, atomic, complex):
+        """
+        Adds or replaces atomic subtree in complex tree.
+        """
+        for i in range(len(complex.children)):
+            if self.get_name(atomic) == self.get_name(complex.children[i].children[0]):
+                complex.children[i] = Tree('agent', [atomic])
+                break
+        return complex
+
+    def get_name(self, agent):
+        return str(agent.children[0].children[0])
+
+
 class TreeToComplex(Transformer):
+    """
+    Creates actual Complexes in rates of the rules - there it is safe,
+    order is not important. Does not apply to the rest of the rule!
+    """
     def state(self, matches):
         return "".join(map(str, matches))
 
@@ -149,7 +281,7 @@ class TreeToComplex(Transformer):
         for item in matches[0].children:
             sequence.append(item.children[0])
         compartment = matches[2]
-        return Tree("agent", [Complex(collections.Counter(sequence), compartment)])
+        return Tree("agent", [Complex(sequence, compartment)])
 
     def compartment(self, matches):
         return str(matches[0])
@@ -162,6 +294,8 @@ class TreeToObjects(Transformer):
     """
     A transformer which is called on a tree in a bottom-up manner and transforms all subtrees/tokens it encounters.
     Note the defined methods have the same name as elements in the grammar above.
+
+    Creates the actual Model object after all the above transformers were applied.
     """
     def const(self, matches):
         return int(matches[0])
@@ -242,11 +376,10 @@ class TreeToObjects(Transformer):
 
 class Parser:
     def __init__(self, start):
-        grammar = "start: " + start + GRAMMAR + COMPLEX_GRAMMAR
+        grammar = "start: " + start + GRAMMAR + COMPLEX_GRAMMAR + EXTENDED_GRAMMAR
         self.parser = Lark(grammar, parser='lalr',
                            propagate_positions=False,
-                           maybe_placeholders=False,
-                           transformer=TreeToComplex()
+                           maybe_placeholders=False
                            )
 
         self.terminals = dict((v, k) for k, v in _TERMINAL_NAMES.items())
@@ -256,13 +389,56 @@ class Parser:
                                "DOUBLE_COLON": "::",
                                "RULES_START": "#! rules",
                                "INITS_START": "#! inits",
-                               "DEFNS_START": "#! definitions"
+                               "DEFNS_START": "#! definitions",
+                               "CNAME": "NAME",
+                               "VAR": "?"
                                })
 
     def replace(self, expected: set) -> set:
-        return set([self.terminals.get(item, item) for item in filter(lambda item: item != 'CNAME', expected)])
+        """
+        Method used to replace expected tokens by their human-readable representations defined in self.terminals
+
+        :param expected: given set of expected tokens
+        :return: transformed tokens
+        """
+        return set([self.terminals.get(item, item) for item in expected])
 
     def parse(self, expression: str) -> Result:
+        """
+        Main method for parsing, first syntax_check is called which checks syntax and if it is
+        correct, a parsed Tree is returned.
+
+        Then the tree is transformed using several Transformers in self.transform method.
+
+        :param expression: given string expression
+        :return: Result containing parsed object or error specification
+        """
+        result = self.syntax_check(expression)
+        if result.success:
+            return self.transform(result.data)
+        else:
+            return result
+
+    def transform(self, tree: Tree) -> Result:
+        """
+        Apply several transformers to construct BCSL object from given tree.
+
+        :param tree: given parsed Tree
+        :return: Result containing constructed BCSL object
+        """
+        try:
+            complexer = ExtractComplexNames()
+            tree = complexer.transform(tree)
+            de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
+            tree = de_abstracter.transform(tree)
+            tree = TreeToComplex().transform(tree)
+            tree = TreeToObjects().transform(tree)
+
+            return Result(True, tree.children[0])
+        except Exception as u:
+            return Result(False, {"error": str(u)})
+
+    def syntax_check(self, expression: str) -> Result:
         """
         Main method for parsing, calls Lark.parse method and creates Result containing parsed
          object (according to designed 'start' in grammar) or dict with specified error in case
@@ -273,8 +449,6 @@ class Parser:
         """
         try:
             tree = self.parser.parse(expression)
-            tree = TreeToObjects().transform(tree)
-            return Result(True, tree.children[0])
         except UnexpectedCharacters as u:
             return Result(False, {"unexpected": expression[u.pos_in_stream],
                                   "expected": self.replace(u.allowed),
@@ -283,3 +457,4 @@ class Parser:
             return Result(False, {"unexpected": str(u.token),
                                   "expected": self.replace(u.expected),
                                   "line": u.line, "column": u.column})
+        return Result(True, tree)

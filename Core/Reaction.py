@@ -44,3 +44,12 @@ class Reaction:
         return VectorReaction(self.lhs.to_vector(ordering),
                               self.rhs.to_vector(ordering),
                               self.rate)
+
+    def compatible(self, other: 'Reaction') -> bool:
+        """
+        Checks whether Reaction is compatible (position-wise) with the other Reaction.
+
+        :param other: given Reaction
+        :return: True if compatible
+        """
+        return self.lhs.compatible(other.lhs) and self.rhs.compatible(other.rhs)

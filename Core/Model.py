@@ -1,5 +1,6 @@
 import collections
 
+from Core.Complex import Complex
 from Core.Side import Side
 from TS.TransitionSystem import TransitionSystem
 from TS.VectorModel import VectorModel
@@ -54,8 +55,6 @@ class Model:
         First reactions are generated, then unique complexes are collected and finally both reactions and
         initial state are transformed to vector representation.
 
-        THIS SHOULD BE DONE IN PARALLEL !!!
-
         :param bound: given bound
         :return: VectorModel representation of the model
         """
@@ -77,7 +76,46 @@ class Model:
         return VectorModel(vector_reactions, init, ordering, bound)
 
     def eliminate_redundant(self):
-        pass
+        """
+        Adds comments to rules which are potentially redundant.
+
+        In the case when there are no rule present, it automatically comments out the redundant rules.
+        """
+        counter = 1
+        for rule_left in self.rules:
+            for rule_right in self.rules:
+                if id(rule_left) != id(rule_right):
+                    if rule_left.compatible(rule_right):
+                        rule_right.comment = (not self.all_rates, rule_right.comment[1] + [counter])
+                        rule_left.comment[1].append(counter)
+                        counter += 1
+
+    def reduce_context(self):
+        """
+        Reduces context of the Model to the minimum.
+        Includes all rules and initial state.
+        """
+        new_rules = set()
+        for rule in self.rules:
+            new_rule = rule.reduce_context()
+            if new_rule.is_meaningful():
+                new_rules.add(new_rule)
+
+        new_init = collections.Counter()
+        for init in self.init:
+            new_init[init.reduce_context()] = self.init[init]
+
+        self.init = new_init
+        self.rules = new_rules
+
+    def static_non_reachability(self, agent: Complex) -> bool:
+        """
+        Checks whether there exists a rule with compatible agent in its rhs.
+
+        :param agent: given Complex agent
+        :return: True if exists compatible
+        """
+        return any(list(map(lambda a: a.exists_compatible_agent(agent), self.rules)))
 
     def network_free_simulation(self, options) -> list:
         # for this we need to be able to apply Rule on State

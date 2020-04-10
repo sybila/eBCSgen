@@ -1,0 +1,37 @@
+<tool id="RegionSampling" name="Region Sampling" version="1.0.0">
+  <description>- sample given result of Storm parameter synthesis</description>
+  <command>python3 /home/xtrojak/RegionSampling/run.py
+      --storm_file '$storm_file'
+      --output '$output'
+
+      #parameters = {}
+      #for $i, $s in enumerate(regions)
+        $parameters['${s.param}'] = [${s.from}, ${s.to}, ${s.number}]
+      #end for
+
+      #params = str($parameters)
+      --params '$params'
+  </command>
+
+  <inputs>
+    <param format="txt" name="storm_file" type="data" label="Storm results file"/>
+
+    <repeat name="regions" title="Regions">
+        <param name="param" value="" type="text" label="Parameter:"/>
+        <param name="from" size="4" type="float" value="" label="Region start:"/>
+        <param name="to" size="4" type="float" value="" label="Region end:"/>
+        <param name="number" size="4" type="float" value="" label="Number of samples:"/>
+    </repeat>
+
+  </inputs>
+
+  <outputs>
+    <data format="html" name="output" />
+  </outputs>
+
+  <tests>
+    <test>
+    </test>
+  </tests>
+
+</tool>
