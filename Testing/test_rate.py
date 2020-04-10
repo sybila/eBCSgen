@@ -86,6 +86,6 @@ class TestRate(unittest.TestCase):
 
     def test_reduce_context(self):
         rate_expr = "3*[K(S{i})::cyt]/2*v_1"
-        rate = Rate(self.parser.parse(rate_expr).data)
+        rate = Core.Rate.Rate(self.parser.parse(rate_expr).data)
 
         self.assertEqual(rate.reduce_context(), self.rate_1)
