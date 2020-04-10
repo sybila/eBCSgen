@@ -8,7 +8,7 @@
 
       #parameters = []
       #for $i, $s in enumerate(regions)
-        $parameters.append(str(${s.from}) + "<=" + str(${s.param}) + "<=" + str(${s.to}))
+        $parameters.append(str(${s.from}) + "=" + str(${s.param}) + "=" + str(${s.to}))
       #end for
 
       #$region = ";".join($parameters)

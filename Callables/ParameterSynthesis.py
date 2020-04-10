@@ -42,6 +42,8 @@ if args.bound:
 else:
     bound = None
 
+region = args.region.replace("=", "<=")
+
 result = model.PCTL_synthesis(args.formula, args.region, bound)
 f = open(args.output, "w")
 f.write(result.decode("utf-8"))
