@@ -1,6 +1,9 @@
 import unittest
-from TS.State import State
 import numpy as np
+
+import Parsing.ParseBCSL
+from Core.Formula import AtomicProposition
+from TS.State import State
 
 
 class TestState(unittest.TestCase):
@@ -12,6 +15,12 @@ class TestState(unittest.TestCase):
         self.s5 = State(np.array((7, 6, 5, 3)))
         self.s6 = State(np.array((1, 0, 0, 1, 0)))
         self.s_inf = State(np.array((np.inf, np.inf, np.inf)))
+
+        complex_parser = Parsing.ParseBCSL.Parser("rate_complex")
+
+        self.complex_1 = complex_parser.parse("K(S{i},T{a}).B{o}::cyt").data.children[0]
+        self.complex_2 = complex_parser.parse("K(S{a},T{a}).B{o}::cyt").data.children[0]
+        self.complex_3 = complex_parser.parse("K(S{a},T{i}).B{o}::cyt").data.children[0]
 
     def test_sub(self):
         self.assertEqual(self.s1 - self.s2, State(np.array((-4, -2, 0))))
@@ -35,3 +44,14 @@ class TestState(unittest.TestCase):
     def test_reorder(self):
         order = np.array([2, 0, 1])
         self.assertEqual(self.s1.reorder(order), State(np.array((3, 1, 2))))
+
+    def test_check_AP(self):
+        ordering = (self.complex_1, self.complex_2, self.complex_3)
+        ap = AtomicProposition(self.complex_2, "<=", 2)
+        self.assertTrue(self.s1.check_AP(ap, ordering))
+        ap = AtomicProposition(self.complex_2, ">", 2)
+        self.assertFalse(self.s1.check_AP(ap, ordering))
+
+    def test_to_PRISM_string(self):
+        self.assertEqual(self.s1.to_PRISM_string(), "(VAR_0=1) & (VAR_1=2) & (VAR_2=3)")
+        self.assertEqual(self.s1.to_PRISM_string(True), "(VAR_0'=1) & (VAR_1'=2) & (VAR_2'=3)")

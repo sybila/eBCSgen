@@ -23,6 +23,15 @@ class Complex:
     def __hash__(self):
         return hash(str(self))
 
+    def to_PRISM_code(self, number: int) -> str:
+        """
+        Creates state variable name for PRISM model.
+
+        :param number: position in ordering
+        :return: PRISM variable name
+        """
+        return "VAR_" + str(number)
+
     def extend_signature(self, atomic_signature: dict, structure_signature: dict):
         """
         Extend given signatures by possibly new context.
@@ -55,6 +64,19 @@ class Complex:
                     if all([self_perm[i].compatible(other_perm[i]) for i in range(len(self_perm))]):
                         return True
         return False
+
+    def identify_compatible(self, agents: tuple) -> list:
+        """
+        Identifies compatible agents from given list.
+
+        :param agents: given tuple of agents (ordering)
+        :return: list of indices of compatible agents
+        """
+        positions = []
+        for i in range(len(agents)):
+            if self.compatible(agents[i]):
+                positions.append(i)
+        return positions
 
     def reduce_context(self) -> 'Complex':
         """

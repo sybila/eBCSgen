@@ -1,6 +1,6 @@
 import threading
 
-import time
+from TS.Edge import Edge
 
 
 class TSworker(threading.Thread):
@@ -26,28 +26,35 @@ class TSworker(threading.Thread):
             try:
                 state = self.ts.unprocessed.pop()
                 self.ts.processed.add(state)
-                edges = set()
+                unique_states = dict()
 
                 # special "hell" state
                 if state.is_inf:
-                    edge = self.ts.new_edge(state, state, 1)
-                    self.ts.edges.add(edge)
+                    self.ts.edges.add(Edge(state, state, 1))
                 else:
                     for reaction in self.model.vector_reactions:
                         new_state, rate = reaction.apply(state, self.model.bound)
                         if new_state and rate:
                             if new_state not in self.ts.processed:
                                 self.ts.unprocessed.add(new_state)
-                            edges.add(self.ts.new_edge(state, new_state, rate))
+
+                            # multiple arrows between two states are not allowed
+                            if new_state in unique_states:
+                                unique_states[new_state].add_rate(rate)
+                            else:
+                                edge = Edge(state, new_state, rate)
+                                unique_states[new_state] = edge
+
+                    edges = set(unique_states.values())
 
                     # normalise
                     factor = sum(list(map(lambda edge: edge.probability, edges)))
-                    for edge in edges:
-                        edge.normalise(factor)
-                        try:
+                    if edges:
+                        for edge in edges:
+                            edge.normalise(factor)
                             self.ts.edges.add(edge)
-                        except AttributeError:
-                            print(edge)
+                    else:
+                        self.ts.edges.add(Edge(state, state, 1))
 
             except KeyError:
                 self.work.clear()

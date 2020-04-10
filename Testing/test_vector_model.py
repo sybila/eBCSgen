@@ -146,17 +146,17 @@ class TestVectorModel(unittest.TestCase):
                               Edge(states[4], states[4], 1),
                               Edge(states[5], states[6], omega / gob), Edge(states[5], states[7], beta / gob),
                               Edge(states[5], states[8], gamma / gob),
-                              Edge(states[6], states[4], omega / goab), Edge(states[6], states[4], alpha / goab),
+                              Edge(states[6], states[4], oa / goab),
                               Edge(states[6], states[9], gamma / goab), Edge(states[6], states[10], beta / goab),
                               Edge(states[7], states[10], omega / omega),
                               Edge(states[8], states[9], gamma / gamma),
-                              Edge(states[9], states[4], omega / oa), Edge(states[9], states[4], alpha / oa),
+                              Edge(states[9], states[4], 1),
                               Edge(states[10], states[4], omega / oa), Edge(states[10], states[11], alpha / oa),
                               Edge(states[11], states[12], omega / omega),
-                              Edge(states[12], states[4], omega / oa), Edge(states[12], states[4], alpha / oa)
+                              Edge(states[12], states[4], 1)
                               }
 
-        self.test_ts.encode()
+        self.test_ts.encode(states[0])
 
         # bigger TS
 
@@ -214,6 +214,21 @@ class TestVectorModel(unittest.TestCase):
             beta = 5
             //gamma = 2
             omega = 3
+            """
+
+        self.model_with_sinks = \
+            """#! rules
+            K(S{u})::cyt => K(S{p})::cyt @ alpha*[K(S{u})::cyt]
+            K(S{p})::cyt + B{a}::cyt => K(S{p}).B{a}::cyt @ beta*[K(S{p})::cyt]*[B{a}::cyt]
+            B{a}::cyt => B{i}::cyt @ alpha*[B{_}::cyt]
+
+            #! inits
+            1 B{a}::cyt
+            1 K(S{u})::cyt
+
+            #! definitions
+            alpha = 10
+            beta = 5
             """
 
     def test_compute_bound(self):
@@ -305,4 +320,11 @@ class TestVectorModel(unittest.TestCase):
         generated_ts.save_to_json("Testing/TS_finished.json")
         loaded_ts = load_TS_from_json("Testing/interrupt_even_bigger_ts.json")
 
+        self.assertEqual(generated_ts, loaded_ts)
+
+    def test_handle_sinks(self):
+        model = self.model_parser.parse(self.model_with_sinks).data
+        vector_model = model.to_vector_model()
+        generated_ts = vector_model.generate_transition_system()
+        loaded_ts = load_TS_from_json("Testing/TS_with_sinks.json")
         self.assertEqual(generated_ts, loaded_ts)

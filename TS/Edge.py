@@ -11,6 +11,12 @@ class Edge:
     def __eq__(self, other: 'Edge'):
         return self.source == other.source and self.target == other.target and self.probability == other.probability
 
+    def __lt__(self, other: 'Edge'):
+        if self.source != other.source:
+            return self.source < other.source
+        else:
+            return self.target < other.target
+
     def __repr__(self):
         return str(self)
 
@@ -35,6 +41,16 @@ class Edge:
                     encoding_new[encoding_old[self.target]],
                     self.probability)
 
+    def add_rate(self, rate):
+        """
+        Adds given rate to self.probability.
+
+        Used when joining two Edges between the same nodes.
+
+        :param rate: given rate expression
+        """
+        self.probability += rate
+
     def normalise(self, factor):
         """
         Normalises rate to probability and converts it to float or string
@@ -55,6 +71,14 @@ class Edge:
         :return: dict representing the edge
         """
         return {'s': self.source, 't': self.target, 'p': self.probability}
+
+    def to_PRISM_string(self, decoding) -> str:
+        """
+        Creates string representation for PRISM file.
+
+        :return: PRISM string representation
+        """
+        return str(self.probability) + " : " + decoding[self.target].to_PRISM_string(True)
 
 
 def edge_from_dict(d: dict) -> Edge:

@@ -1,4 +1,4 @@
-from Core.Rate import tree_to_string
+import Core.Rate
 from lark import Transformer, Tree
 
 
@@ -11,16 +11,25 @@ class Formula:
         self.data = data
 
     def __str__(self):
-        return "".join(tree_to_string(self.data))
+        return "".join(Core.Rate.tree_to_string(self.data))
 
     def get_complexes(self) -> list:
         """
         Extracts all used Complexes from the Tree.
-
         :return: list of extracted Complexes
         """
         APs = self.get_APs()
         return list(map(lambda ap: ap.complex, APs))
+
+    def replace_complexes(self, labels: dict) -> 'Formula':
+        """
+        Replaces Complexes with PRISM name given by ordering.
+
+        :return: new Formula with replaced Complexes
+        """
+        replacetor = ComplexReplacetor(labels)
+        data = replacetor.transform(self.data)
+        return Formula(True, data)
 
     def get_APs(self) -> list:
         """
@@ -28,7 +37,7 @@ class Formula:
 
         :return: list of Atomic Propositions
         """
-        extractor = ComplexExtractor()
+        extractor = APextractor()
         extractor.transform(self.data)
         return extractor.APs
 
@@ -55,7 +64,7 @@ class AtomicProposition:
         return str(self)
 
     def __str__(self):
-        return "[" + str(self.complex) + self.sign + str(self.number) + "]"
+        return str(self.complex) + self.sign + str(self.number)
 
     def __hash__(self):
         return hash(str(self))
@@ -64,7 +73,7 @@ class AtomicProposition:
         return self.complex == other.complex and self.sign == other.sign and self.number == other.number
 
 
-class ComplexExtractor(Transformer):
+class APextractor(Transformer):
     def __init__(self):
         super(Transformer, self).__init__()
         self.APs = []
@@ -79,4 +88,15 @@ class APreplacetor(Transformer):
         self.replacements = replacements
 
     def ap(self, proposition):
-        return Tree("ap", [self.replacements[proposition[0]]])
+        return Tree("ap", ['"' + self.replacements[proposition[0]] + '"'])
+
+
+class ComplexReplacetor(Transformer):
+    def __init__(self, labels):
+        super(Transformer, self).__init__()
+        self.labels = labels
+
+    def ap(self, proposition):
+        ap = proposition[0]
+        ap.complex = self.labels[ap.complex]
+        return Tree("ap", [ap])

@@ -1,5 +1,7 @@
 import numpy as np
 
+import Core.Formula
+
 
 class State:
     def __init__(self, sequence: np.array):
@@ -61,7 +63,7 @@ class State:
         :param state: given State
         :return: resulting summation
         """
-        return sum(self.sequence * state)
+        return sum(self * state)
 
     def to_ODE_string(self) -> str:
         """
@@ -88,3 +90,33 @@ class State:
         :return: True if is special
         """
         return all([np.isinf(i) for i in self.sequence])
+
+    def check_AP(self, ap, ordering: tuple) -> bool:
+        """
+        Checks whether the State satisfies given AtomicProposition.
+
+        TBA : could be abstract !!!
+
+        :param ap: given AtomicProposition
+        :param ordering: position of corresponding Complex
+        :return: True if satisfied
+        """
+        if ap.complex in ordering:
+            operand = str(self.sequence[ordering.index(ap.complex)])
+        else:
+            indices = ap.complex.identify_compatible(ordering)
+            state = State(np.array([1 if i in indices else 0 for i in range(len(ordering))]))
+            operand = str(self.filter_values(state))
+        sign = "==" if ap.sign == " = " else ap.sign
+        return eval(operand + sign + str(ap.number))
+
+    def to_PRISM_string(self, apostrophe=False) -> str:
+        """
+        Creates string representation for PRISM file.
+
+        :param apostrophe: indicates whether variables should be with the apostrophe
+        :return: PRISM string representation
+        """
+        aps = "'" if apostrophe else ""
+        vars = list(map(lambda i: "(VAR_{}{}={})".format(i, aps, self.sequence[i]), range(len(self))))
+        return " & ".join(vars)

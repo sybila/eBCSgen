@@ -9,13 +9,14 @@ from Core.Complex import Complex
 from Core.Rule import Rule
 from Parsing.ParseBCSL import Parser
 from TS.State import State
+import TS.TransitionSystem
 from TS.VectorModel import VectorModel
 from TS.VectorReaction import VectorReaction
+import Core.Formula
 
 
 class TestModel(unittest.TestCase):
     def setUp(self):
-
         # agents
 
         self.s1 = StructureAgent("X", set())
@@ -28,7 +29,7 @@ class TestModel(unittest.TestCase):
 
         #  rules
 
-        sequence_1 = (self.s1, )
+        sequence_1 = (self.s1,)
         mid_1 = 1
         compartments_1 = ["rep"]
         complexes_1 = [(0, 0)]
@@ -45,7 +46,7 @@ class TestModel(unittest.TestCase):
 
         self.r2 = Rule(sequence_2, mid_2, compartments_2, complexes_2, pairs_2, None)
 
-        sequence_3 = (self.s2, )
+        sequence_3 = (self.s2,)
         mid_3 = 0
         compartments_3 = ["rep"]
         complexes_3 = [(0, 0)]
@@ -62,7 +63,7 @@ class TestModel(unittest.TestCase):
 
         self.defs = {'k1': 0.05, 'k2': 0.12}
 
-        self.model = Model({self.r1, self.r2, self.r3}, self.inits, self.defs, None)
+        self.model = Model({self.r1, self.r2, self.r3}, self.inits, self.defs, set())
         # model
 
         self.model_str_1 = """
@@ -77,7 +78,7 @@ class TestModel(unittest.TestCase):
         
         #! definitions
         k1 = 0.05
-        k2 = 0.12
+        k2 = 0.12   
         """
 
         self.model_parser = Parser("model")
@@ -110,11 +111,11 @@ class TestModel(unittest.TestCase):
         rate_2 = Rate(self.rate_parser.parse(rate_expr).data)
         rate_2.vectorize(ordering, {"k1": 0.05})
 
-        init = State(np.array([2.0, 1.0, 0.0]))
+        init = State(np.array([2, 1, 0]))
 
-        vector_reactions = {VectorReaction(State(np.array([0.0, 0.0, 0.0])), State(np.array([0.0, 1.0, 0.0])), rate_1),
-                            VectorReaction(State(np.array([1.0, 0.0, 0.0])), State(np.array([0.0, 0.0, 0.0])), rate_2),
-                            VectorReaction(State(np.array([0.0, 0.0, 1.0])), State(np.array([1.0, 0.0, 0.0])), None)}
+        vector_reactions = {VectorReaction(State(np.array([0, 0, 0])), State(np.array([0, 1, 0])), rate_1),
+                            VectorReaction(State(np.array([1, 0, 0])), State(np.array([0, 0, 0])), rate_2),
+                            VectorReaction(State(np.array([0, 0, 1])), State(np.array([1, 0, 0])), None)}
 
         self.vm_1 = VectorModel(vector_reactions, init, ordering, None)
 
@@ -167,7 +168,7 @@ class TestModel(unittest.TestCase):
             k1 = 0.05 // also
             k2 = 0.12
             """
-
+        
         self.model_with_complexes = """
             #! rules
             // commenting
@@ -332,6 +333,21 @@ class TestModel(unittest.TestCase):
             v_1 = 0.05
             k2 = 0.12
             """
+        
+        self.model_parametrised = """
+            #! rules
+            // commenting
+            X(K{i})::rep => X(K{p})::rep @ k1*[X()::rep] // also here
+            X(T{a})::rep => X(T{o})::rep @ k2*[Z()::rep]
+            => Y(P{f})::rep @ 1/(v_3+([X()::rep])**4) // ** means power (^)
+
+            #! inits
+            2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+            Y(P{g}, N{l})::rep // comment just 1 item
+
+            #! definitions
+            k1 = 0.05
+            """
 
     def test_str(self):
         model = self.model_parser.parse(self.model_str_1).data
@@ -356,6 +372,8 @@ class TestModel(unittest.TestCase):
 
     def test_to_vector_model(self):
         model = self.model_parser.parse(self.model_str_1).data
+        # print(model.to_vector_model())
+        # print(self.vm_1)
         self.assertTrue(model.to_vector_model() == self.vm_1)
 
     def test_parser_errors(self):
@@ -398,6 +416,63 @@ class TestModel(unittest.TestCase):
 
         model_reach = self.model_parser.parse(self.model_reachable).data
         model_nonreach = self.model_parser.parse(self.model_nonreachable).data
-
+        
         self.assertTrue(model_reach.static_non_reachability(complex))
         self.assertFalse(model_nonreach.static_non_reachability(complex))
+
+    def test_parametrised_model(self):
+        model = self.model_parser.parse(self.model_parametrised).data
+        self.assertTrue(len(model.params) == 2)
+
+    def test_create_complex_labels(self):
+        model = Model(set(), collections.Counter(), dict(), set())
+        complex_parser = Parser("rate_complex")
+        complex_1 = complex_parser.parse("K(S{i},T{a}).B{o}::cyt").data.children[0]
+        complex_2 = complex_parser.parse("K(S{a},T{a}).B{o}::cyt").data.children[0]
+        complex_3 = complex_parser.parse("K(S{a},T{i}).B{o}::cyt").data.children[0]
+        complex_abstract = complex_parser.parse("K(S{a}).B{_}::cyt").data.children[0]
+
+        ordering = (complex_1, complex_2, complex_3)
+        complexes = [complex_2, complex_abstract, complex_1]
+
+        result_labels = {complex_2: "VAR_1",complex_abstract: "ABSTRACT_VAR_12", complex_1: "VAR_0"}
+        result_formulas = ['ABSTRACT_VAR_12 = VAR_1+VAR_2; // K(S{a}).B{_}::cyt']
+
+        labels, prism_formulas = model.create_complex_labels(complexes, ordering)
+        self.assertEqual(labels, result_labels)
+        self.assertEqual(prism_formulas, result_formulas)
+
+    def test_create_AP_labels(self):
+        model = Model(set(), collections.Counter(), dict(), set())
+
+        complex_parser = Parser("rate_complex")
+        complex_1 = complex_parser.parse("K(S{i},T{a}).B{o}::cyt").data.children[0]
+        complex_2 = complex_parser.parse("K(S{a},T{a}).B{o}::cyt").data.children[0]
+        complex_3 = complex_parser.parse("K(S{a},T{i}).B{o}::cyt").data.children[0]
+
+        complex_abstract = complex_parser.parse("K(S{a}).B{_}::cyt").data.children[0]
+
+        ordering = (complex_1, complex_2, complex_3)
+
+        APs = [Core.Formula.AtomicProposition(complex_abstract, " >= ", "3"),
+               Core.Formula.AtomicProposition(complex_1, " < ", 2)]
+
+        s1 = State(np.array((1, 2, 2)))
+        s2 = State(np.array((5, 1, 1)))
+        s3 = State(np.array((2, 4, 3)))
+        s4 = State(np.array((1, 4, 3)))
+
+        states_encoding = {s1: 1, s2: 2, s3: 3, s4: 4}
+
+        result_AP_lables = {APs[0]: 'property_0', APs[1]: 'property_1'}
+        result_state_labels = {1: {'property_0', 'property_1'},
+                               3: {'property_0', 'init'},
+                               4: {'property_0', 'property_1'}}
+
+        ts = TS.TransitionSystem.TransitionSystem(ordering)
+        ts.states_encoding = states_encoding
+        ts.init = 3
+
+        state_labels, AP_lables = model.create_AP_labels(APs, ts, 0)
+        self.assertEqual(state_labels, result_state_labels)
+        self.assertEqual(AP_lables, result_AP_lables)

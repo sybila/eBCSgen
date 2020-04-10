@@ -1,5 +1,6 @@
 import json
 import numpy as np
+from itertools import groupby
 
 from TS.Edge import Edge
 from TS.State import State
@@ -10,6 +11,7 @@ class TransitionSystem:
         self.states_encoding = dict()  # State -> int
         self.edges = set()  # Edge objects: (int from, int to, probability), can be used for explicit Storm format
         self.ordering = ordering  # used to decode State to actual agents
+        self.init = int
 
         # for TS generating
         self.unprocessed = set()
@@ -20,6 +22,19 @@ class TransitionSystem:
 
     def __repr__(self):
         return str(self)
+
+    def __iter__(self):
+        """
+        Used to iterate over equivalence classes (given by source) of sorted edges.
+        """
+        self.index = 0
+        edges = sorted(self.edges)
+        self.data = groupby(edges, key=lambda edge: edge.source)
+        return self
+
+    def __next__(self):
+        new = next(self.data)
+        return list(new[-1])
 
     def __eq__(self, other: 'TransitionSystem'):
         """
@@ -48,13 +63,15 @@ class TransitionSystem:
         return set(map(hash, ts.edges)) == set(map(hash, other.edges))
         # return ts.edges == other.edges
 
-    def encode(self):
+    def encode(self, init: State):
         """
         Assigns a unique code to each State for storing purposes
         """
         for state in self.processed | self.unprocessed:
             if state not in self.states_encoding:
                 self.states_encoding[state] = len(self.states_encoding) + 1
+
+        self.init = self.states_encoding[init]
         self.processed = set()
         self.encode_edges()
 
@@ -65,16 +82,13 @@ class TransitionSystem:
         for edge in self.edges:
             edge.encode(self.states_encoding)
 
-    def new_edge(self, source: State, target: State, probability: float) -> Edge:
+    def create_decoding(self) -> dict:
         """
-        Added a new edge with code representations of given States.
+        Swaps encoding dictionary for decoding purposes.
 
-        :param source: origin state
-        :param target: target state
-        :param probability: probability of transition
-        :return: created Edge
+        :return: swapped dictionary
         """
-        return Edge(source, target, probability)
+        return {value: key for key, value in self.states_encoding.items()}
 
     def recode(self, new_encoding: dict):
         """
@@ -84,7 +98,7 @@ class TransitionSystem:
         :return: new TransitionSystem
         """
         # swap dictionary
-        old_encoding = {value: key for key, value in self.states_encoding.items()}
+        old_encoding = self.create_decoding()
         self.edges = set(map(lambda edge: edge.recode(old_encoding, new_encoding), self.edges))
 
     def save_to_json(self, output_file: str):
@@ -105,8 +119,98 @@ class TransitionSystem:
         with open(output_file, 'w') as json_file:
             json.dump(data, json_file, indent=4)
 
-    def save_to_PRISM_explicit(self, output_file):
-        pass
+    def change_hell(self, bound):
+        """
+        Changes hell from inf to bound + 1.
+
+        TODO: maybe we could get rid of inf completely, but it is more clear for
+        debugging purposes
+
+        :param bound: given allowed bound
+        """
+        for key, value in self.states_encoding.items():
+            if key.is_inf:
+                del self.states_encoding[key]
+                hell = State(np.array([bound + 1] * len(key)))
+                hell.is_inf = True
+                self.states_encoding[hell] = value
+                break
+
+    def save_to_STORM_explicit(self, transitions_file: str, labels_file: str, state_labels: dict, AP_labels):
+        """
+        Save the TransitionSystem as explicit Storm file (no parameters).
+
+        :param transitions_file: file for transitions
+        :param labels_file: file for labels
+        :param labels: labels representing atomic propositions assigned to states
+        """
+        trans_file = open(transitions_file, "w+")
+        trans_file.write("dtmc\n")
+
+        for edge in sorted(self.edges):
+            trans_file.write(str(edge) + "\n")
+        trans_file.close()
+
+        label_file = open(labels_file, "w+")
+        unique_labels = ['init'] + list(map(str, AP_labels.values()))
+        label_file.write("#DECLARATION\n" + " ".join(unique_labels) + "\n#END\n")
+
+        label_file.write("\n".join([str(state) + " " + " ".join(list(map(str, state_labels[state])))
+                                    for state in sorted(state_labels)]))
+        label_file.close()
+
+    def save_to_prism(self, output_file: str, bound: int, params: set, prism_formulas: list):
+        """
+        Save the TransitionSystem as a PRISM file (parameters present).
+
+        :param output_file: output file name
+        :param bound: given bound
+        :param params: set of present parameters
+        :param prism_formulas: definition of abstract Complexes
+        """
+
+        prism_file = open(output_file, "w+")
+        prism_file.write("dtmc\n")
+
+        # declare parameters
+        prism_file.write("\n" + "\n".join(["\tconst double {};".format(param) for param in params]) + "\n")
+        prism_file.write("\nmodule TS\n")
+
+        # to get rid of inf
+        self.change_hell(bound)
+        decoding = self.create_decoding()
+
+        # declare state variables
+        init = decoding[self.init]
+        vars = ["\tVAR_{} : [0..{}] init {}; // {}".format(i, bound + 1, init.sequence[i], self.ordering[i])
+                for i in range(len(self.ordering))]
+        prism_file.write("\n" + "\n".join(vars) + "\n")
+
+        # write transitions
+        transitions = self.edges_to_PRISM(decoding)
+        prism_file.write("\n" + "\n".join(transitions))
+
+        prism_file.write("\nendmodule\n\n")
+
+        # write formulas
+        if prism_formulas:
+            prism_file.write("\n\tformula " + "\n".join(prism_formulas))
+
+        prism_file.close()
+
+    def edges_to_PRISM(self, decoding):
+        """
+        Takes ordered edges grouped by source and for each group creates PRISM file representation
+
+        :return: list of strings for each group (source)
+        """
+        output = []
+        for group in self:
+            source = group[0].source
+            line = "\t[] " + decoding[source].to_PRISM_string() + " -> " + \
+                   " + ".join(list(map(lambda edge: edge.to_PRISM_string(decoding), group))) + ";"
+            output.append(line)
+        return output
 
 
 def create_indices(ordering_1: tuple, ordering_2: tuple):
