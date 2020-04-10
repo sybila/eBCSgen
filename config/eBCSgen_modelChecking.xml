@@ -1,0 +1,25 @@
+<tool id="ModelChecking" name="PCTL Model Checking" version="1.0.0">
+  <description> - explicit PCTL model checking of given model</description>
+    <command>python3 /home/xtrojak/eBCSgen/Callables/ModelChecking.py
+      --model '$model'
+      --output '$output'
+      --bound '$bound'
+      --formula 'formula'
+  </command>
+
+  <inputs>
+    <param format="bcs" name="model" type="data" label="Model file" help="Provide a .bcs file"/>
+    <param name="formula" type="text" label="PCTL formula"/>
+    <param name="bound" size="4" type="integer" value="" label="Bound [optional]" optional="true"/>
+  </inputs>
+
+  <outputs>
+    <data format="txt" name="output" />
+  </outputs>
+
+  <tests>
+    <test>
+    </test>
+  </tests>
+
+</tool>

@@ -1,6 +1,5 @@
 import sys, os
 import argparse
-import numpy as np
 
 # this add to path eBCSgen home dir, so it can be called from anywhere
 sys.path.append(os.path.split(sys.path[0])[0])
