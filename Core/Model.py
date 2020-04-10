@@ -265,4 +265,6 @@ def call_storm(command: str, files: list):
                 tunnel.put(file, file)
 
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
-        return ssh_stdout.read()
+        output = ssh_stdout.read()
+        ssh.close()
+        return output
