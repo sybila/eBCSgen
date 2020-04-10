@@ -1,6 +1,6 @@
-<tool id="ModelChecking" name="PCTL Model Checking" version="1.0.0">
-  <description> - explicit PCTL model checking of given model</description>
-    <command>python3 /home/xtrojak/eBCSgen/Callables/ModelChecking.py
+<tool id="ParameterSynthesis" name="PCTL Parameter Synthesis" version="1.0.0">
+  <description> - PCTL parameter synthesis of given model</description>
+    <command>python3 /home/xtrojak/eBCSgen/Callables/ParameterSynthesis.py
       --model '$model'
       --output '$output'
       --bound '$bound'
