@@ -260,9 +260,9 @@ def call_storm(command: str, files: list):
         ssh.load_system_host_keys()
         ssh.connect("psyche07.fi.muni.cz", username="biodivine")
 
-        tunnel = scp.SCPClient(ssh.get_transport())
-        for file in files:
-            tunnel.put(file, file)
+        with scp.SCPClient(ssh.get_transport()) as tunnel:
+            for file in files:
+                tunnel.put(file, file)
 
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
         return ssh_stdout.read()
