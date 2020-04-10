@@ -147,11 +147,8 @@ class Model:
         ts.save_to_STORM_explicit(path + "exp_transitions.tra", path + "exp_labels.lab", state_labels, AP_labeles)
 
         command = "storm --explicit {0} {1} --prop '{2}'"
-        command = subprocess.Popen(command.format(path + 'exp_transitions.tra', path + 'exp_labels.lab', formula),
-                                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-
-        stdout, stderr = command.communicate()
-        return stdout
+        result = call_storm(command.format(path + 'exp_transitions.tra', path + 'exp_labels.lab', formula))
+        return result
 
     def PCTL_synthesis(self, PCTL_formula: str, region: str, bound: int = None):
         """
@@ -185,13 +182,10 @@ class Model:
         command_no_region = "storm-pars --prism {0} --prop '{1}'"
 
         if region:
-            command = subprocess.Popen(command_region.format(path + 'prism-parametric.pm', formula, region),
-                                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            result = call_storm(command_region.format(path + 'prism-parametric.pm', formula, region))
         else:
-            command = subprocess.Popen(command_no_region.format(path + 'prism-parametric.pm', formula),
-                                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        stdout, stderr = command.communicate()
-        return stdout
+            result = call_storm(command_no_region.format(path + 'prism-parametric.pm', formula))
+        return result
 
     def create_complex_labels(self, complexes: list, ordering: tuple):
         """
@@ -241,3 +235,25 @@ class Model:
                         state_labels.get(ts.states_encoding[state], set()) | {AP_lables[ap]}
         state_labels[ts.init] = state_labels.get(ts.init, set()) | {"init"}
         return state_labels, AP_lables
+
+
+def call_storm(command: str):
+    """
+    Calls Storm model checker either locally (if available) or on the remote server.
+
+    :param command: given command to be executed
+    :return: result of Storm execution
+    """
+    status, result = subprocess.getstatusoutput('storm')
+    if status == 0:
+        command = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        stdout, stderr = command.communicate()
+        return stdout
+    else:
+        import paramiko
+        ssh = paramiko.SSHClient()
+        ssh.load_system_host_keys()
+        ssh.connect("psyche07.fi.muni.cz", username="biodivine")
+
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+        return ssh_stdout.read()
