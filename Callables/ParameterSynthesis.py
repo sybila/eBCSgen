@@ -42,9 +42,12 @@ if args.bound:
 else:
     bound = None
 
-region = args.region.replace("=", "<=")
+if args.region:
+    region = args.region.replace("=", "<=")
+else:
+    region = None
 
-result = model.PCTL_synthesis(args.formula, args.region, bound)
+result = model.PCTL_synthesis(args.formula, region, bound)
 f = open(args.output, "w")
 f.write(result.decode("utf-8"))
 f.close()
