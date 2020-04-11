@@ -30,7 +30,11 @@
   </inputs>
 
   <outputs>
-    <data format="txt" name="output" />
+    <data format="storm.regions" name="output">
+      <change_format>
+		  <when input="regions" value="none" format="storm.sample" />
+	  </change_format>
+    </data>
   </outputs>
 
   <tests>
