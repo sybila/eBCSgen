@@ -111,7 +111,7 @@ class TransitionSystem:
         unique = list(map(str, self.ordering))
         edges = [edge.to_dict() for edge in self.edges]
 
-        data = {'nodes': nodes, 'edges': edges, 'ordering': unique}
+        data = {'nodes': nodes, 'edges': edges, 'ordering': unique, "initial": self.init}
 
         if self.unprocessed:
             data['unprocessed'] = [str(state) for state in self.unprocessed]
