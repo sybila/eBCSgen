@@ -3,8 +3,8 @@
     <command>python3 /home/xtrojak/eBCSgen/Callables/StaticAnalysis.py
       --model '$model'
       --output '$output'
-      --method '$method'
-	  #if $method == "reach":
+      --method '${Method.method}'
+	  #if $Method.method == "reach":
           --complex '$complex'
 	  #end if
 	</command>
@@ -18,13 +18,13 @@
 			  <option value="reduce">Context based reduction</option>
 		  </param>
 			<when value="eliminate">
-				  <param name="complex" value="" type="text" label="Complex agent:"/>
+				  <param name="complex" value="" type="text" label="Complex agent:" hidden="true"/>
 			</when>
 			<when value="reduce">
 				  <param name="complex" value="" type="text" label="Complex agent:" hidden="true"/>
 			</when>
 			<when value="reach">
-				  <param name="complex" value="" type="text" label="Complex agent:" hidden="true"/>
+				  <param name="complex" value="" type="text" label="Complex agent:"/>
 			</when>
 		</conditional>
   </inputs>
