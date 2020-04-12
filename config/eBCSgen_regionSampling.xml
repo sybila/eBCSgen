@@ -4,13 +4,10 @@
       --storm_file '$storm_file'
       --output '$output'
 
-      #parameters = {}
-      #for $i, $s in enumerate(regions)
-        $parameters['${s.param}'] = [${s.from}, ${s.to}, ${s.number}]
-      #end for
-
-      #params = str($parameters)
-      --params '$params'
+      #set parameters = str({str($s.param): [float($s.from), float($s.to), int($s.number)] for $s in $regions})
+      #if $parameters:
+          --params "$parameters"
+      #end if
   </command>
 
   <inputs>
@@ -20,7 +17,7 @@
         <param name="param" value="" type="text" label="Parameter:"/>
         <param name="from" size="4" type="float" value="" label="Region start:"/>
         <param name="to" size="4" type="float" value="" label="Region end:"/>
-        <param name="number" size="4" type="float" value="" label="Number of samples:"/>
+        <param name="number" size="4" type="integer" value="" label="Number of samples:"/>
     </repeat>
 
   </inputs>
