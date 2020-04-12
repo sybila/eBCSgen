@@ -3,8 +3,10 @@
     <command>python3 /home/xtrojak/eBCSgen/Callables/ModelChecking.py
       --model '$model'
       --output '$output'
-      --bound '$bound'
       --formula 'formula'
+      #if $bound != "":
+          --bound '$bound'
+      #end if
   </command>
 
   <inputs>

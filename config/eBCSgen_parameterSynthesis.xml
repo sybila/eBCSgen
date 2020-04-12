@@ -3,18 +3,20 @@
     <command>python3 /home/xtrojak/eBCSgen/Callables/ParameterSynthesis.py
       --model '$model'
       --output '$output'
-      --bound '$bound'
       --formula 'formula'
+
+      #if $bound != "":
+          --bound '$bound'
+      #end if
 
       #parameters = []
       #for $i, $s in enumerate(regions)
         $parameters.append(str(${s.from}) + "=" + str(${s.param}) + "=" + str(${s.to}))
       #end for
 
-      #$region = ";".join($parameters)
-
-      --region '$region'
-
+      #if parameters:
+          #$region = ";".join($parameters)
+          --region '$region'
   </command>
 
   <inputs>

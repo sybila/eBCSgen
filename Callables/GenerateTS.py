@@ -30,7 +30,7 @@ optional arguments:
 args_parser = argparse.ArgumentParser(description='Transition system generating')
 args_parser.add_argument('--model', type=str, required=True)
 args_parser.add_argument('--output', type=str, required=True)
-args_parser.add_argument('--bound', type=int)
+args_parser.add_argument('--bound', type=int, default=None)
 args_parser.add_argument('--transition_file')
 args_parser.add_argument('--max_time', type=float, default=np.inf)
 args_parser.add_argument('--max_size', type=float, default=np.inf)
@@ -41,10 +41,7 @@ model_parser = Parser("model")
 model_str = open(args.model, "r").read()
 
 model = model_parser.parse(model_str).data
-
-# this is different in new version
-model.bound = args.bound  # this remove
-vm = model.to_vector_model()  # args.bound)
+vm = model.to_vector_model(args.bound)
 
 if args.transition_file:
     ts = load_TS_from_json(args.transition_file)

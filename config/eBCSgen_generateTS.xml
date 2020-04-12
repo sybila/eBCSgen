@@ -3,10 +3,18 @@
   <command>python3 /home/xtrojak/eBCSgen/Callables/GenerateTS.py
       --model '$model'
       --output '$output'
-      --bound '$bound'
-      --transition_file '$adv.transition_file'
-      --max_time '$adv.max_time'
-      --max_size '$adv.max_size'
+      #if $bound != "":
+          --bound '$bound'
+      #end if
+      #if $adv.transition_file != "None":
+          --transition_file '$adv.transition_file'
+      #end if
+      #if $adv.max_time != "":
+          --max_time '$adv.max_time'
+      #end if
+      #if $adv.max_size != "":
+          --max_size '$adv.max_size'
+      #end if
   </command>
 
   <inputs>
@@ -15,7 +23,7 @@
       <section name="adv" title="Advanced Options" expanded="false">
           <param name="max_time" size="4" type="float" value="" label="Maximal computation time [optional]" optional="true"/>
           <param name="max_size" size="4" type="float" value="" label="Maximal TS size [optional]" optional="true"/>
-          <param name="transition_file" type="data" label="Precomputed TS file [optional]" optional="true"/>
+          <param format="bcs.ts" name="transition_file" type="data" label="Precomputed TS file [optional]" optional="true"/>
       </section>
   </inputs>
 

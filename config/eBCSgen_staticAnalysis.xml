@@ -4,7 +4,9 @@
       --model '$model'
       --output '$output'
       --method '$method'
-      --complex '$complex'
+	  #if $method == "reach":
+          --complex '$complex'
+	  #end if
 	</command>
 
   <inputs>

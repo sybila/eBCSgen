@@ -26,7 +26,7 @@ optional arguments:
 args_parser = argparse.ArgumentParser(description='Model checking')
 args_parser.add_argument('--model', type=str, required=True)
 args_parser.add_argument('--output', type=str, required=True)
-args_parser.add_argument('--bound', type=int)
+args_parser.add_argument('--bound', type=int, default=None)
 args_parser.add_argument('--formula', type=str, required=True)
 
 args = args_parser.parse_args()
