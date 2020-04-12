@@ -10,14 +10,10 @@
           --bound '$bound'
       #end if
 
-      #parameters = []
-      #for $i, $s in enumerate(regions)
-        $parameters.append(str(${s.from}) + "=" + str(${s.param}) + "=" + str(${s.to}))
-      #end for
-
-      #if parameters:
-          #$region = ";".join($parameters)
-          --region '$region'
+      #set parameters = ",".join([str($s.from) + "=" + str($s.param) + "=" + str($s.to) for $s in $regions])
+      #if $parameters:
+          --region '$parameters'
+      #end if
   </command>
 
   <inputs>
@@ -34,9 +30,10 @@
 
   <outputs>
     <data format="storm.regions" name="output">
-      <change_format>
-		  <when input="regions" value="none" format="storm.sample" />
-	  </change_format>
+       <filter>"?" not in $formula</filter>
+    </data>
+    <data format="storm.sample" name="output">
+       <filter>"?" in $formula</filter>
     </data>
   </outputs>
 
