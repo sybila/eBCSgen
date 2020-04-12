@@ -1,5 +1,6 @@
 <tool id="ParameterSynthesis" name="PCTL Parameter Synthesis" version="1.0.0">
   <description> - PCTL parameter synthesis of given model</description>
+    <options sanitize="False"/>
     <command>python3 /home/xtrojak/eBCSgen/Callables/ParameterSynthesis.py
       --model '$model'
       --output '$output'

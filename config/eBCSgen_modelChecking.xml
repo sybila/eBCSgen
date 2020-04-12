@@ -1,5 +1,6 @@
 <tool id="ModelChecking" name="PCTL Model Checking" version="1.0.0">
   <description> - explicit PCTL model checking of given model</description>
+    <options sanitize="False"/>
     <command>python3 /home/xtrojak/eBCSgen/Callables/ModelChecking.py
       --model '$model'
       --output '$output'

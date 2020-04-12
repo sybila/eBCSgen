@@ -14,7 +14,7 @@
   </command>
 
   <inputs>
-    <param format="storm.regions" name="storm_file" type="data" label="Storm results file"/>
+    <param format="storm.sample" name="storm_file" type="data" label="Storm results file"/>
 
     <repeat name="regions" title="Regions">
         <param name="param" value="" type="text" label="Parameter:"/>
