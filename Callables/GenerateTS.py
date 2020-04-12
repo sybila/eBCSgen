@@ -43,7 +43,7 @@ model_str = open(args.model, "r").read()
 model = model_parser.parse(model_str).data
 vm = model.to_vector_model(args.bound)
 
-if args.transition_file:
+if args.transition_file != 'None':
     ts = load_TS_from_json(args.transition_file)
 else:
     ts = None

@@ -6,9 +6,7 @@
       #if $bound != "":
           --bound '$bound'
       #end if
-      #if $adv.transition_file != "None":
-          --transition_file '$adv.transition_file'
-      #end if
+      --transition_file '$adv.transition_file'
       #if $adv.max_time != "":
           --max_time '$adv.max_time'
       #end if
