@@ -6,7 +6,7 @@ from Parsing.ParseBCSL import Parser
 class TestModel(unittest.TestCase):
     def setUp(self):
         self.model_parser = Parser("model")
-        self.url = 'http://localhost:5000/bcsl_parse'
+        self.url = 'http://biodivine-vm.fi.muni.cz/BCSLparser/'
 
         self.model_wrong_1 = \
             """#! rules
@@ -48,7 +48,7 @@ class TestModel(unittest.TestCase):
 
     def test_remote_request(self):
         try:
-            response = requests.get('http://localhost:5000/ping')
+            response = requests.get(self.url + 'ping')
             self.assertTrue(response.status_code == 200)
         except requests.exceptions.ConnectionError:
             raise AssertionError("API not available")
@@ -58,7 +58,7 @@ class TestModel(unittest.TestCase):
             # correct one
             result_local = self.model_parser.syntax_check(self.model_with_complexes)
 
-            response = requests.post(self.url, {'start': 'model', 'expression': self.model_with_complexes})
+            response = requests.post(self.url + 'parse', {'start': 'model', 'expression': self.model_with_complexes})
             result_remote = eval(response.text)
 
             self.assertEqual(result_remote['success'], result_local.success)
@@ -67,7 +67,7 @@ class TestModel(unittest.TestCase):
             # wrong one
             result_local = self.model_parser.syntax_check(self.model_wrong_1)
 
-            response = requests.post(self.url, {'start': 'model', 'expression': self.model_wrong_1})
+            response = requests.post(self.url + 'parse', {'start': 'model', 'expression': self.model_wrong_1})
             result_remote = eval(response.text)
 
             self.assertEqual(result_remote['success'], result_local.success)
