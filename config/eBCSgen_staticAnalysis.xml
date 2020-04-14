@@ -1,5 +1,6 @@
 <tool id="StaticAnalysis" name="Static Analysis" version="1.0.0">
   <description>- several static analysis techniques</description>
+	<options sanitize="False"/>
     <command>python3 /home/xtrojak/eBCSgen/Callables/StaticAnalysis.py
       --model '$model'
       --output '$output'
