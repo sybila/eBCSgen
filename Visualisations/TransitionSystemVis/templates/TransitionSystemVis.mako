@@ -3,11 +3,6 @@ import collections
 import json
 import sys
 from numpy import inf
-
-# comment for testing
-from routes import url_for
-prefix = url_for("/")
-path = os.getcwd()
 %>
 
 <%
@@ -96,7 +91,7 @@ def write_reaction(edge_id, left_index, right_index, substrates, products, rate)
         edge_id, left_index, right_index, side_to_string(substrates), side_to_string(products), rate)
 
 
-def create_HTML_graph(data):
+def create_HTML_graph(): #data):
     output_file = firstpart
 
     data = ''.join(list(hda.datatype.dataprovider(hda, 'line', strip_lines=True, strip_newlines=True)))

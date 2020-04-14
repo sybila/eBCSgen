@@ -3,16 +3,12 @@ import sys, os
 import itertools
 import numpy as np
 
-# this path needs to be edited for Galaxy server
 sys.path.append('/home/xtrojak/eBCSgen/Visualisations/SynthesisVis/templates')
 
 import libs
+%>
 
-# comment for testing
-from routes import url_for
-prefix = url_for("/")
-path = os.getcwd()
-
+<%
 # def create_HTML(data):  # testing
 def create_HTML():
     output = ""
