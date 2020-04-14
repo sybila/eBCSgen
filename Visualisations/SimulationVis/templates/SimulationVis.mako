@@ -15,7 +15,6 @@ def newSimulationGraph():
     data = "\n".join(hda.datatype.dataprovider(hda, 'line', comment_char=none, provide_blank=True, strip_lines=False,
                                                strip_newlines=True))
 
-    data = data.decode("utf-8")
     data = pandas.DataFrame([x.split(',') for x in data.split('\n')[1:]],
                             columns=[x for x in data.split('\n')[0].split(',')])
 
