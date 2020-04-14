@@ -8,15 +8,16 @@ import pandas
 %>
 
 <%
-def newSimulationGraph(filename): # just for testing, hda is used
+# def newSimulationGraph(filename): # just for testing, hda is used
 def newSimulationGraph():
     html = firstpart
     # data = pandas.read_csv(filename)
     data = "\n".join(hda.datatype.dataprovider(hda, 'line', comment_char=none, provide_blank=True, strip_lines=False,
                                                strip_newlines=True))
 
-    # might be problem with file format
-    data = pandas.read_csv(data)
+    data = data.decode("utf-8")
+    data = pandas.DataFrame([x.split(',') for x in data.split('\n')[1:]],
+                            columns=[x for x in data.split('\n')[0].split(',')])
 
     html += "\tvar time = " + str(list(data.get("times"))) + ";\n"
 
