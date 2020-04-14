@@ -2825,7 +2825,7 @@ define("ace/mode/bcsl_worker", ["require", "exports", "module", "ace/lib/oop", "
                         if (response.expected.length == 1){
                             expected = '"' + response.expected[0] + '"';
                         } else {
-                            expected 'one of "' + response.expected.join('", "') + '"';
+                            expected = 'one of "' + response.expected.join('", "') + '"';
                         }
 
                         errors.push(
@@ -2834,7 +2834,7 @@ define("ace/mode/bcsl_worker", ["require", "exports", "module", "ace/lib/oop", "
                             column: (response.column - 1),
                             text: 'Unexpected "' + response.unexpected + '", expected ' + expected,
                             type: 'error',
-                            msg_console: 'Unexpected ' + response.unexpected + ', expected ' + expected + ' (row: ' + response.line + ', column: ' + response.column + ')'
+                            msg_console: 'Unexpected "' + response.unexpected + '", expected ' + expected + ' (row: ' + response.line + ', column: ' + response.column + ')'
                         });
                         window.sender.emit("error", errors);
                     }
@@ -2842,6 +2842,8 @@ define("ace/mode/bcsl_worker", ["require", "exports", "module", "ace/lib/oop", "
             };
             xhr.send(JSON.stringify(data));
 
+            // when there is not error
+            window.sender.emit("error", errors);
             return;
 	    };
     }).call(Worker.prototype);
