@@ -2809,68 +2809,40 @@ define("ace/mode/bcsl_worker", ["require", "exports", "module", "ace/lib/oop", "
             if (!value)
                 return;
 
+            var errors = [];
+
             var xhr = new XMLHttpRequest();
             var url = "https://biodivine-vm.fi.muni.cz/BCSLparser/parse"
             var data = {"start": "model", "expression": value}
-            console.log(JSON.stringify(data))
 
             xhr.open("POST", url)
             xhr.setRequestHeader("Content-type", "application/json");
-            xhr.onreadystatechange = function () {
-                console.log(xhr.responseText);
+            xhr.onload = function () {
+                if (xhr.status == 200){
+                    var response = JSON.parse(xhr.responseText);
+                    if (!response.success){
+                        var expected = '';
+                        if (response.expected.length == 1){
+                            expected = '"' + response.expected[0] + '"';
+                        } else {
+                            expected 'one of "' + response.expected.join('", "') + '"';
+                        }
+
+                        errors.push(
+                        {
+                            row: (response.line - 1),
+                            column: (response.column - 1),
+                            text: 'Unexpected "' + response.unexpected + '", expected ' + expected,
+                            type: 'error',
+                            msg_console: 'Unexpected ' + response.unexpected + ', expected ' + expected + ' (row: ' + response.line + ', column: ' + response.column + ')'
+                        });
+                        window.sender.emit("error", errors);
+                    }
+                }
             };
             xhr.send(JSON.stringify(data));
 
-//            var errors = [];
-//            var lines = value.split('\n');
-//            var statement = "";
-//            var processingRules = true;
-//            var processingInits = false;
-//            var processingDef = false;
-//
-//            for (var i = 0; i < lines.length; i++)
-//            {
-//                if (lines[i] == "#! inits") processingInits = true;
-//                if (lines[i] == "#! definitions")
-//                    {
-//                        processingInits = false;
-//                        processingDef = true;
-//                    }
-//                if (lines[i][0] == "#" || processingDef) continue;
-//                if (processingRules) lines[i] = lines[i].split("@")[0];
-//                if (processingInits)
-//                    if (lines[i].length != 0) lines[i] += "=>";
-//                var res = window.doParse(lines[i]);
-//                if (res)
-//                {
-//                    var json = JSON.parse(res);
-//                    if (typeof json.error != 'undefined' && json.error == 1)
-//                    {
-//                        var ex = '';
-//                        if (json.expected.length == 1)
-//                        {
-//                            ex = '"' + json.expected[0] + '"';
-//                        }
-//                        else
-//                        {
-//                            ex = 'one of "' + json.expected.join('", "') + '"';
-//                        }
-//                        errors.push(
-//                        {
-//                            row: i,
-//                            column: json.start,
-//                            text: 'Unexpected ' + json.unexpected + ', expecting ' + ex,
-//                            type: 'error',
-//                            msg_console: 'Unexpected ' + json.unexpected + ', expecting ' + ex + ', row: ' + (i+1) + ', column: ' + (json.start + 1)
-//                        });
-//                    }
-//                }
-//                window.doDealloc();
-//
-//            }
-//            this.sender.emit("error", errors);
             return;
-        };
-
+	    };
     }).call(Worker.prototype);
 });

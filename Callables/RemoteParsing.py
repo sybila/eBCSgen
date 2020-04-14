@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
 import sys, os
+import json
 
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask import make_response
 
 # this add to path eBCSgen home dir, so it can be called from anywhere
@@ -32,9 +33,13 @@ def parse():
         parser = Parser(start)
         result = parser.syntax_check(expression)
 
-        response = make_response(str({"success": result.success, "data": str(result.data)}))
-        response.headers['Content-Type'] = "application/json"
-        return response
+        response = {"success": result.success}
+
+        if not result.success:
+            response.update(result.data)
+            response["expected"] = list(response["expected"])
+
+        return json.dumps(response)
 
 if __name__ == "__main__":
     app.run() #debug=True)
