@@ -2795,8 +2795,7 @@ define("ace/mode/bcsl_worker", ["require", "exports", "module", "ace/lib/oop", "
     };
 
     oop.inherits(Worker, Mirror);
-    importScripts('http://biodivine-vm.fi.muni.cz/galaxy/plugins/visualizations/BCS_Editor/static/ruleparser.js');
-    
+
     (function()
     {
         this.setOptions = function(options)
