@@ -6,7 +6,7 @@
       --output '$output'
       --method '${Method.method}'
 	  #if $Method.method == "reach":
-          --complex '$complex'
+          --complex '$Method.complex'
 	  #end if
 	</command>
 
