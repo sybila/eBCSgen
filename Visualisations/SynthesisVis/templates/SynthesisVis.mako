@@ -4,7 +4,7 @@ import itertools
 import numpy as np
 
 # this path needs to be edited for Galaxy server
-sys.path.append('...eBCSgen_new/Visualisations/SynthesisVis/templates')
+sys.path.append('/home/xtrojak/eBCSgen/Visualisations/SynthesisVis/templates')
 
 import libs
 
