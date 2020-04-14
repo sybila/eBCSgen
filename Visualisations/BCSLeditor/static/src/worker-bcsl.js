@@ -2811,18 +2811,16 @@ define("ace/mode/bcsl_worker", ["require", "exports", "module", "ace/lib/oop", "
                 return;
 
             var xhr = new XMLHttpRequest();
-            var url = "http://biodivine-vm.fi.muni.cz/BCSLparser/parse"
+            var url = "https://biodivine-vm.fi.muni.cz/BCSLparser/parse"
             var data = {"start": "model", "expression": value}
+            console.log(JSON.stringify(data))
 
-            xhr.open("POST", url, true)
-            xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+            xhr.open("POST", url)
+            xhr.setRequestHeader("Content-type", "application/json");
             xhr.onreadystatechange = function () {
-                 if (xhr.readyState == 4 && xhr.status == 200) {
-                     // do something with response
-                     console.log(xhr.responseText);
-                 }
+                console.log(xhr.responseText);
             };
-            xhr.send(data);
+            xhr.send(JSON.stringify(data));
 
 //            var errors = [];
 //            var lines = value.split('\n');

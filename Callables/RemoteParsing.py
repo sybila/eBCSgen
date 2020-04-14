@@ -25,8 +25,9 @@ def ping():
 @app.route('/BCSLparser/parse', methods=['POST'])
 def parse():
     if request.method == 'POST':
-        start = request.form['start']
-        expression = request.form['expression']
+        data = request.get_json()
+        start = data['start']
+        expression = data['expression']
 
         parser = Parser(start)
         result = parser.syntax_check(expression)
@@ -36,4 +37,4 @@ def parse():
         return response
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
