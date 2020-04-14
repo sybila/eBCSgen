@@ -2774,17 +2774,6 @@ define("ace/lib/es5-shim", ["require", "exports", "module"], function(require, e
 
 });
 
-window.doParse = null;
-window.doDealloc = null;
-
-Module = [];
-
-Module['onRuntimeInitialized'] = function()
-{
-    window.doParse = Module.cwrap('RuleParserParse', 'string', ['string']);
-    window.doDealloc = Module.cwrap('RuleParserDealloc', 'void', []);
-};
-
 define("ace/mode/bcsl_worker", ["require", "exports", "module", "ace/lib/oop", "ace/lib/lang", "ace/worker/mirror"], function(require, exports, module)
 {
     "use strict";
@@ -2806,7 +2795,7 @@ define("ace/mode/bcsl_worker", ["require", "exports", "module", "ace/lib/oop", "
     };
 
     oop.inherits(Worker, Mirror);
-    importScripts('http://pithya.ics.muni.cz/galaxy/plugins/visualizations/BCS_Editor/static/ruleparser.js');
+    importScripts('http://biodivine-vm.fi.muni.cz/galaxy/plugins/visualizations/BCS_Editor/static/ruleparser.js');
     
     (function()
     {
@@ -2817,61 +2806,72 @@ define("ace/mode/bcsl_worker", ["require", "exports", "module", "ace/lib/oop", "
 
         this.onUpdate = function()
         {
-            if (!window.doParse || !window.doDealloc)
-                return;
-
             var value = this.doc.getValue();
             if (!value)
                 return;
 
-            var errors = [];
-            var lines = value.split('\n');
-            var statement = "";
-            var processingRules = true;
-            var processingInits = false;
-            var processingDef = false;
+            var xhr = new XMLHttpRequest();
+            var url = "http://biodivine-vm.fi.muni.cz/BCSLparser/parse"
+            var data = {"start": "model", "expression": value}
 
-            for (var i = 0; i < lines.length; i++)
-            {
-                if (lines[i] == "#! inits") processingInits = true;
-                if (lines[i] == "#! definitions") 
-                    {
-                        processingInits = false;
-                        processingDef = true;
-                    }
-                if (lines[i][0] == "#" || processingDef) continue;
-                if (processingRules) lines[i] = lines[i].split("@")[0];
-                if (processingInits)
-                    if (lines[i].length != 0) lines[i] += "=>";
-                var res = window.doParse(lines[i]);
-                if (res)
-                {
-                    var json = JSON.parse(res);
-                    if (typeof json.error != 'undefined' && json.error == 1)
-                    {
-                        var ex = '';
-                        if (json.expected.length == 1)
-                        {
-                            ex = '"' + json.expected[0] + '"';
-                        }
-                        else
-                        {
-                            ex = 'one of "' + json.expected.join('", "') + '"';
-                        }
-                        errors.push(
-                        {
-                            row: i,
-                            column: json.start,
-                            text: 'Unexpected ' + json.unexpected + ', expecting ' + ex,
-                            type: 'error',
-                            msg_console: 'Unexpected ' + json.unexpected + ', expecting ' + ex + ', row: ' + (i+1) + ', column: ' + (json.start + 1)
-                        });
-                    }
-                }
-                window.doDealloc();
+            xhr.open("POST", url, true)
+            xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function () {
+                 if (xhr.readyState == 4 && xhr.status == 200) {
+                     // do something with response
+                     console.log(xhr.responseText);
+                 }
+            };
+            xhr.send(data);
 
-            }
-            this.sender.emit("error", errors);
+//            var errors = [];
+//            var lines = value.split('\n');
+//            var statement = "";
+//            var processingRules = true;
+//            var processingInits = false;
+//            var processingDef = false;
+//
+//            for (var i = 0; i < lines.length; i++)
+//            {
+//                if (lines[i] == "#! inits") processingInits = true;
+//                if (lines[i] == "#! definitions")
+//                    {
+//                        processingInits = false;
+//                        processingDef = true;
+//                    }
+//                if (lines[i][0] == "#" || processingDef) continue;
+//                if (processingRules) lines[i] = lines[i].split("@")[0];
+//                if (processingInits)
+//                    if (lines[i].length != 0) lines[i] += "=>";
+//                var res = window.doParse(lines[i]);
+//                if (res)
+//                {
+//                    var json = JSON.parse(res);
+//                    if (typeof json.error != 'undefined' && json.error == 1)
+//                    {
+//                        var ex = '';
+//                        if (json.expected.length == 1)
+//                        {
+//                            ex = '"' + json.expected[0] + '"';
+//                        }
+//                        else
+//                        {
+//                            ex = 'one of "' + json.expected.join('", "') + '"';
+//                        }
+//                        errors.push(
+//                        {
+//                            row: i,
+//                            column: json.start,
+//                            text: 'Unexpected ' + json.unexpected + ', expecting ' + ex,
+//                            type: 'error',
+//                            msg_console: 'Unexpected ' + json.unexpected + ', expecting ' + ex + ', row: ' + (i+1) + ', column: ' + (json.start + 1)
+//                        });
+//                    }
+//                }
+//                window.doDealloc();
+//
+//            }
+//            this.sender.emit("error", errors);
             return;
         };
 
