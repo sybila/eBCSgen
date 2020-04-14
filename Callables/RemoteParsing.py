@@ -1,3 +1,5 @@
+#!/usr/bin/python3.6
+
 import sys, os
 
 from flask import Flask, request
