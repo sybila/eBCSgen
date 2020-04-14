@@ -1,4 +1,4 @@
-#!/usr/bin/python3.6
+#!/usr/bin/python3
 
 import sys, os
 
@@ -36,4 +36,4 @@ def parse():
         return response
 
 if __name__ == "__main__":
-    app.run() # debug = True)
+    app.run()
