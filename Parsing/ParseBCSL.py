@@ -102,7 +102,7 @@ GRAMMAR = r"""
     def_param : CNAME
     number: NUMBER
 
-    const: INT
+    const: (INT|DECIMAL)
 
     %import common.WORD
     %import common.NUMBER
@@ -299,7 +299,7 @@ class TreeToObjects(Transformer):
     Creates the actual Model object after all the above transformers were applied.
     """
     def const(self, matches):
-        return int(matches[0])
+        return float(matches[0])
 
     def def_param(self, matches):
         return str(matches[0])
