@@ -162,7 +162,7 @@ class TestVectorModel(unittest.TestCase):
 
         self.model_bigger_TS = \
             """#! rules
-            => K(S{u},T{i})::cyt @ omega
+            => 2 K(S{u},T{i})::cyt @ omega
             K(S{u})::cyt => K(S{p})::cyt @ alpha*[K(S{u})::cyt]
             K(S{p})::cyt + B{a}::cyt => K(S{p}).B{a}::cyt @ beta*[K(S{p})::cyt]*[B{a}::cyt]
             B{_}::cyt => @ gamma*[B{_}::cyt]

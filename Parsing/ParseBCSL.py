@@ -311,8 +311,8 @@ class TreeToObjects(Transformer):
         helper = SideHelper()
         stochio = 1
         for item in matches:
-            if type(item) == int:
-                stochio = item
+            if type(item) in [int, float]:
+                stochio = int(item)
             else:
                 agents = item.children[0]
                 compartment = item.children[2]
