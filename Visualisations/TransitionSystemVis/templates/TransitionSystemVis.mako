@@ -122,7 +122,7 @@ def create_HTML_graph(): #data):
 
     initial = data['initial']
     output_file += secondpart_1
-    output_file += "\tvar fromNode = " + str(int(initial) + 1) + ";\n"
+    output_file += "\tvar fromNode = " + str(int(initial)) + ";\n"
     output_file += secondpart_2
     return output_file
 
