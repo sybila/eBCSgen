@@ -361,7 +361,7 @@ class TreeToObjects(Transformer):
         result = collections.Counter()
         for init in matches[1:]:
             if len(init) > 1:
-                result[init[1].children[0]] = init[0]
+                result[init[1].children[0]] = int(init[0])
             else:
                 result[init[0].children[0]] = 1
         return result
