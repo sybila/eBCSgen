@@ -39,7 +39,7 @@ class TestRule(unittest.TestCase):
         compartments_1 = ["cyt"] * 4
         complexes_1 = [(0, 1), (2, 2), (3, 3)]
         pairs_1 = [(0, 2), (1, 3)]
-        rate_1 = Rate("3*[K()::cyt]/2*v_1")
+        rate_1 = Rate("3.0*[K()::cyt]/2.0*v_1")
 
         self.r1 = Rule(sequence_1, mid_1, compartments_1, complexes_1, pairs_1, rate_1)
 
@@ -48,7 +48,7 @@ class TestRule(unittest.TestCase):
         compartments_2 = ["cyt"] * 4 + ["cell"]
         complexes_2 = [(0, 1), (2, 2), (3, 3), (4, 4)]
         pairs_2 = [(0, 2), (1, 3), (None, 4)]
-        rate_2 = Rate("3*[K()::cyt]/2*v_1")
+        rate_2 = Rate("3.0*[K()::cyt]/2.0*v_1")
 
         self.r2 = Rule(sequence_2, mid_2, compartments_2, complexes_2, pairs_2, rate_2)
 
@@ -57,7 +57,7 @@ class TestRule(unittest.TestCase):
         compartments_3 = ["cyt"] * 2 + ["cell"] + ["cyt"] * 2
         complexes_3 = [(0, 1), (2, 2), (3, 3), (4, 4)]
         pairs_3 = [(0, 3), (1, 4), (2, None)]
-        rate_3 = Rate("3*[K(T{3+})::cyt]/2*v_1")
+        rate_3 = Rate("3.0*[K(T{3+})::cyt]/2.0*v_1")
 
         self.r3 = Rule(sequence_3, mid_3, compartments_3, complexes_3, pairs_3, rate_3)
 
@@ -81,7 +81,7 @@ class TestRule(unittest.TestCase):
         compartments_5 = ["rep"]
         complexes_5 = [(0, 0)]
         pairs_5 = [(None, 0)]
-        rate_5 = Rate("1/(1+([X()::rep])**4)")
+        rate_5 = Rate("1.0/(1.0+([X()::rep])**4.0)")
 
         self.r5 = Rule(sequence_5, mid_5, compartments_5, complexes_5, pairs_5, rate_5)
 
@@ -171,9 +171,9 @@ class TestRule(unittest.TestCase):
         self.assertEqual(self.r1, self.r1)
 
     def test_print(self):
-        self.assertEqual(str(self.r1), "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt @ 3*[K()::cyt]/2*v_1")
+        self.assertEqual(str(self.r1), "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt @ 3.0*[K()::cyt]/2.0*v_1")
         self.assertEqual(str(self.r2),
-                         "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt + D(B{_})::cell @ 3*[K()::cyt]/2*v_1")
+                         "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt + D(B{_})::cell @ 3.0*[K()::cyt]/2.0*v_1")
 
     def test_create_complexes(self):
         lhs = Side([self.c1])

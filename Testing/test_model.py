@@ -51,7 +51,7 @@ class TestModel(unittest.TestCase):
         compartments_3 = ["rep"]
         complexes_3 = [(0, 0)]
         pairs_3 = [(None, 0)]
-        rate_3 = Rate("1/(1+([X()::rep])**4)")
+        rate_3 = Rate("1.0/(1.0+([X()::rep])**4.0)")
 
         self.r3 = Rule(sequence_3, mid_3, compartments_3, complexes_3, pairs_3, rate_3)
 
@@ -381,7 +381,7 @@ class TestModel(unittest.TestCase):
                          {"unexpected": ";", "expected": {'?', 'NAME'}, "line": 3, "column": 37})
 
         self.assertEqual(self.model_parser.parse(self.model_wrong_2).data,
-                         {"expected": {'#! inits', ']', '#! definitions', '=>', '@', 'INT', '+', 'NAME', ';'},
+                         {"expected": {'DECIMAL', '#! inits', ']', '#! definitions', '=>', '@', 'INT', '+', 'NAME', ';'},
                           "line": 3, "column": 26, "unexpected": "="})
 
     def test_zooming_syntax(self):
@@ -416,7 +416,7 @@ class TestModel(unittest.TestCase):
 
         model_reach = self.model_parser.parse(self.model_reachable).data
         model_nonreach = self.model_parser.parse(self.model_nonreachable).data
-        
+
         self.assertTrue(model_reach.static_non_reachability(complex))
         self.assertFalse(model_nonreach.static_non_reachability(complex))
 

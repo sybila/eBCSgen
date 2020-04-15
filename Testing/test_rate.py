@@ -37,11 +37,11 @@ class TestRate(unittest.TestCase):
         # rates
 
         self.parser = Parser("rate")
-        rate_expr = "3*[K()::cyt]/2*v_1"
+        rate_expr = "3.0*[K()::cyt]/2.0*v_1"
 
         self.rate_1 = Core.Rate.Rate(self.parser.parse(rate_expr).data)
 
-        rate_expr = "3*[K(T{i}).X()::cyt] + [K()::cyt]"
+        rate_expr = "3.0*[K(T{i}).X()::cyt] + [K()::cyt]"
 
         self.rate_2 = Core.Rate.Rate(self.parser.parse(rate_expr).data)
 
@@ -51,7 +51,7 @@ class TestRate(unittest.TestCase):
         self.state_2 = State(np.array([2, 0, 3, 1, 6, 2]))
 
     def test_to_str(self):
-        self.assertEqual(str(self.rate_1), "3*[K()::cyt]/2*v_1")
+        self.assertEqual(str(self.rate_1), "3.0*[K()::cyt]/2.0*v_1")
 
     def test_eq(self):
         self.assertEqual(self.rate_2, self.rate_2)
@@ -77,15 +77,15 @@ class TestRate(unittest.TestCase):
         ordering = (self.c2, self.c3)
         self.rate_1.vectorize(ordering, dict())
         self.rate_1.to_symbolic()
-        self.assertEqual(str(self.rate_1), "3*(y[0] + y[1])/2*v_1")
+        self.assertEqual(str(self.rate_1), "3.0*(y[0] + y[1])/2.0*v_1")
 
         ordering = (self.c2, self.c3, self.c4, self.c5, self.c6, self.c7)
         self.rate_2.vectorize(ordering, dict())
         self.rate_2.to_symbolic()
-        self.assertEqual(str(self.rate_2), "3*(y[2] + y[3])+(y[0] + y[1])")
+        self.assertEqual(str(self.rate_2), "3.0*(y[2] + y[3])+(y[0] + y[1])")
 
     def test_reduce_context(self):
-        rate_expr = "3*[K(S{i})::cyt]/2*v_1"
+        rate_expr = "3.0*[K(S{i})::cyt]/2.0*v_1"
         rate = Core.Rate.Rate(self.parser.parse(rate_expr).data)
 
         self.assertEqual(rate.reduce_context(), self.rate_1)
