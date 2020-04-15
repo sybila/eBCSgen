@@ -124,19 +124,21 @@ class VectorModel:
             solution = self.init
             time = 0.0
             while time < max_time:
-                # enumerate all rates
                 applied_reactions = pd.DataFrame(data=[reaction.apply(solution, np.math.inf)
                                                        for reaction in self.vector_reactions],
                                                  columns=["state", "rate"])
                 applied_reactions = applied_reactions.dropna()
-                rates_sum = applied_reactions.sum()["rate"]
-                sorted_applied = applied_reactions.sort_values(by=["rate"])
-                sorted_applied["cumsum"] = sorted_applied.cumsum(axis=0)["rate"]
+                if not applied_reactions.empty:
+                    rates_sum = applied_reactions.sum()["rate"]
+                    sorted_applied = applied_reactions.sort_values(by=["rate"])
+                    sorted_applied["cumsum"] = sorted_applied.cumsum(axis=0)["rate"]
 
-                # pick random reaction based on rates
-                rand_number = rates_sum * random.random()
-                sorted_applied.drop(sorted_applied[sorted_applied["cumsum"] < rand_number].index, inplace=True)
-                solution = sorted_applied.iloc[0]["state"]
+                    # pick random reaction based on rates
+                    rand_number = rates_sum * random.random()
+                    sorted_applied.drop(sorted_applied[sorted_applied["cumsum"] < rand_number].index, inplace=True)
+                    solution = sorted_applied.iloc[0]["state"]
+                else:
+                    rates_sum = random.random()
 
                 # add to data
                 df.loc[len(df)] = [time] + list(solution.sequence)
