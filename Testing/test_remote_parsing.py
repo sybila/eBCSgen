@@ -1,5 +1,7 @@
 import unittest
 import requests
+import json
+
 from Parsing.ParseBCSL import Parser
 
 
@@ -58,19 +60,27 @@ class TestModel(unittest.TestCase):
             # correct one
             result_local = self.model_parser.syntax_check(self.model_with_complexes)
 
-            response = requests.post(self.url + 'parse', {'start': 'model', 'expression': self.model_with_complexes})
-            result_remote = eval(response.text)
+            headers = {'content-type': 'application/json'}
+
+            response = requests.post(self.url + 'parse',
+                                     data=json.dumps({'start': 'model', 'expression': self.model_with_complexes}),
+                                     headers=headers)
+            result_remote = eval(response.text.replace("true", "True"))
 
             self.assertEqual(result_remote['success'], result_local.success)
-            self.assertEqual(result_remote['data'], str(result_local.data))
 
             # wrong one
             result_local = self.model_parser.syntax_check(self.model_wrong_1)
 
-            response = requests.post(self.url + 'parse', {'start': 'model', 'expression': self.model_wrong_1})
-            result_remote = eval(response.text)
+            response = requests.post(self.url + 'parse',
+                                     data=json.dumps({'start': 'model', 'expression': self.model_wrong_1}),
+                                     headers=headers)
+            result_remote = eval(response.text.replace("false", "False"))
 
             self.assertEqual(result_remote['success'], result_local.success)
-            self.assertEqual(eval(result_remote['data']), result_local.data)
+            self.assertEqual([result_remote["line"], result_remote["column"],
+                              result_remote["unexpected"], sorted(result_remote["expected"])],
+                             [result_local.data["line"], result_local.data["column"],
+                              result_local.data["unexpected"], sorted(result_local.data["expected"])])
         except requests.exceptions.ConnectionError:
             raise AssertionError("API not available")
