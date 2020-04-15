@@ -3,7 +3,11 @@
     <options sanitize="False"/>
     <command>python3 /home/xtrojak/eBCSgen/Callables/ParameterSynthesis.py
       --model '$model'
-      --output '$output'
+      #if len($regions) > 0:
+          --output '$output_regions'
+      #else:
+          --output '$output_sample'
+      #end if
       --formula '$formula'
 
       #if $bound != "":
@@ -29,11 +33,11 @@
   </inputs>
 
   <outputs>
-    <data format="storm.regions" name="output">
-       <filter>"?" not in $formula</filter>
+    <data format="storm.regions" name="output_regions">
+       <filter>"?" not in formula</filter>
     </data>
-    <data format="storm.sample" name="output">
-       <filter>"?" in $formula</filter>
+    <data format="storm.sample" name="output_sample">
+       <filter>"?" in formula</filter>
     </data>
   </outputs>
 
