@@ -1,5 +1,6 @@
 import collections
 
+from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
 from Core.Side import Side
 from TS.TransitionSystem import TransitionSystem
@@ -39,13 +40,20 @@ class Model:
         :return: created atomic and structure signatures
         """
         atomic_signature, structure_signature = dict(), dict()
+        atomic_names = set()
         for rule in self.rules:
             if rule.rate is None:
                 self.all_rates = False
             for agent in rule.agents:
                 atomic_signature, structure_signature = agent.extend_signature(atomic_signature, structure_signature)
+                if type(agent) == AtomicAgent:
+                    atomic_names.add(agent.name)
         for agent in list(self.init):
             atomic_signature, structure_signature = agent.extend_signature(atomic_signature, structure_signature)
+            atomic_names |= agent.get_atomic_names()
+        for name in atomic_names:
+            if name not in atomic_signature:
+                atomic_signature[name] = {"_"}
         return atomic_signature, structure_signature
 
     def to_vector_model(self, bound: int = None) -> VectorModel:

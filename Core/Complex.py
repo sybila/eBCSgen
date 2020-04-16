@@ -1,6 +1,8 @@
 import collections
 import itertools
 
+import Core.Atomic
+
 
 class Complex:
     def __init__(self, agents: list, compartment: str):
@@ -22,6 +24,14 @@ class Complex:
 
     def __hash__(self):
         return hash(str(self))
+
+    def get_atomic_names(self) -> set:
+        """
+        Creates set of all atomic names used in the complex.
+
+        :return: set of all atomic names
+        """
+        return {agent.name for agent in list(filter(lambda agent: type(agent) == Core.Atomic.AtomicAgent, self.agents))}
 
     def to_PRISM_code(self, number: int) -> str:
         """

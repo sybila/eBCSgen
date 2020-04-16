@@ -12,7 +12,19 @@ def save_model(model, filename):
     f.close()
 
 """
+usage: StaticAnalysis.py [-h] --model MODEL --output OUTPUT --method METHOD
+                         [--complex COMPLEX]
 
+Static analysis
+
+arguments
+  --model MODEL
+  --output OUTPUT
+  --method METHOD
+
+optional arguments:
+  -h, --help         show this help message and exit
+  --complex COMPLEX
 """
 
 args_parser = argparse.ArgumentParser(description='Static analysis')
@@ -22,7 +34,6 @@ args_parser.add_argument('--method', type=str, required=True)
 args_parser.add_argument('--complex')
 
 args = args_parser.parse_args()
-print(args)
 
 model_parser = Parser("model")
 model_str = open(args.model, "r").read()
