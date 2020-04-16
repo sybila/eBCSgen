@@ -3,7 +3,7 @@ define("ace/theme/terminal",["require","exports","module","ace/lib/dom"], functi
 exports.isDark = false;
 exports.cssClass = "ace-terminal-theme";
 exports.cssText = ".ace-terminal-theme .ace_gutter {\
-background: #1a0005;\
+background: #ffffff;\
 color: steelblue\
 }\
 .ace-terminal-theme .ace_print-margin {\
@@ -102,7 +102,10 @@ color: #B9CA4A\
 color: #D54E53\
 }\
 .ace-terminal-theme .ace_comment {\
-color: orangered\
+color: grey\
+}\
+.ace-terminal-theme .ace_part {\
+color: green\
 }\
 .ace-terminal-theme .ace_indent-guide {\
 background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAEklEQVQImWNgYGBgYLBWV/8PAAK4AYnhiq+xAAAAAElFTkSuQmCC) right repeat-y;\

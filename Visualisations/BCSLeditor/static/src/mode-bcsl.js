@@ -23,7 +23,7 @@ define("ace/mode/bcsl_highlight", ["require", "exports", "module", "ace/lib/oop"
             },
             {
                 token: "constant.numeric",
-                regex: /(?<![a-zA-Z_])[0-9]+\.?[0-9]*(?![a-zA-Z_])/
+                regex: /(^| )[0-9]+($| )/
             },
             {
                 token: "variable.language",
@@ -34,12 +34,12 @@ define("ace/mode/bcsl_highlight", ["require", "exports", "module", "ace/lib/oop"
                 regex: /@/
             },
             {
-                token: "comment",
+                token: "part",
                 regex: /\#.+$/
             },
             {
                 token: "comment",
-                regex: /(?<={)\w+(?=})/
+                regex: /\/\/.+$/
             }]
         };
 
