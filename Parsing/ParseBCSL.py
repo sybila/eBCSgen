@@ -127,7 +127,7 @@ COMPLEX_GRAMMAR = """
     rate_complex: sequence DOUBLE_COLON compartment
     sequence: (agent ".")* agent
     agent: atomic | structure
-    structure: s_name "()" | s_name "(" composition ")"
+    structure: s_name "(" composition ")"
     composition: (atomic ",")* atomic?
     atomic : a_name "{" state "}" | a_name
 
@@ -391,8 +391,10 @@ class Parser:
                                "RULES_START": "#! rules",
                                "INITS_START": "#! inits",
                                "DEFNS_START": "#! definitions",
-                               "CNAME": "NAME",
-                               "VAR": "?"
+                               "CNAME": "agent_name",
+                               "VAR": "?",
+                               "DECIMAL": "decimal",
+                               "INT": "int"
                                })
 
     def replace(self, expected: set) -> set:
