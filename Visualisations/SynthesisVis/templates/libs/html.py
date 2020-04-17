@@ -10,7 +10,12 @@ HTML_start_2d = """
     <title>Select Image</title>
 
     <style>
+        #plot {
+            height: 95%;
+        }
+
         #combos {
+            height: 5%;
             text-align: center;
             width: 620px;
         }
