@@ -392,10 +392,7 @@ class Parser:
                                "INITS_START": "#! inits",
                                "DEFNS_START": "#! definitions",
                                "CNAME": "agent_name",
-                               "VAR": "?",
-                               "DECIMAL": "decimal",
-                               "INT": "int",
-                               "COMMENT": "comment",
+                               "VAR": "?"
                                })
         self.terminals.pop("$END", None)
 
@@ -406,7 +403,7 @@ class Parser:
         :param expected: given set of expected tokens
         :return: transformed tokens
         """
-        return set([self.terminals.get(item, item) for item in expected])
+        return set([self.terminals.get(item, item.lower()) for item in expected])
 
     def parse(self, expression: str) -> Result:
         """

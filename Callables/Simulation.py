@@ -5,6 +5,7 @@ import argparse
 sys.path.append(os.path.split(sys.path[0])[0])
 
 from Parsing.ParseBCSL import Parser
+from Errors.ModelParsingError import ModelParsingError
 
 """
 usage: Simulation.py [-h] --model MODEL --output OUTPUT --deterministic
@@ -38,12 +39,15 @@ args = args_parser.parse_args()
 model_parser = Parser("model")
 model_str = open(args.model, "r").read()
 
-model = model_parser.parse(model_str).data
-vm = model.to_vector_model()
+model = model_parser.parse(model_str)
 
-if eval(args.deterministic):
-    df = vm.deterministic_simulation(args.max_time, args.volume)
+if model.success:
+    vm = model.data.to_vector_model()
+    if eval(args.deterministic):
+        df = vm.deterministic_simulation(args.max_time, args.volume)
+    else:
+        df = vm.stochastic_simulation(args.max_time, args.runs)
+
+    df.to_csv(args.output, index=None, header=True)
 else:
-    df = vm.stochastic_simulation(args.max_time, args.runs)
-
-df.to_csv(args.output, index=None, header=True)
+    raise ModelParsingError(model.data, model_str)

@@ -6,6 +6,8 @@ sys.path.append(os.path.split(sys.path[0])[0])
 
 from Parsing.ParseBCSL import Parser
 import Parsing.ParsePCTLformula
+from Errors.ModelParsingError import ModelParsingError
+from Errors.FormulaParsingError import FormulaParsingError
 
 """
 usage: ParameterSynthesis.py [-h] --model MODEL --output OUTPUT
@@ -36,7 +38,7 @@ args = args_parser.parse_args()
 
 model_parser = Parser("model")
 model_str = open(args.model, "r").read()
-model = model_parser.parse(model_str).data
+model = model_parser.parse(model_str)
 
 if args.bound:
     bound = int(args.bound)
@@ -48,9 +50,14 @@ if args.region:
 else:
     region = None
 
-formula = Parsing.ParsePCTLformula.PCTLparser().parse(args.formula)
-
-result = model.PCTL_synthesis(formula, region, bound)
-f = open(args.output, "w")
-f.write(result.decode("utf-8"))
-f.close()
+if model.success:
+    formula = Parsing.ParsePCTLformula.PCTLparser().parse(args.formula)
+    if formula.success:
+        result = model.data.PCTL_synthesis(formula, region, bound)
+        f = open(args.output, "w")
+        f.write(result.decode("utf-8"))
+        f.close()
+    else:
+        raise FormulaParsingError(formula.data, args.formula)
+else:
+    raise ModelParsingError(model.data, model_str)

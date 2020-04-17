@@ -101,7 +101,8 @@ class PCTLparser:
         self.terminals.update({"NEXT": "X",
                                "UNTIL": "U",
                                "FUTURE": "F",
-                               "EQ": "=", "GE": ">=", "G": ">", "LE": "<=", "L": "<"
+                               "EQ": "=", "GE": ">=", "G": ">", "LE": "<=", "L": "<",
+                               "DOUBLE_COLON": "::"
                                })
 
     def replace(self, expected: set) -> set:

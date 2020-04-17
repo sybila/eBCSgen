@@ -6,6 +6,7 @@ import numpy as np
 sys.path.append(os.path.split(sys.path[0])[0])
 
 from Parsing.ParseBCSL import Parser, load_TS_from_json
+from Errors.ModelParsingError import ModelParsingError
 
 """
 usage: GenerateTS.py [-h] --model MODEL --output OUTPUT [--bound BOUND]
@@ -37,16 +38,18 @@ args_parser.add_argument('--max_size', type=float, default=np.inf)
 
 args = args_parser.parse_args()
 
-model_parser = Parser("model")
-model_str = open(args.model, "r").read()
-
-model = model_parser.parse(model_str).data
-vm = model.to_vector_model(args.bound)
-
 if args.transition_file != 'None':
     ts = load_TS_from_json(args.transition_file)
 else:
     ts = None
 
-ts = vm.generate_transition_system(ts, args.max_time, args.max_size)
-ts.save_to_json(args.output)
+model_parser = Parser("model")
+model_str = open(args.model, "r").read()
+
+model = model_parser.parse(model_str)
+if model.success:
+    vm = model.data.to_vector_model(args.bound)
+    ts = vm.generate_transition_system(ts, args.max_time, args.max_size)
+    ts.save_to_json(args.output)
+else:
+    raise ModelParsingError(model.data, model_str)
