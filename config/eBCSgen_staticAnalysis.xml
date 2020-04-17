@@ -25,7 +25,9 @@
 				  <param name="complex" value="" type="text" label="Complex agent:" hidden="true"/>
 			</when>
 			<when value="reach">
-				  <param name="complex" value="" type="text" label="Complex agent:"/>
+				  <param name="complex" value="" type="text" label="Complex agent:">
+					 <validator type="empty_field"/>
+        		  </param>
 			</when>
 		</conditional>
   </inputs>

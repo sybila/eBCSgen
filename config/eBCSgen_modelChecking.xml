@@ -12,8 +12,10 @@
 
   <inputs>
     <param format="bcs" name="model" type="data" label="Model file" help="Provide a .bcs file"/>
-    <param name="formula" type="text" label="PCTL formula"/>
-    <param name="bound" size="4" type="integer" value="" label="Bound [optional]" optional="true"/>
+    <param name="formula" type="text" label="PCTL formula">
+      <validator type="empty_field"/>
+    </param>
+    <param name="bound" min="0" type="integer" value="" label="Bound [optional]" optional="true"/>
   </inputs>
 
   <outputs>

@@ -17,10 +17,10 @@
 
   <inputs>
     <param format="bcs" name="model" type="data" label="Model file" help="Provide a .bcs file"/>
-    <param name="bound" size="4" type="integer" value="" label="Bound [optional]" optional="true"/>
+    <param name="bound" min="0" type="integer" value="" label="Bound [optional]" optional="true"/>
       <section name="adv" title="Advanced Options" expanded="false">
-          <param name="max_time" size="4" type="float" value="" label="Maximal computation time [optional]" optional="true"/>
-          <param name="max_size" size="4" type="float" value="" label="Maximal TS size [optional]" optional="true"/>
+          <param name="max_time" min="0" type="float" value="" label="Maximal computation time [optional]" optional="true"/>
+          <param name="max_size" min="1" type="integer" value="" label="Maximal TS size [optional]" optional="true"/>
           <param format="bcs.ts" name="transition_file" type="data" label="Precomputed TS file [optional]" optional="true"/>
       </section>
   </inputs>
