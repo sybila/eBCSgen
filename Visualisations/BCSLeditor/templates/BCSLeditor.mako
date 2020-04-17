@@ -22,7 +22,8 @@ data = "\n".join(list(hda.datatype.dataprovider( hda, 'line', comment_char=none,
 
     #console {
         position: absolute;
-        bottom: 3.5%;
+        bottom: 0;
+        height: 3.5%;
         float: left;
         left: 0%;
         width: 100%;
