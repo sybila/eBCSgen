@@ -394,8 +394,10 @@ class Parser:
                                "CNAME": "agent_name",
                                "VAR": "?",
                                "DECIMAL": "decimal",
-                               "INT": "int"
+                               "INT": "int",
+                               "COMMENT": "comment",
                                })
+        self.terminals.pop("$END", None)
 
     def replace(self, expected: set) -> set:
         """
