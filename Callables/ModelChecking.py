@@ -5,6 +5,7 @@ import argparse
 sys.path.append(os.path.split(sys.path[0])[0])
 
 from Parsing.ParseBCSL import Parser
+import Parsing.ParsePCTLformula
 
 """
 usage: ModelChecking.py [-h] --model MODEL --output OUTPUT [--bound BOUND]
@@ -39,6 +40,8 @@ if args.bound:
     bound = int(args.bound)
 else:
     bound = None
+
+formula = Parsing.ParsePCTLformula.PCTLparser().parse(args.formula)
 
 result = model.PCTL_model_checking(args.formula, bound)
 f = open(args.output, "w")

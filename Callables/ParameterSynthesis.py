@@ -5,6 +5,7 @@ import argparse
 sys.path.append(os.path.split(sys.path[0])[0])
 
 from Parsing.ParseBCSL import Parser
+import Parsing.ParsePCTLformula
 
 """
 usage: ParameterSynthesis.py [-h] --model MODEL --output OUTPUT
@@ -47,7 +48,9 @@ if args.region:
 else:
     region = None
 
-result = model.PCTL_synthesis(args.formula, region, bound)
+formula = Parsing.ParsePCTLformula.PCTLparser().parse(args.formula)
+
+result = model.PCTL_synthesis(formula, region, bound)
 f = open(args.output, "w")
 f.write(result.decode("utf-8"))
 f.close()

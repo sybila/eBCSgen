@@ -1,5 +1,6 @@
 import collections
 
+from Core.Formula import Formula
 from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
 from Core.Side import Side
@@ -129,7 +130,7 @@ class Model:
         # for this we need to be able to apply Rule on State
         pass
 
-    def PCTL_model_checking(self, PCTL_formula: str, bound: int = None):
+    def PCTL_model_checking(self, PCTL_formula: Formula, bound: int = None):
         """
         Model checking of given PCTL formula.
 
@@ -144,14 +145,11 @@ class Model:
         path = "/tmp/"
         vm = self.to_vector_model(bound)
         ts = vm.generate_transition_system()
-        formula = Parsing.ParsePCTLformula.PCTLparser().parse(PCTL_formula)
-        if not formula.success:
-            return formula.data
 
         # generate labels and give them to save_storm
-        APs = formula.get_APs()
+        APs = PCTL_formula.get_APs()
         state_labels, AP_labeles = self.create_AP_labels(APs, ts, vm.bound)
-        formula = formula.replace_APs(AP_labeles)
+        formula = PCTL_formula.replace_APs(AP_labeles)
         transitions_file = path + "exp_transitions.tra"
         labels_file = path + "exp_labels.lab"
         ts.save_to_STORM_explicit(transitions_file, labels_file, state_labels, AP_labeles)
@@ -161,7 +159,7 @@ class Model:
                             [transitions_file, labels_file])
         return result
 
-    def PCTL_synthesis(self, PCTL_formula: str, region: str, bound: int = None):
+    def PCTL_synthesis(self, PCTL_formula: Formula, region: str, bound: int = None):
         """
         Parameter synthesis of given PCTL formula in given region.
 
@@ -180,12 +178,9 @@ class Model:
         path = "/tmp/"
         vm = self.to_vector_model(bound)
         ts = vm.generate_transition_system()
-        formula = Parsing.ParsePCTLformula.PCTLparser().parse(PCTL_formula)
-        if not formula.success:
-            return formula.data
 
-        labels, prism_formulas = self.create_complex_labels(formula.get_complexes(), ts.ordering)
-        formula = formula.replace_complexes(labels)
+        labels, prism_formulas = self.create_complex_labels(PCTL_formula.get_complexes(), ts.ordering)
+        formula = PCTL_formula.replace_complexes(labels)
 
         prism_file = path + "prism-parametric.pm"
 
