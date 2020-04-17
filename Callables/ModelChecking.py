@@ -43,7 +43,7 @@ else:
 
 formula = Parsing.ParsePCTLformula.PCTLparser().parse(args.formula)
 
-result = model.PCTL_model_checking(args.formula, bound)
+result = model.PCTL_model_checking(formula, bound)
 f = open(args.output, "w")
 f.write(result.decode("utf-8"))
 f.close()
