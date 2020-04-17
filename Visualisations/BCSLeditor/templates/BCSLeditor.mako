@@ -23,7 +23,7 @@ data = "\n".join(list(hda.datatype.dataprovider( hda, 'line', comment_char=none,
     #console {
         position: absolute;
         bottom: 0;
-        height: 3.5%;
+        height: 3%;
         float: left;
         left: 0%;
         width: 100%;
@@ -35,6 +35,7 @@ data = "\n".join(list(hda.datatype.dataprovider( hda, 'line', comment_char=none,
         border-radius: 0px;
         border-style: solid;
         border-width: 1px;
+        padding-left: 2px;
     }
 
     #actualPosition {
@@ -52,7 +53,7 @@ data = "\n".join(list(hda.datatype.dataprovider( hda, 'line', comment_char=none,
         margin: 0;
         position: absolute;
         top: 3.8%;
-        bottom: 0;
+        bottom: 3%;
         left: 0;
         right: 0;
         height: 92.5%;
