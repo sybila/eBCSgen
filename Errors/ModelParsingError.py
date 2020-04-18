@@ -1,10 +1,7 @@
-import sys
-
 class ModelParsingError(Exception):
     def __init__(self, error, model):
         self.error = error
         self.model = model
-        sys.tracebacklimit = 0
 
     def __str__(self):
         line = self.model.split("\n")[self.error['line'] - 1]
