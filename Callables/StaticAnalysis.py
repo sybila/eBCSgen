@@ -7,6 +7,7 @@ sys.path.append(os.path.split(sys.path[0])[0])
 from Parsing.ParseBCSL import Parser
 from Errors.ModelParsingError import ModelParsingError
 from Errors.ComplexParsingError import ComplexParsingError
+from Errors.UnspecifiedParsingError import UnspecifiedParsingError
 
 def save_model(model, filename):
     f = open(filename, "w")
@@ -61,4 +62,6 @@ if model.success:
         else:
             raise ComplexParsingError(complex.data, args.complex)
 else:
+    if "error" in model.data:
+        raise UnspecifiedParsingError(model.data["error"])
     raise ModelParsingError(model.data, model_str)

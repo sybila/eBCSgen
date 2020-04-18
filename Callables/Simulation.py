@@ -6,6 +6,7 @@ sys.path.append(os.path.split(sys.path[0])[0])
 
 from Parsing.ParseBCSL import Parser
 from Errors.ModelParsingError import ModelParsingError
+from Errors.UnspecifiedParsingError import UnspecifiedParsingError
 
 """
 usage: Simulation.py [-h] --model MODEL --output OUTPUT --deterministic
@@ -50,4 +51,6 @@ if model.success:
 
     df.to_csv(args.output, index=None, header=True)
 else:
+    if "error" in model.data:
+        raise UnspecifiedParsingError(model.data["error"])
     raise ModelParsingError(model.data, model_str)

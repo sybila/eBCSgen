@@ -6,8 +6,10 @@ sys.path.append(os.path.split(sys.path[0])[0])
 
 from Parsing.ParseBCSL import Parser
 import Parsing.ParsePCTLformula
-from Errors.ModelParsingError import ModelParsingError
+
 from Errors.FormulaParsingError import FormulaParsingError
+from Errors.ModelParsingError import ModelParsingError
+from Errors.UnspecifiedParsingError import UnspecifiedParsingError
 
 """
 usage: ParameterSynthesis.py [-h] --model MODEL --output OUTPUT
@@ -60,4 +62,6 @@ if model.success:
     else:
         raise FormulaParsingError(formula.data, args.formula)
 else:
+    if "error" in model.data:
+        raise UnspecifiedParsingError(model.data["error"])
     raise ModelParsingError(model.data, model_str)
