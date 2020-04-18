@@ -45,10 +45,10 @@ model = model_parser.parse(model_str)
 if model.success:
     if args.method == "reduce":
         model.data.reduce_context()
-        save_model(model, args.output)
+        save_model(model.data, args.output)
     elif args.method == "eliminate":
         model.data.eliminate_redundant()
-        save_model(model, args.output)
+        save_model(model.data, args.output)
     else:
         complex_parser = Parser("rate_complex")
         complex = complex_parser.parse(args.complex)
