@@ -1,15 +1,11 @@
-# eBCSgen_new
+# eBCSgen
 
-## Prerequisites
+eBSCgen is a tool for development and analysis of models written in Biochemical Space Language (BCSL). The tool is deployed online as a part of [BioDivine](https://biodivine-vm.fi.muni.cz/galaxy/) toolset. 
 
-`Python 3+` with packages `pandas`, `numpy`, `scipy`, `lark`, `lark-parser`, `sympy`, `itertools`, `collections` (all installable using `pip`)
+For more information about the tool, see Wiki.
 
-## Testing
+---
 
-To run all the tests use
+If you want to run the tool locally, make sure you have `Python 3+` installed with the following packages: `pandas`, `numpy`, `scipy`, `lark`, `lark-parser`, `sympy`, `itertools`, `collections` (all installable using `pip`).
 
-```
-python3 Testing/main.py
-```
-
-in the main directory.
+To test the tool, run `python3 Testing/main.py` in the main directory.
