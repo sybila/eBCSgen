@@ -9,7 +9,7 @@
 To run all the tests use
 
 ```
-python3 -m unittest discover -s Testing -p 'test_*.py'
+python3 Testing/main.py
 ```
 
 in the main directory.
