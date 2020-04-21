@@ -70,7 +70,7 @@ class TestFormalMethods(unittest.TestCase):
 
     def test_tumor_modelchecking_wrong_formula(self):
         formula = Parsing.ParsePCTLformula.PCTLparser().parse("P > 0.5 [F T(P{m}):x>2]")
-        error_message = {'line': 1, 'column': 19, 'unexpected': ':', 'expected': {'DOUBLE_COLON', '.'}}
+        error_message = {'line': 1, 'column': 19, 'unexpected': ':', 'expected': {'::', '.'}}
         self.assertEqual(formula.data, error_message)
 
     def test_parameter_synthesis(self):

@@ -378,10 +378,11 @@ class TestModel(unittest.TestCase):
 
     def test_parser_errors(self):
         self.assertEqual(self.model_parser.parse(self.model_wrong_1).data,
-                         {"unexpected": ";", "expected": {'?', 'NAME'}, "line": 3, "column": 37})
+                         {"unexpected": ";", "expected": {'?', 'agent_name'}, "line": 3, "column": 37})
 
         self.assertEqual(self.model_parser.parse(self.model_wrong_2).data,
-                         {"expected": {'DECIMAL', '#! inits', ']', '#! definitions', '=>', '@', 'INT', '+', 'NAME', ';'},
+                         {"expected": {'decimal', '#! inits', ']', '#! definitions', '=>', '@', 'int',
+                                       '+', 'agent_name', ';'},
                           "line": 3, "column": 26, "unexpected": "="})
 
     def test_zooming_syntax(self):
