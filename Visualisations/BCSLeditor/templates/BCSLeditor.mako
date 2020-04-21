@@ -155,6 +155,7 @@ data = "\n".join(list(hda.datatype.dataprovider( hda, 'line', comment_char=none,
         var editor = ace.edit("editor");
         editor.setTheme("ace/theme/terminal");
         editor.session.setMode("ace/mode/bcsl");
+        editor.setOption("showPrintMargin", false);
         editor.getSession().setUseWrapMode(true);
         editor.resize();
         editor.session.selection.on('changeCursor', function(e) {
