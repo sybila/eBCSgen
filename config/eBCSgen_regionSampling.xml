@@ -1,4 +1,4 @@
-<tool id="RegionSampling" name="Region Sampling" version="1.0.0">
+<tool id="ProbabilitySampling" name="Probability Sampling" version="1.0.0">
   <description>- sample given result of Storm parameter synthesis</description>
   <command>python3 /home/xtrojak/RegionSampling/run.py
       --storm_file '$storm_file'
