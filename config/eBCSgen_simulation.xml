@@ -12,12 +12,12 @@
 	<inputs>
 		<param format="bcs" name="model" type="data" label="Model file" help="Provide a .bcs file"/>
 		<conditional name="type">
-			<param name="deterministic_choice" type="select" label="Choose stochastic or deterministic:">
+			<param name="deterministic_choice" type="select" label="Choose simulation method:">
 				<option value="False" selected="true">Stochastic</option>
 				<option value="True">Deterministic</option>
 			</param>
 			<when value="False">
-                <param name="num_of_runs" min="1" type="integer" value="1" label="Number of total runs:"/>
+                <param name="num_of_runs" min="1" type="integer" value="1" label="Number of runs:"/>
                 <param name="volume" min="0" type="integer" value="1" hidden="true"/>
 			</when>
 			<when value="True">
