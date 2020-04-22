@@ -1,4 +1,5 @@
 import collections
+import subprocess
 
 from Core.Formula import Formula
 from Core.Atomic import AtomicAgent
@@ -6,8 +7,7 @@ from Core.Complex import Complex
 from Core.Side import Side
 from TS.TransitionSystem import TransitionSystem
 from TS.VectorModel import VectorModel
-import Parsing.ParsePCTLformula
-import subprocess
+from Errors.ComplexOutOfScope import ComplexOutOfScope
 
 
 class Model:
@@ -213,6 +213,8 @@ class Model:
                 labels[complex] = complex.to_PRISM_code(ordering.index(complex))
             else:
                 indices = complex.identify_compatible(ordering)
+                if not indices:
+                    raise ComplexOutOfScope(complex)
                 id = "ABSTRACT_VAR_" + "".join(list(map(str, indices)))
                 labels[complex] = id
                 prism_formulas.append(id + " = " + "+".join(["VAR_{}".format(i) for i in indices]) +

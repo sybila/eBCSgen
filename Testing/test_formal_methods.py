@@ -1,6 +1,7 @@
 import unittest
 
 import Parsing.ParsePCTLformula
+from Errors.ComplexOutOfScope import ComplexOutOfScope
 from Parsing.ParseBCSL import Parser
 
 
@@ -89,6 +90,25 @@ class TestFormalMethods(unittest.TestCase):
         formula = Parsing.ParsePCTLformula.PCTLparser().parse("P=? [F X().Y{_}::rep >= 1]")
         result = model_parsed.PCTL_synthesis(formula, None)
         self.assertTrue("Result (initial states)" in str(result))
+
+    def test_synthesis_out_of_scope(self):
+        model_str = """
+        #! rules
+        X()::rep => @ k1*[X()::rep]
+        Z()::rep => X()::rep @ k2
+        => Y()::rep @ 1/(1+([X()::rep])**4)
+
+        #! inits
+        2 X()::rep
+        Y()::rep
+
+        #! definitions
+        k2 = 5
+        """
+        model = self.model_parser.parse(model_str).data
+        formula = Parsing.ParsePCTLformula.PCTLparser().parse('P <= 0.5[F X()::out = 1]')
+        region = '0<=k1<=1'
+        self.assertRaises(ComplexOutOfScope, model.PCTL_synthesis, formula, region)
 
     def test_synthesis_simple(self):
         model_str = """
