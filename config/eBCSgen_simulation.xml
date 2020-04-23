@@ -7,7 +7,7 @@
         --runs '$type.num_of_runs'
         --max_time '$max_time'
         --volume '$type.volume'
-		--step '$step'
+		--step '$type.step'
     </command>
 
 	<inputs>
