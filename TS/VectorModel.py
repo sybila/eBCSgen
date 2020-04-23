@@ -62,12 +62,13 @@ class VectorModel:
         reation_max = max(map(lambda r: max(max(r.source.sequence), max(r.target.sequence)), self.vector_reactions))
         return max(reation_max, max(self.init.sequence))
 
-    def deterministic_simulation(self, max_time: float, volume: float) -> pd.DataFrame:
+    def deterministic_simulation(self, max_time: float, volume: float, step: float = 0.01) -> pd.DataFrame:
         """
         Translates model to ODE and runs odeint solver for given max_time.
 
         :param max_time: end time of simulation
         :param volume: volume of the system
+        :param step: distance between time points
         :return: simulated data
         """
 
@@ -91,7 +92,7 @@ class VectorModel:
                 # positive effect
                 if reaction.target.sequence[i] == 1:
                     ODEs[i] += " + " + str(reaction.rate)
-        t = np.arange(0, max_time, 0.01)
+        t = np.arange(0, max_time + step, step)
         y_0 = list(map(lambda x: x / (AVOGADRO * volume), self.init.sequence))
         y = odeint(fun, y_0, t)
         df = pd.DataFrame(data=y, columns=list(map(str, self.ordering)))

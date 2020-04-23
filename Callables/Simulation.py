@@ -34,6 +34,7 @@ args_parser.add_argument('--deterministic', required=True)
 args_parser.add_argument('--runs', type=int, required=True)
 args_parser.add_argument('--max_time', type=float, required=True)
 args_parser.add_argument('--volume', type=float)
+args_parser.add_argument('--step', type=float)
 
 args = args_parser.parse_args()
 
@@ -45,7 +46,7 @@ model = model_parser.parse(model_str)
 if model.success:
     vm = model.data.to_vector_model()
     if eval(args.deterministic):
-        df = vm.deterministic_simulation(args.max_time, args.volume)
+        df = vm.deterministic_simulation(args.max_time, args.volume, args.step)
     else:
         df = vm.stochastic_simulation(args.max_time, args.runs)
 

@@ -7,6 +7,7 @@
         --runs '$type.num_of_runs'
         --max_time '$max_time'
         --volume '$type.volume'
+		--step '$step'
     </command>
 
 	<inputs>
@@ -19,10 +20,12 @@
 			<when value="False">
                 <param name="num_of_runs" min="1" type="integer" value="1" label="Number of runs:"/>
                 <param name="volume" min="0" type="integer" value="1" hidden="true"/>
+				<param name="step" min="0" type="float" value="0.01" hidden="true"/>
 			</when>
 			<when value="True">
 				<param name="num_of_runs" min="1" type="integer" value="1" hidden="true"/>
 				<param name="volume" min="0" type="integer" value="" label="Volume (liters):"/>
+				<param name="step" min="0" type="float" value="0.01" label="Simulation step:"/>
 			</when>
 		</conditional>
 		<param name="max_time" min="0" type="integer" value="1" label="Maximum simulation time:"/>
