@@ -24,6 +24,7 @@ arguments:
 optional arguments:
   -h, --help         show this help message and exit
   --bound BOUND
+  --local_storm
 
 """
 
@@ -32,6 +33,7 @@ args_parser.add_argument('--model', type=str, required=True)
 args_parser.add_argument('--output', type=str, required=True)
 args_parser.add_argument('--bound', type=int, default=None)
 args_parser.add_argument('--formula', type=str, required=True)
+args_parser.add_argument('--local_storm', nargs="?", const=True)
 
 args = args_parser.parse_args()
 
@@ -44,10 +46,15 @@ if args.bound:
 else:
     bound = None
 
+if args.local_storm:
+    local_storm = True
+else:
+    local_storm = False
+
 if model.success:
     formula = Parsing.ParsePCTLformula.PCTLparser().parse(args.formula)
     if formula.success:
-        result = model.data.PCTL_model_checking(formula, bound)
+        result = model.data.PCTL_model_checking(formula, bound, local_storm)
         f = open(args.output, "w")
         f.write(result.decode("utf-8"))
         f.close()

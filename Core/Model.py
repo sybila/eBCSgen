@@ -8,6 +8,7 @@ from Core.Side import Side
 from TS.TransitionSystem import TransitionSystem
 from TS.VectorModel import VectorModel
 from Errors.ComplexOutOfScope import ComplexOutOfScope
+from Errors.StormNotAvailable import StormNotAvailable
 
 
 class Model:
@@ -130,7 +131,7 @@ class Model:
         # for this we need to be able to apply Rule on State
         pass
 
-    def PCTL_model_checking(self, PCTL_formula: Formula, bound: int = None):
+    def PCTL_model_checking(self, PCTL_formula: Formula, bound: int = None, storm_local: bool = True):
         """
         Model checking of given PCTL formula.
 
@@ -140,6 +141,7 @@ class Model:
 
         :param PCTL_formula: given PCTL formula
         :param bound: given bound
+        :param storm_local: use local Storm installation
         :return: output of Storm model checker
         """
         path = "/tmp/"
@@ -156,10 +158,10 @@ class Model:
 
         command = "storm --explicit {0} {1} --prop '{2}'"
         result = call_storm(command.format(transitions_file, labels_file, formula),
-                            [transitions_file, labels_file])
+                            [transitions_file, labels_file], storm_local)
         return result
 
-    def PCTL_synthesis(self, PCTL_formula: Formula, region: str, bound: int = None):
+    def PCTL_synthesis(self, PCTL_formula: Formula, region: str, bound: int = None, storm_local: bool = True):
         """
         Parameter synthesis of given PCTL formula in given region.
 
@@ -173,6 +175,7 @@ class Model:
         :param PCTL_formula: given PCTL formula
         :param region: string representation of region which will be checked by Storm
         :param bound: given bound
+        :param storm_local: use local Storm installation
         :return: output of Storm model checker
         """
         path = "/tmp/"
@@ -190,9 +193,9 @@ class Model:
         command_no_region = "storm-pars --prism {0} --prop '{1}'"
 
         if region:
-            result = call_storm(command_region.format(prism_file, formula, region), [prism_file])
+            result = call_storm(command_region.format(prism_file, formula, region), [prism_file], storm_local)
         else:
-            result = call_storm(command_no_region.format(prism_file, formula), [prism_file])
+            result = call_storm(command_no_region.format(prism_file, formula), [prism_file], storm_local)
         return result
 
     def create_complex_labels(self, complexes: list, ordering: tuple):
@@ -247,23 +250,25 @@ class Model:
         return state_labels, AP_lables
 
 
-def call_storm(command: str, files: list):
+def call_storm(command: str, files: list, storm_local: bool):
     """
-    Calls Storm model checker either locally (if available) or on the remote server.
+    Calls Storm model checker either locally or on the remote server.
 
     :param command: given command to be executed
+    :param files: files to be transferred to remote device
+    :param storm_local: use local Storm installation
     :return: result of Storm execution
     """
-    status, result = subprocess.getstatusoutput('storm')
-    if status == 0:
-        command = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        stdout, stderr = command.communicate()
-        return stdout
+    if storm_local:
+        return call_local_storm(command)
     else:
         import paramiko, scp
         ssh = paramiko.SSHClient()
         ssh.load_system_host_keys()
-        ssh.connect("psyche07.fi.muni.cz", username="biodivine")
+        try:
+            ssh.connect("psyche07.fi.muni.cz", username="biodivine")
+        except Exception:
+            return call_local_storm(command)
 
         with scp.SCPClient(ssh.get_transport()) as tunnel:
             for file in files:
@@ -274,3 +279,20 @@ def call_storm(command: str, files: list):
         ssh.close()
         del ssh, ssh_stdin, ssh_stdout, ssh_stderr
         return output
+
+
+
+def call_local_storm(command: str):
+    """
+    Calls Storm model checker locally.
+
+    :param command: given command to be executed
+    :return: result of Storm execution
+    """
+    status, result = subprocess.getstatusoutput('storm')
+    if status == 0:
+        command = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        stdout, stderr = command.communicate()
+        return stdout
+    else:
+        raise StormNotAvailable
