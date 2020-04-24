@@ -5,6 +5,7 @@ from scipy.integrate import odeint
 import numpy as np
 import pandas as pd
 import random
+from sortedcontainers import SortedList
 
 from TS.State import State
 from TS.TSworker import TSworker
@@ -33,7 +34,7 @@ def handle_number_of_threads(number, workers):
 
 
 class VectorModel:
-    def __init__(self, vector_reactions: set, init: State, ordering: tuple, bound: int):
+    def __init__(self, vector_reactions: set, init: State, ordering: SortedList, bound: int):
         self.vector_reactions = vector_reactions
         self.init = init
         self.ordering = ordering

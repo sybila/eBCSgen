@@ -1,6 +1,7 @@
 import numpy as np
 import sympy
 from lark import Transformer, Tree
+from sortedcontainers import SortedList
 
 import TS.State
 
@@ -21,7 +22,7 @@ class Rate:
     def __hash__(self):
         return hash(str(self))
 
-    def vectorize(self, ordering: tuple, definitions: dict) -> list:
+    def vectorize(self, ordering: SortedList, definitions: dict) -> list:
         """
         Converts all occurrences of Complexes (resp. sub trees named agent)
         with its vector representation. These are directly replaced within
@@ -30,7 +31,7 @@ class Rate:
         Moreover, in the process parameters are replaces with their values
         (if given).
 
-        :param ordering: given tuple of Complexes
+        :param ordering: given SortedList of Complexes
         :param definitions: dict of (param_name, value)
         :return: list of transformed States (just for testing)
         """

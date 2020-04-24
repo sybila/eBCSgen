@@ -10,13 +10,13 @@ class Complex:
         self.compartment = compartment
 
     def __repr__(self):
-        return str(self)
+        return ".".join(sorted(list(map(str, self.agents)))) + "::" + self.compartment
 
     def __str__(self):
         return ".".join(list(map(str, self.agents))) + "::" + self.compartment
 
     def __lt__(self, other: 'Complex'):
-        return str(self) < str(other)
+        return repr(self) < repr(other)
 
     def __eq__(self, other: 'Complex'):
         return self.compartment == other.compartment and\
@@ -109,7 +109,7 @@ class Complex:
         for agent in self.agents:
             agent_derivatives = agent.add_context(1, atomic_signature, structure_signature)
             results.append({pair[0] for pair in agent_derivatives})
-        output_comples = set()
+        output_complexes = set()
         for result in itertools.product(*results):
-            output_comples.add(Complex(list(result), self.compartment))
-        return output_comples
+            output_complexes.add(Complex(list(result), self.compartment))
+        return output_complexes

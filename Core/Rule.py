@@ -79,6 +79,16 @@ class Rule:
         lhs, rhs = self.create_complexes()
         return Reaction(lhs, rhs, copy(self.rate))
 
+    def rate_to_vector(self, ordering, definitions: dict):
+        """
+        Converts all occurrences of Complexes in rate to vector representation.
+
+        :param ordering: given ordering of unique of Complexes (as sortedcontainers.SortedList)
+        :param definitions: dict of (param_name, value)
+        """
+        if self.rate:
+            self.rate.vectorize(ordering, definitions)
+
     def create_reactions(self, atomic_signature: dict, structure_signature: dict) -> set:
         """
         Adds context to all agents and generated all possible combinations.

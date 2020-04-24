@@ -1,5 +1,6 @@
 import collections
 import numpy as np
+from sortedcontainers import SortedList
 
 from Core.Complex import Complex
 from TS.State import State
@@ -38,7 +39,7 @@ class Side:
     def to_counter(self):
         return collections.Counter(self.agents)
 
-    def to_vector(self, ordering: tuple) -> State:
+    def to_vector(self, ordering: SortedList) -> State:
         """
         Convert the Side to a State accoring to given ordering.
 
@@ -82,5 +83,7 @@ class Side:
         :param structure_signature: given structure signature
         :return: set of all created Complexes
         """
-        return set.union(*[complex.create_all_compatible(atomic_signature, structure_signature)
-                           for complex in self.agents])
+        if self.agents:
+            return set.union(*[complex.create_all_compatible(atomic_signature, structure_signature)
+                               for complex in self.agents])
+        return set()
