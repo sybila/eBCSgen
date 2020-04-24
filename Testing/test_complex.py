@@ -78,10 +78,22 @@ class TestComplex(unittest.TestCase):
         structure_signature = {"KaiC": {"S", "T"}}
 
         results = set()
-        with open("Testing/complexes.txt") as file:
+        with open("Testing/complexes_1.txt") as file:
             for complex in file.readlines():
                 results.add(complex_parser.parse(complex).data.children[0])
 
         complex = complex_parser.parse("KaiC().KaiC().KaiC().KaiC().KaiC().KaiC()::cyt").data.children[0]
+        output_comples = complex.create_all_compatible(atomic_signature, structure_signature)
+        self.assertEqual(output_comples, results)
+
+        atomic_signature = {"A": {"+", "-"}, "B": {"HA", "HE"}}
+        structure_signature = {"KaiB": {"A", "B"}}
+
+        results = set()
+        with open("Testing/complexes_2.txt") as file:
+            for complex in file.readlines():
+                results.add(complex_parser.parse(complex).data.children[0])
+
+        complex = complex_parser.parse("KaiB().KaiB().KaiB()::cyt").data.children[0]
         output_comples = complex.create_all_compatible(atomic_signature, structure_signature)
         self.assertEqual(output_comples, results)

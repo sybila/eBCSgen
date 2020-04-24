@@ -7,6 +7,7 @@ from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
 from Core.Side import Side
 from TS.State import State
+import Parsing.ParseBCSL
 
 
 class TestSide(unittest.TestCase):
@@ -60,3 +61,24 @@ class TestSide(unittest.TestCase):
     def test_exists_compatible_agent(self):
         self.assertTrue(self.side1.exists_compatible_agent(self.c1))
         self.assertFalse(self.side1.exists_compatible_agent(self.c3))
+
+    def test_create_all_compatible(self):
+        complex_parser = Parsing.ParseBCSL.Parser("rate_complex")
+        side_parser = Parsing.ParseBCSL.Parser("side")
+
+        atomic_signature = {"A": {"+", "-"}, "B": {"HA", "HE"}, "S": {"a", "i"}, "T": {"u", "p"}}
+        structure_signature = {"KaiB": {"A", "B"}, "KaiC": {"S", "T"}}
+
+        results = set()
+        with open("Testing/complexes_1.txt") as file:
+            for complex in file.readlines():
+                results.add(complex_parser.parse(complex).data.children[0])
+
+        with open("Testing/complexes_2.txt") as file:
+            for complex in file.readlines():
+                results.add(complex_parser.parse(complex).data.children[0])
+
+        side = "KaiC().KaiC().KaiC().KaiC().KaiC().KaiC()::cyt + 2 KaiB().KaiB().KaiB()::cyt"
+        side = side_parser.parse(side).data.to_side()
+        output_comples = side.create_all_compatible(atomic_signature, structure_signature)
+        self.assertEqual(output_comples, results)

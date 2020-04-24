@@ -70,3 +70,14 @@ class Side:
         :return: True if exists compatible
         """
         return any(list(map(lambda a: a.compatible(agent), self.agents)))
+
+    def create_all_compatible(self, atomic_signature: dict, structure_signature: dict):
+        """
+        Creates all fully specified complexes for all complexes in Side
+
+        :param atomic_signature: given atomic signature
+        :param structure_signature: given structure signature
+        :return: set of all created Complexes
+        """
+        return set.union(*[complex.create_all_compatible(atomic_signature, structure_signature)
+                           for complex in self.agents])

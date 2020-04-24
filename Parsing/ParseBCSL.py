@@ -16,6 +16,7 @@ from Core.Structure import StructureAgent
 from TS.State import State
 from TS.TransitionSystem import TransitionSystem
 from TS.Edge import edge_from_dict
+from Core.Side import Side
 
 
 def load_TS_from_json(json_file: str) -> TransitionSystem:
@@ -64,6 +65,9 @@ class SideHelper:
 
     def __repr__(self):
         return str(self)
+
+    def to_side(self):
+        return Side([Complex(self.seq[c[0]:c[1]+1], self.comp[c[0]]) for c in self.complexes])
 
 
 GRAMMAR = r"""
