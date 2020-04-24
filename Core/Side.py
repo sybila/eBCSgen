@@ -29,6 +29,9 @@ class Side:
     def __len__(self):
         return len(self.agents)
 
+    def __hash__(self):
+        return hash(frozenset(self.to_counter().items()))
+
     def to_list_of_strings(self):
         return list(map(str, self.agents))
 

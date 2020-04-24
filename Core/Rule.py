@@ -150,3 +150,12 @@ class Rule:
         reaction = self.to_reaction()
         return reaction.rhs.exists_compatible_agent(agent)
 
+    def create_all_compatible(self, atomic_signature: dict, structure_signature: dict):
+        """
+        Creates all fully specified complexes for all both Sides
+
+        :param atomic_signature: given atomic signature
+        :param structure_signature: given structure signature
+        :return: set of all created Complexes
+        """
+        return self.to_reaction().create_all_compatible(atomic_signature, structure_signature)

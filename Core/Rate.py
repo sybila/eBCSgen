@@ -18,6 +18,9 @@ class Rate:
     def __str__(self):
         return self.expression if type(self.expression) == str else "".join(tree_to_string(self.expression))
 
+    def __hash__(self):
+        return hash(str(self))
+
     def vectorize(self, ordering: tuple, definitions: dict) -> list:
         """
         Converts all occurrences of Complexes (resp. sub trees named agent)
