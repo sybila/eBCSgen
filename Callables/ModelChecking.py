@@ -9,6 +9,7 @@ import Parsing.ParsePCTLformula
 from Errors.ModelParsingError import ModelParsingError
 from Errors.FormulaParsingError import FormulaParsingError
 from Errors.UnspecifiedParsingError import UnspecifiedParsingError
+from Errors.InvalidInputError import InvalidInputError
 
 """
 usage: ModelChecking.py [-h] --model MODEL --output OUTPUT [--bound BOUND]
@@ -52,6 +53,9 @@ else:
     local_storm = False
 
 if model.success:
+    if len(model.data.params) != 0:
+        raise InvalidInputError("Provided model is parametrised - model checking cannot be executed.")
+
     formula = Parsing.ParsePCTLformula.PCTLparser().parse(args.formula)
     if formula.success:
         result = model.data.PCTL_model_checking(formula, bound, local_storm)

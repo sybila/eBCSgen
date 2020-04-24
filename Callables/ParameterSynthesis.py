@@ -10,6 +10,7 @@ import Parsing.ParsePCTLformula
 from Errors.FormulaParsingError import FormulaParsingError
 from Errors.ModelParsingError import ModelParsingError
 from Errors.UnspecifiedParsingError import UnspecifiedParsingError
+from Errors.InvalidInputError import InvalidInputError
 
 """
 usage: ParameterSynthesis.py [-h] --model MODEL --output OUTPUT
@@ -60,6 +61,9 @@ else:
     local_storm = False
 
 if model.success:
+    if len(model.data.params) == 0:
+        raise InvalidInputError("Provided model is not parametrised - parameter synthesis cannot be executed.")
+
     formula = Parsing.ParsePCTLformula.PCTLparser().parse(args.formula)
     if formula.success:
         result = model.data.PCTL_synthesis(formula, region, bound, local_storm)

@@ -7,6 +7,7 @@ sys.path.append(os.path.split(sys.path[0])[0])
 from Parsing.ParseBCSL import Parser
 from Errors.ModelParsingError import ModelParsingError
 from Errors.UnspecifiedParsingError import UnspecifiedParsingError
+from Errors.InvalidInputError import InvalidInputError
 
 """
 usage: Simulation.py [-h] --model MODEL --output OUTPUT --deterministic
@@ -44,6 +45,9 @@ model_str = open(args.model, "r").read()
 model = model_parser.parse(model_str)
 
 if model.success:
+    if len(model.data.params) != 0:
+        raise InvalidInputError("Provided model is parametrised - simulation cannot be executed.")
+
     vm = model.data.to_vector_model()
     if eval(args.deterministic):
         df = vm.deterministic_simulation(args.max_time, args.volume, args.step)
