@@ -1,5 +1,6 @@
 import collections
 import subprocess
+import sortedcontainers
 
 from Core.Formula import Formula
 from Core.Atomic import AtomicAgent
@@ -57,6 +58,19 @@ class Model:
             if name not in atomic_signature:
                 atomic_signature[name] = {"_"}
         return atomic_signature, structure_signature
+
+    def create_ordering(self) -> sortedcontainers.SortedList:
+        """
+        Extracts all possible unique agents from the model and gives them fixed order using SortedList.
+
+        :return: SortedList of unique agents
+        """
+        unique_complexes = set()
+        for rule in self.rules:
+            unique_complexes |= rule.create_all_compatible(self.atomic_signature, self.structure_signature)
+
+        unique_complexes |= set(self.init)
+        return sortedcontainers.SortedList(unique_complexes)
 
     def to_vector_model(self, bound: int = None) -> VectorModel:
         """
