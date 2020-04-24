@@ -23,7 +23,7 @@ class Complex:
                collections.Counter(self.agents) == collections.Counter(other.agents)
 
     def __hash__(self):
-        return hash(str(self))
+        return hash((frozenset(collections.Counter(self.agents).items()), self.compartment))
 
     def get_atomic_names(self) -> set:
         """
@@ -96,3 +96,20 @@ class Complex:
         """
         new_agents = [agent.reduce_context() for agent in self.agents]
         return Complex(new_agents, self.compartment)
+
+    def create_all_compatible(self, atomic_signature: dict, structure_signature: dict):
+        """
+        Creates all fully specified complexes compatible with the Complex
+
+        :param atomic_signature: given atomic signature
+        :param structure_signature: given structure signature
+        :return: set of all create Complexes
+        """
+        results = []
+        for agent in self.agents:
+            agent_derivatives = agent.add_context(1, atomic_signature, structure_signature)
+            results.append({pair[0] for pair in agent_derivatives})
+        output_comples = set()
+        for result in itertools.product(*results):
+            output_comples.add(Complex(list(result), self.compartment))
+        return output_comples
