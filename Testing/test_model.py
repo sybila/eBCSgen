@@ -372,17 +372,15 @@ class TestModel(unittest.TestCase):
 
     def test_to_vector_model(self):
         model = self.model_parser.parse(self.model_str_1).data
-        # print(model.to_vector_model())
-        # print(self.vm_1)
         self.assertTrue(model.to_vector_model() == self.vm_1)
 
     def test_parser_errors(self):
         self.assertEqual(self.model_parser.parse(self.model_wrong_1).data,
-                         {"unexpected": ";", "expected": {'?', 'agent_name'}, "line": 3, "column": 37})
+                         {"unexpected": ";", "expected": {'?', 'name'}, "line": 3, "column": 37})
 
         self.assertEqual(self.model_parser.parse(self.model_wrong_2).data,
                          {"expected": {'decimal', '#! inits', ']', '#! definitions', '=>', '@', 'int',
-                                       '+', 'agent_name', ';'},
+                                       '+', 'name', ';'},
                           "line": 3, "column": 26, "unexpected": "="})
 
     def test_zooming_syntax(self):

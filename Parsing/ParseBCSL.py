@@ -80,7 +80,7 @@ GRAMMAR = r"""
     cmplx_dfn: cmplx_name "=" sequence (COMMENT)?
 
     side: (const? complex "+")* (const? complex)?
-    complex: (abstract_sequence|sequence) DOUBLE_COLON compartment
+    complex: (abstract_sequence|sequence|cmplx_name) DOUBLE_COLON compartment
 
     !rate : fun "/" fun | fun
     !fun: const | param | rate_agent | fun "+" fun | fun "-" fun | fun "*" fun | fun POW const | "(" fun ")"
@@ -97,7 +97,6 @@ GRAMMAR = r"""
     DEFNS_START: "#! definitions"
     COMPLEXES_START: "#! complexes"
 
-    cmplx_name: CNAME
     param: CNAME
     def_param : CNAME
     number: NUMBER
@@ -124,16 +123,17 @@ EXTENDED_GRAMMAR = """
 """
 
 COMPLEX_GRAMMAR = """
-    rate_complex: sequence DOUBLE_COLON compartment
+    rate_complex: (sequence|cmplx_name) DOUBLE_COLON compartment
     sequence: (agent ".")* agent
     agent: atomic | structure
     structure: s_name "(" composition ")"
     composition: (atomic ",")* atomic?
-    atomic : a_name "{" state "}" | a_name
+    atomic : a_name "{" state "}"
 
     a_name: CNAME
     s_name: CNAME
     compartment: CNAME
+    cmplx_name: CNAME
     !state: (DIGIT|LETTER|"+"|"-"|"*"|"_")+
 
     DOUBLE_COLON: "::"
@@ -391,7 +391,8 @@ class Parser:
                                "RULES_START": "#! rules",
                                "INITS_START": "#! inits",
                                "DEFNS_START": "#! definitions",
-                               "CNAME": "agent_name",
+                               "CNAME": "name",
+                               "NAME": "agent_name",
                                "VAR": "?"
                                })
         self.terminals.pop("$END", None)
