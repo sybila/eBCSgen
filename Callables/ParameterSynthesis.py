@@ -64,6 +64,16 @@ if model.success:
     if len(model.data.params) == 0:
         raise InvalidInputError("Provided model is not parametrised - parameter synthesis cannot be executed.")
 
+    if "?" not in args.formula:
+        if not region:
+            params = set()
+        else:
+            params = {param.split("<=")[1] for param in region.split(",")}
+
+        undefined = model.data.params - params
+        if undefined:
+            raise InvalidInputError("Intervals undefined for parameters: {}.".format(", ".join(undefined)))
+
     formula = Parsing.ParsePCTLformula.PCTLparser().parse(args.formula)
     if formula.success:
         result = model.data.PCTL_synthesis(formula, region, bound, local_storm)
