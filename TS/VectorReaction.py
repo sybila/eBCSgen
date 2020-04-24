@@ -36,8 +36,8 @@ class VectorReaction:
         :param bound: allow bound on particular values
         :return: new State and evaluated rate
         """
-        new_state = state - self.source
-        if new_state.check_negative():
+        if state >= self.source:
+            new_state = state - self.source
             return new_state.add_with_bound(self.target, bound), self.rate.evaluate(state)
         return None, None
 

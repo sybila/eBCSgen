@@ -20,6 +20,9 @@ class State:
     def __mul__(self, other: 'State') -> np.array:
         return self.sequence * other.sequence
 
+    def __ge__(self, other: 'State') -> bool:
+        return all(self.sequence >= other.sequence)
+
     def __str__(self):
         return str(tuple(self.sequence))
 
