@@ -41,8 +41,6 @@ class Reaction:
         :param definitions: dict of (param_name, value)
         :return: VectorReaction representation of Reaction
         """
-        # if self.rate is not None:
-        #     self.rate.vectorize(ordering, definitions)
         return VectorReaction(self.lhs.to_vector(ordering),
                               self.rhs.to_vector(ordering),
                               self.rate)
