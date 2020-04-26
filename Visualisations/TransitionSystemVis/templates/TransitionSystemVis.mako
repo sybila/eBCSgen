@@ -350,7 +350,7 @@ firstpart = \
         <tr class="switch_button">
           <td class="switch_td">
             <label class="switch">
-              <input type="checkbox" name="check" id="loop_edges">
+              <input type="checkbox" name="check" id="loop_edges" checked>
               <span class="slider round"></span>
             </label>
           </td>
@@ -363,7 +363,7 @@ firstpart = \
         <tr>
           <td class="switch_td">
             <label class="switch">
-              <input type="checkbox" name="check" id="hell_node">
+              <input type="checkbox" name="check" id="hell_node" checked>
               <span class="slider round"></span>
             </label>
           </td>
