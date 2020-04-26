@@ -105,8 +105,11 @@ def create_HTML_graph(): #data):
     border_nodes = set()
 
     edges = []
+    self_loops = []
     for edge_id, edge in enumerate(data['edges'], 1):
         substrates, products = create_sides(nodes[edge['s']], nodes[edge['t']])
+        if edge['s'] == edge['t']:
+            self_loops.append((edge_id, edge['s'], edge['t'], substrates, products, edge.get('p', None)))
         edges.append((edge_id, edge['s'], edge['t'], substrates, products, edge.get('p', None)))
         if products == inf and substrates != inf:
             border_nodes.add(edge['s'])
@@ -118,6 +121,11 @@ def create_HTML_graph(): #data):
     output_file += "\t]);\n\n\t// create an array with edges\n\tvar edges = new vis.DataSet([\n"
 
     for edge in edges:
+        output_file += write_reaction(*edge)
+
+    output_file += mid
+
+    for edge in self_loops:
         output_file += write_reaction(*edge)
 
     initial = data['initial']
@@ -380,8 +388,14 @@ setTimeout(function () {
     var nodes = new vis.DataSet([
 '''
 
+mid = '''
+]);
+
+    var self_loops = [
+'''
+
 secondpart_1_1 = '''
-    ]);
+    ];
 
     // create a network
     var container = document.getElementById('mynetwork');
@@ -449,9 +463,9 @@ secondpart_1_2 = '''                    },
     // remove hell
     hell_filter.addEventListener('change', (e) => {
         if (hell_filter.checked){
-            noHell = true
-        } else {
             noHell = false
+        } else {
+            noHell = true
         }
         nodesView.refresh()
     });
@@ -463,43 +477,41 @@ secondpart_1_2 = '''                    },
 
     var network = new vis.Network(container, data, options);
 
-    [border_filter, loops_filter].forEach(function (arrayItem) {
-        // change border states and remove self-loops
-        arrayItem.addEventListener('change', (e) => {
-            var border_nodes = nodesView.get({filter: function (item){
-                    return (item.class == 'border')
-                }})
-
-            var no_self_loops = edges.get({filter: function (item){
-                    return (item.from != item.to)
-                }})
-
-            if (border_filter.checked){
-                for (index = 0; index < border_nodes.length; index++) {
-                    border_nodes[index].shape = "box"
-                }
-            } else {
-                for (index = 0; index < border_nodes.length; index++) {
-                    border_nodes[index].shape = "ellipse"
-               }
+    loops_filter.addEventListener('change', (e) => {
+        if (loops_filter.checked){
+            for (index = 0; index < self_loops.length; index++) {
+                edges.add(self_loops[index]);
             }
-
-            if (loops_filter.checked){
-                use_edges = no_self_loops
-            } else {
-                use_edges = edges
+        } else {
+            for (index = 0; index < self_loops.length; index++) {
+                edges.remove({id: self_loops[index].id});
             }
+        }
+    });
 
-            nodes.update(border_nodes)
-                nodesView = new vis.DataView(nodes, { filter: nodesFilter })
-                data = {
-                    nodes: nodesView,
-                    edges: use_edges
-                };
-                network.setData(data)
-                network.stabilize(0)
-        });
-    })
+    border_filter.addEventListener('change', (e) => {
+        var border_nodes = nodesView.get({filter: function (item){
+                return (item.class == 'border')
+            }})
+
+        if (border_filter.checked){
+            for (index = 0; index < border_nodes.length; index++) {
+                border_nodes[index].shape = "box"
+            }
+        } else {
+            for (index = 0; index < border_nodes.length; index++) {
+                border_nodes[index].shape = "ellipse"
+           }
+        }
+
+        nodes.update(border_nodes)
+        nodesView = new vis.DataView(nodes, { filter: nodesFilter })
+        data = {
+            nodes: nodesView,
+            edges: edges
+        };
+        network.setData(data)
+    });
 
     var stabil = true;
 '''
