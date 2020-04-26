@@ -1,3 +1,5 @@
+from sortedcontainers import SortedList
+
 from Core import Rate
 from Core.Side import Side
 from TS.VectorReaction import VectorReaction
@@ -29,9 +31,9 @@ class Reaction:
         return str(self) < str(other)
 
     def __hash__(self):
-        return hash(str(self))
+        return hash((self.lhs, self.rhs, self.rate))
 
-    def to_vector(self, ordering: tuple, definitions: dict) -> VectorReaction:
+    def to_vector(self, ordering: SortedList, definitions: dict) -> VectorReaction:
         """
         Creates vector representation of the Reaction.
 
@@ -39,8 +41,6 @@ class Reaction:
         :param definitions: dict of (param_name, value)
         :return: VectorReaction representation of Reaction
         """
-        if self.rate is not None:
-            self.rate.vectorize(ordering, definitions)
         return VectorReaction(self.lhs.to_vector(ordering),
                               self.rhs.to_vector(ordering),
                               self.rate)
@@ -53,3 +53,14 @@ class Reaction:
         :return: True if compatible
         """
         return self.lhs.compatible(other.lhs) and self.rhs.compatible(other.rhs)
+
+    def create_all_compatible(self, atomic_signature: dict, structure_signature: dict):
+        """
+        Creates all fully specified complexes for all both Sides
+
+        :param atomic_signature: given atomic signature
+        :param structure_signature: given structure signature
+        :return: set of all created Complexes
+        """
+        return set.union(*[self.lhs.create_all_compatible(atomic_signature, structure_signature) |
+                           self.rhs.create_all_compatible(atomic_signature, structure_signature)])

@@ -184,13 +184,25 @@ class TestRule(unittest.TestCase):
         self.assertEqual(self.r2.to_reaction(), self.reaction1)
 
     def test_create_reactions(self):
-        atomic_signature = {"T": {"a", "i"}, "U": {"p", "u"}, "C": {"p", "u"}}
+        atomic_signature = {"T": {"a", "i"}, "U": {"p", "u"}, "C": {"p", "u"}, "S": {"p", "u"}}
         structure_signature = {"K": {"T", "S"}, "B": {"U"}, "D": {"C"}}
         self.assertEqual(self.rule_c1.create_reactions(atomic_signature, structure_signature),
                          self.reactions_c1)
 
         self.assertEqual(self.rule_no_change.create_reactions(atomic_signature, structure_signature),
                          {self.reaction_c1_1})
+
+        rule_exp = "K(T{a}).K().K()::cyt => K(T{i}).K().K()::cyt @ k1*[K(T{a}).K().K()::cyt]"
+        rule = self.parser.parse(rule_exp).data
+        result = rule.create_reactions(atomic_signature, structure_signature)
+
+        reactions = set()
+        with open("Testing/reactions.txt") as file:
+            for complex in file.readlines():
+                rule = self.parser.parse(complex).data
+                reactions.add(rule.to_reaction())
+
+        self.assertEqual(result, reactions)
 
     def test_parser(self):
         rule_expr = "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt + D(B{_})::cell @ 3*[K()::cyt]/2*v_1"

@@ -1,5 +1,6 @@
 import unittest
 
+import Parsing.ParseBCSL
 from Core.Structure import StructureAgent
 from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
@@ -51,3 +52,48 @@ class TestComplex(unittest.TestCase):
 
     def test_reduce_context(self):
         self.assertEqual(self.c5.reduce_context(), self.c6)
+
+    def test_create_all_compatible(self):
+        atomic_signature = {"S": {"a", "i"}, "T": {"u", "p"}}
+        structure_signature = {"KaiC": {"S"}}
+
+        complex_parser = Parsing.ParseBCSL.Parser("rate_complex")
+
+        complex1 = complex_parser.parse("KaiC(S{a}).T{u}::cyt").data.children[0]
+        complex2 = complex_parser.parse("KaiC(S{a}).T{p}::cyt").data.children[0]
+        complex3 = complex_parser.parse("KaiC(S{i}).T{u}::cyt").data.children[0]
+        complex4 = complex_parser.parse("KaiC(S{i}).T{p}::cyt").data.children[0]
+        results_1 = {complex1, complex2, complex3, complex4}
+        results_2 = {complex1, complex2}
+
+        complex = complex_parser.parse("KaiC().T{_}::cyt").data.children[0]
+        output_comples = complex.create_all_compatible(atomic_signature, structure_signature)
+        self.assertEqual(output_comples, results_1)
+
+        complex = complex_parser.parse("KaiC(S{a}).T{_}::cyt").data.children[0]
+        output_comples = complex.create_all_compatible(atomic_signature, structure_signature)
+        self.assertEqual(output_comples, results_2)
+
+        atomic_signature = {"S": {"a", "i"}, "T": {"u", "p"}}
+        structure_signature = {"KaiC": {"S", "T"}}
+
+        results = set()
+        with open("Testing/complexes_1.txt") as file:
+            for complex in file.readlines():
+                results.add(complex_parser.parse(complex).data.children[0])
+
+        complex = complex_parser.parse("KaiC().KaiC().KaiC().KaiC().KaiC().KaiC()::cyt").data.children[0]
+        output_comples = complex.create_all_compatible(atomic_signature, structure_signature)
+        self.assertEqual(output_comples, results)
+
+        atomic_signature = {"A": {"+", "-"}, "B": {"HA", "HE"}}
+        structure_signature = {"KaiB": {"A", "B"}}
+
+        results = set()
+        with open("Testing/complexes_2.txt") as file:
+            for complex in file.readlines():
+                results.add(complex_parser.parse(complex).data.children[0])
+
+        complex = complex_parser.parse("KaiB().KaiB().KaiB()::cyt").data.children[0]
+        output_comples = complex.create_all_compatible(atomic_signature, structure_signature)
+        self.assertEqual(output_comples, results)

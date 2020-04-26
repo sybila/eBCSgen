@@ -292,14 +292,6 @@ class TestVectorModel(unittest.TestCase):
         self.assertEqual(generated_ts, loaded_ts)
 
     def test_generate_transition_system_interrupt(self):
-        # model = self.model_parser.parse(self.model_even_bigger_TS).data
-        # vector_model = model.to_vector_model()
-        # generated_ts = vector_model.generate_transition_system()
-        # generated_ts.save_to_json("Testing/interrupt_even_bigger_ts.json")
-
-        # test not working, after interruption some unprocessed states are missing
-        # therefore resulting TS is not correct
-        # sometimes edges are somehow mixed - is it possible that the algorithm allows it?
         model = self.model_parser.parse(self.model_even_bigger_TS).data
         vector_model = model.to_vector_model()
 

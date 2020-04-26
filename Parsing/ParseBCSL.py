@@ -6,6 +6,7 @@ from copy import deepcopy
 from lark import Lark, Transformer, Tree, Token
 from lark import UnexpectedCharacters, UnexpectedToken
 from lark.load_grammar import _TERMINAL_NAMES
+from sortedcontainers import SortedList
 
 from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
@@ -16,6 +17,7 @@ from Core.Structure import StructureAgent
 from TS.State import State
 from TS.TransitionSystem import TransitionSystem
 from TS.Edge import edge_from_dict
+from Core.Side import Side
 
 
 def load_TS_from_json(json_file: str) -> TransitionSystem:
@@ -29,7 +31,7 @@ def load_TS_from_json(json_file: str) -> TransitionSystem:
     with open(json_file) as json_file:
         data = json.load(json_file)
 
-        ordering = tuple(map(lambda agent: complex_parser.parse(agent).data.children[0], data['ordering']))
+        ordering = SortedList(map(lambda agent: complex_parser.parse(agent).data.children[0], data['ordering']))
         ts = TransitionSystem(ordering)
         ts.states_encoding = {State(np.array(eval(data['nodes'][node_id]))): int(node_id) for node_id in data['nodes']}
         ts.edges = {edge_from_dict(edge) for edge in data['edges']}
@@ -64,6 +66,9 @@ class SideHelper:
 
     def __repr__(self):
         return str(self)
+
+    def to_side(self):
+        return Side([Complex(self.seq[c[0]:c[1]+1], self.comp[c[0]]) for c in self.complexes])
 
 
 GRAMMAR = r"""

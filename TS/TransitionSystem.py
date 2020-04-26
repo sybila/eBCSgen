@@ -1,13 +1,14 @@
 import json
 import numpy as np
 from itertools import groupby
+from sortedcontainers import SortedList
 
 from TS.Edge import Edge
 from TS.State import State
 
 
 class TransitionSystem:
-    def __init__(self, ordering: tuple):
+    def __init__(self, ordering: SortedList):
         self.states_encoding = dict()  # State -> int
         self.edges = set()  # Edge objects: (int from, int to, probability), can be used for explicit Storm format
         self.ordering = ordering  # used to decode State to actual agents
@@ -213,7 +214,7 @@ class TransitionSystem:
         return output
 
 
-def create_indices(ordering_1: tuple, ordering_2: tuple):
+def create_indices(ordering_1: SortedList, ordering_2: SortedList):
     """
     Creates indices np.array which represents how agents from ordering_1 have to be rearranged
     in order to fit agents from ordering_2. If such relation is not possible, return False.

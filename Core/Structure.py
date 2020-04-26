@@ -67,8 +67,6 @@ class StructureAgent:
         """
         Fills missing context for given agent.
 
-        ...
-
         Note: it is assumed this method is used only for well formed rules, which means
          given structure agents have specified the same atomic agents and miss the same
          atomic agents.

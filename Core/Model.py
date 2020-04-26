@@ -1,6 +1,9 @@
 import collections
 import subprocess
 
+import copy
+from sortedcontainers import SortedList
+
 from Core.Formula import Formula
 from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
@@ -58,6 +61,19 @@ class Model:
                 atomic_signature[name] = {"_"}
         return atomic_signature, structure_signature
 
+    def create_ordering(self) -> SortedList:
+        """
+        Extracts all possible unique agents from the model and gives them fixed order using SortedList.
+
+        :return: SortedList of unique agents
+        """
+        unique_complexes = set()
+        for rule in self.rules:
+            unique_complexes |= rule.create_all_compatible(self.atomic_signature, self.structure_signature)
+
+        unique_complexes |= set(self.init)
+        return SortedList(unique_complexes)
+
     def to_vector_model(self, bound: int = None) -> VectorModel:
         """
         Creates vector representation of the model.
@@ -68,18 +84,17 @@ class Model:
         :param bound: given bound
         :return: VectorModel representation of the model
         """
+        ordering = self.create_ordering()
         reactions = set()
-        unique_complexes = set()
-        for rule in self.rules:
-            reactions |= rule.create_reactions(self.atomic_signature, self.structure_signature)
 
-        for reaction in reactions:
-            unique_complexes |= set(reaction.lhs.to_counter()) | set(reaction.rhs.to_counter())
-        unique_complexes |= set(self.init)
-        ordering = tuple(sorted(unique_complexes))
+        for rule in self.rules:
+            rule_copy = copy.deepcopy(rule)
+            rule_copy.rate_to_vector(ordering, self.definitions)
+            reactions |= rule_copy.create_reactions(self.atomic_signature, self.structure_signature)
 
         init = Side(self.init.elements()).to_vector(ordering)
         vector_reactions = set()
+
         for reaction in reactions:
             vector_reactions.add(reaction.to_vector(ordering, self.definitions))
 

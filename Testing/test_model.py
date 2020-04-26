@@ -1,5 +1,6 @@
 import unittest
 import collections
+import sortedcontainers
 import numpy as np
 
 from Core.Model import Model
@@ -349,6 +350,37 @@ class TestModel(unittest.TestCase):
             k1 = 0.05
             """
 
+        self.miyoshi = """
+            #! rules
+            S{u}:KaiC():KaiC6::cyt => S{p}:KaiC():KaiC6::cyt @ (kcat1*[KaiA2()::cyt]*[KaiC6::cyt])/(Km + [KaiC6::cyt])
+            S{p}:KaiC():KaiC6::cyt => S{u}:KaiC():KaiC6::cyt @ (kcat2*[KaiB4{a}.KaiA2()::cyt]*[KaiC6::cyt])/(Km + [KaiC6::cyt])
+            T{u}:KaiC():KaiC6::cyt => T{p}:KaiC():KaiC6::cyt @ (kcat3*[KaiA2()::cyt]*[KaiC6::cyt])/(Km + [KaiC6::cyt])
+            T{p}:KaiC():KaiC6::cyt => T{u}:KaiC():KaiC6::cyt @ (kcat4*[KaiB4{a}.KaiA2()::cyt]*[KaiC6::cyt])/(Km + [KaiC6::cyt])
+            KaiB4{i}::cyt => KaiB4{a}::cyt @ (kcatb2*[KaiB4{i}::cyt])/(Kmb2 + [KaiB4{i}::cyt])
+            KaiB4{a}::cyt => KaiB4{i}::cyt @ (kcatb1*[KaiB4{a}::cyt])/(Kmb1 + [KaiB4{a}::cyt])
+            KaiB4{a}.KaiA2()::cyt => KaiB4{a}::cyt + KaiA2()::cyt @ k12*[KaiB4{a}.KaiA2()::cyt]
+            KaiC6::cyt => 6 KaiC()::cyt @ kdimer*[KaiC6::cyt]
+            6 KaiC()::cyt => KaiC6::cyt @ kdimer*[KaiC()::cyt]*([KaiC()::cyt] - 1)*([KaiC()::cyt] - 2)*([KaiC()::cyt] - 3)*([KaiC()::cyt] - 4)*([KaiC()::cyt] - 5)
+
+            #! inits
+            6 KaiC(S{p},T{p})::cyt
+            1 KaiB4{a}.KaiA2()::cyt
+
+            #! definitions
+            kcat1 = 0.539
+            kcat3 = 0.89
+            Km = 0.602
+            kcatb2 = 0.346
+            kcatb1 = 0.602
+            Kmb2 = 66.75
+            Kmb1 = 2.423
+            k12 = 0.0008756
+            kdimer = 1.77
+
+            #! complexes
+            KaiC6 = KaiC().KaiC().KaiC().KaiC().KaiC().KaiC()
+            """
+
     def test_str(self):
         model = self.model_parser.parse(self.model_str_1).data
         back_to_str = repr(model)
@@ -475,3 +507,20 @@ class TestModel(unittest.TestCase):
         state_labels, AP_lables = model.create_AP_labels(APs, ts, 0)
         self.assertEqual(state_labels, result_state_labels)
         self.assertEqual(AP_lables, result_AP_lables)
+
+    def test_create_unique_agents(self):
+        model = self.model_parser.parse(self.miyoshi).data
+
+        reactions = set()
+        unique_complexes = set()
+
+        for rule in model.rules:
+            reactions |= rule.create_reactions(model.atomic_signature, model.structure_signature)
+
+        for reaction in reactions:
+            unique_complexes |= set(reaction.lhs.to_counter()) | set(reaction.rhs.to_counter())
+
+        unique_complexes |= set(model.init)
+
+        ordering = model.create_ordering()
+        self.assertEqual(unique_complexes, set(ordering))
