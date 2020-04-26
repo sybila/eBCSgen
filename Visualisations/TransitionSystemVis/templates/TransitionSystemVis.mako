@@ -121,9 +121,19 @@ def create_HTML_graph(): #data):
         output_file += write_reaction(*edge)
 
     initial = data['initial']
-    output_file += secondpart_1
+
+    iterations = (len(nodes)//100+1) * 100
+    step = iterations//100
+
+    output_file += secondpart_1_1
+    output_file += stabil_physics.format(iterations, step)
+    output_file += secondpart_1_2
+
     output_file += "\tvar fromNode = " + str(int(initial)) + ";\n"
-    output_file += secondpart_2
+
+    output_file += secondpart_2_1
+    output_file += stabil_bar.format(iterations, step)
+    output_file += secondpart_2_2
     return output_file
 
 
@@ -370,7 +380,7 @@ setTimeout(function () {
     var nodes = new vis.DataSet([
 '''
 
-secondpart_1 = '''
+secondpart_1_1 = '''
     ]);
 
     // create a network
@@ -392,9 +402,10 @@ secondpart_1 = '''
             solver: 'barnesHut',
             timestep: 0.5,
             stabilization: {
-                        enabled:true,
-                        iterations:5000,
-                    },
+                        enabled: true,
+'''
+
+secondpart_1_2 = '''                    },
         },
         nodes: {
             size: 15,
@@ -486,13 +497,14 @@ secondpart_1 = '''
                     edges: use_edges
                 };
                 network.setData(data)
+                network.stabilize(0)
         });
     })
 
     var stabil = true;
 '''
 
-secondpart_2 = '''
+secondpart_2_1 = '''
     network.on("click", function (params) {
         params.event = "[original event]";
         var tmp = " ";
@@ -523,10 +535,11 @@ secondpart_2 = '''
     });
 
     network.on("stabilizationProgress", function(params) {
-                var maxWidth = 500;
-                var minWidth = 20;
-                var widthFactor = params.iterations/params.total*10;
-                var width = Math.max(minWidth,maxWidth * widthFactor);
+'''
+
+secondpart_2_2 = '''
+                var width = 5*(params.iterations/updateInterval);
+                var widthFactor = params.iterations/iterations;
 
                 document.getElementById('bar').style.width = width + 'px';
                 document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
@@ -561,6 +574,17 @@ secondpart_2 = '''
 </body>
 </html>
 '''
+
+stabil_physics = \
+'''                        iterations: {},
+                        updateInterval: {}
+'''
+
+stabil_bar = \
+'''                var iterations = {};
+                var updateInterval = {};
+'''
+
 # for testing
 # filename = open('bigger_pMC.json', "r")
 # graph = create_HTML_graph(filename)
