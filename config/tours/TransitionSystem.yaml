@@ -1,0 +1,69 @@
+﻿id: TransitionSystemGenerator
+name: Transition System generator tour
+description: This is a tour created to describe Transition System generator tool.
+title_default: Transition System generator tour
+steps:
+  - title: Step 1 - Begin
+    element: >-
+      #left .unified-panel .unified-panel-body .toolMenuContainer .toolMenu
+      .toolSectionTitle.tool-menu-section-default a[href$="javascript:void(0)"]
+      .name
+    content: Click here to list available tools.
+    placement: bottom
+  - title: Step 2 - Select tool
+    element: >-
+      #left > div.unified-panel > div.unified-panel-body > div > div.toolMenu >
+      div:nth-child(4) > div > div > div:nth-child(2) > div:nth-child(1) > a
+    content: And click on Transition System generator.
+    placement: bottom
+  - title: Step 3 - Model file
+    element: 'div[tour_id="model"]'
+    content: >-
+      Choose your model file. This tool supports only .bcs files stored in your
+      history.
+    placement: auto
+  - title: Single dataset
+    element: >-
+      #uid-460 > div.ui-form-field >
+      div.ui-select-content.d-flex.flex-row.flex-wrap.flex-lg-nowrap >
+      div:nth-child(1) > div > div.btn-group.ui-radiobutton >
+      label.btn.btn-secondary.m-0.ui-option.active
+    content: Please select Single dataset (current option).
+    placement: right
+  - title: Step 4 - Bound
+    element: 'div[tour_id="bound"]'
+    content: >-
+      The attribute bound assigns the maximal capacity of each agent. (This attribute is optional, default
+      bound is the most numerous agent in the initial state.) 
+    placement: auto
+  - title: Step 5 - Advanced options
+    element: 'div[tour_id="adv"]'
+    content: You can expand Advanced options to assign more attributes.
+    placement: right
+  - title: Maximal computational time
+    element: 'div[tour_id="adv|max_time"]'
+    content: 'Select covetable computational time (undefined units). '
+    placement: auto
+  - title: Maximal TS size
+    element: 'div[tour_id="adv|max_size"]'
+    content: Choose the maximum size of the final transition system.
+    placement: auto
+  - title: Precomputed TS file
+    element: 'div[tour_id="adv|transition_file"]'
+    content: >-
+      You can insert precomputed trasition system file. 
+    placement: left
+  - title: Step 6 - Notifications
+    element: '#field-uid-187'
+    content: Select an option.
+    placement: right
+  - title: Step 7 - Accomplishment
+    element: '#execute'
+    content: Just click Execute and it is done.
+    placement: right
+  - title: Step 8 - Results
+    element: .list-items
+    content: >-
+      Now you have to wait while your data are processing and then you can view
+      or visualize your data.
+    placement: left

@@ -1,0 +1,62 @@
+﻿id: Simulation-Stochastic
+name: Simulation - Stochastic
+description: This is a tour created to describe stochastic simulation.
+title_default: Simulation - Stochastic
+steps:
+  - title: Step 1 - Begin
+    element: >-
+      #left .unified-panel .unified-panel-body .toolMenuContainer .toolMenu
+      .toolSectionTitle.tool-menu-section-default a[href$="javascript:void(0)"]
+      .name
+    content: Click here to list available tools.
+    placement: bottom
+  - title: Step 2 - Select tool
+    element: >-
+      #left > div.unified-panel > div.unified-panel-body > div > div.toolMenu >
+      div:nth-child(4) > div > div > div:nth-child(2) > div:nth-child(2) > a >
+      span.name.font-weight-bold
+    content: And click on Simulation.
+    placement: bottom
+  - title: Step 3 - Model file
+    element: '#s2id_uid-44_select'
+    content: >-
+      Choose your model file. This tool supports only .bcs files stored in your
+      history. (For demonstration please choose "repressilator.bcs".)
+    placement: auto
+  - title: Single dataset
+    element: >-
+      #uid-42 > div.ui-form-field >
+      div.ui-select-content.d-flex.flex-row.flex-wrap.flex-lg-nowrap >
+      div:nth-child(1) > div
+    content: Please select Single dataset (current option).
+    placement: right
+  - title: Step 4 - Stochastic simulation
+    element: '#s2id_field-uid-49_select > a'
+    content: Click here and choose Stochastic.
+    placement: auto
+  - title: Number of runs
+    element: '#field-uid-51 > div > input'
+    content: >-
+      Specify number of total runs. Only positive integers are allowed. (For
+      demonstration choose 2)
+    placement: auto
+  - title: Step 5 - Time
+    element: '#field-uid-59 > div > input'
+    content: >-
+      Specify how long should one run take. (Only positive integers) (For
+      demonstration choose 200)
+    placement: auto
+  - title: Step 6 - Notifications
+    element: '#field-uid-61'
+    content: Select an option.
+    placement: right
+  - title: Step 7 - Accomplishment
+    element: '#execute'
+    content: Just click Execute and it is done.
+    placement: auto
+  - title: Step 8 - Results
+    element: .list-items
+    content: >-
+      Now you have to wait while your data are processing and then you can view
+      or visualize your data.
+    placement: left

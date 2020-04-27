@@ -1,0 +1,54 @@
+id: PCTL-ModelChecking
+name: PCTL Model Checking
+description: This is a tour created to describe PCTL Model Checking tool
+title_default: PCTL Model Checking
+steps:
+  - title: Step 1 - Begin
+    element: >-
+      #left .unified-panel .unified-panel-body .toolMenuContainer .toolMenu
+      .toolSectionTitle.tool-menu-section-default a[href$="javascript:void(0)"]
+      .name
+    content: Click here to list available tools.
+    placement: bottom
+  - title: Step 2 - Select tool
+    element: >-
+      #left > div.unified-panel > div.unified-panel-body > div > div.toolMenu >
+      div:nth-child(4) > div > div > div:nth-child(2) > div:nth-child(3) > a >
+      span.description
+    content: And click on PCTL model checking tool.
+    placement: bottom
+  - title: Step 3 - Model file
+    element: 'div[tour_id="model"]'
+    content: >-
+      Choose your model file. This tool supports only .bcs files stored in your
+      history. (For demonstration please choose "model.bcs".)
+    placement: auto
+  - title: Single dataset
+    element: >-
+      #uid-34 > div.ui-form-field >
+      div.ui-select-content.d-flex.flex-row.flex-wrap.flex-lg-nowrap >
+      div:nth-child(1) > div
+    content: Please select Single dataset (current option).
+    placement: right
+  - title: Step 4 - PCTL Formula
+    element: 'div[tour_id="formula"]'
+    content: Enter your PCTL (Probabilistic CTL) fromula.
+    placement: auto
+  - title: Step 5 - Bound
+    element: 'div[tour_id="bound]'
+    content: You may specify a boundary here.
+    placement: auto
+  - title: Step 6 - Notifications
+    element: '#field-uid-44'
+    content: Select an option.
+    position: right
+  - title: Step 7 - Accomplishment
+    element: '#execute'
+    content: Just click Execute and it is done.
+    placement: auto
+  - title: Step 8 - Results
+    element: .list-items
+    content: >-
+      Now you have to wait while your data are processing and then you can view
+      or visualize your data.
+    placement: left

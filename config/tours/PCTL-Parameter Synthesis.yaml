@@ -1,0 +1,57 @@
+﻿id: PCTL-ParameterSynthesis
+name: PCTL Parameter Synthesis
+description: This is a tour created to describe PCTL Parameter Synthesis reduction
+title_default: PCTL Parameter Synthesis
+steps:
+  - title: Step 1 - Begin
+    element: >-
+      #left .unified-panel .unified-panel-body .toolMenuContainer .toolMenu
+      .toolSectionTitle.tool-menu-section-default a[href$="javascript:void(0)"]
+      .name
+    content: Click here to list available tools.
+    placement: bottom
+  - title: Step 2 - Select tool
+    element: >-
+      #left > div.unified-panel > div.unified-panel-body > div > div.toolMenu >
+      div:nth-child(4) > div > div > div:nth-child(2) > div:nth-child(4) > a
+    content: And click on PCTL Parameter Synthesis tool.
+    placement: bottom
+  - title: Step 3 - Model file
+    element: 'div[tour_id="model"]'
+    content: >-
+      Choose your model file. This tool supports only .bcs files stored in your
+      history.
+    placement: auto
+  - title: Single dataset
+    element: >-
+      #uid-12 > div.ui-form-field >
+      div.ui-select-content.d-flex.flex-row.flex-wrap.flex-lg-nowrap >
+      div:nth-child(1) > div
+    content: Please select Single dataset (current option).
+    placement: right
+  - title: Step 4 - PCTL Formula
+    element: 'div[tour_id="formula"]'
+    content: Enter your PCTL (Probabilistic CTL) fromula.
+    placement: auto
+  - title: Step 5 - Bound
+    element: 'div[tour_id="bound'
+    content: You may specify a boundary here.
+    placement: auto
+  - title: Step 6 - Insert Intervals
+    element: '#uid-23'
+    content: Insert intervals for computation of areas of satisfaction.
+    placement: auto
+  - title: Step 7 - Notifications
+    element: '#field-uid-24'
+    content: Select an option.
+    placement: right
+  - title: Step 8 - Accomplishment
+    element: '#execute'
+    content: Just click Execute and it is done.
+    placement: auto
+  - title: Step 9 - Results
+    element: .list-items
+    content: >-
+      Now you have to wait while your data are processing and then you can view
+      or visualize your data.
+    placement: left

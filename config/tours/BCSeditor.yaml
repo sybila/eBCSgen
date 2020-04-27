@@ -1,0 +1,50 @@
+﻿id: BCSeditor
+name: BCS Editor tour
+description: This is a tour created to describe BCS interactive editor.
+title_default: Galaxy Tour
+steps:
+  - title: Step 1 - Open editor
+    element: '#dropdown-button-visualization'
+    content: Select Visualise in the navigation bar.
+    placement: right
+  - title: Step 2 - Open editor
+    element: 'a[href$="/galaxy/visualizations"]'
+    content: 'Select: Create Visualization.'
+    placement: left
+  - title: Step 3 - Open editor
+    element: '#center > div > div > div > div > div:nth-child(3)'
+    content: Choose BCS Editor among the visualisation tools.
+    placement: bottom
+  - title: Step 4 - BCS file
+    element: >-
+      #center .center-container .center-panel .ui-thumbnails table tr td
+      .ui-select .select
+    content: Select one of stored .bcs files from history.
+    placement: left
+  - title: Step 5
+    element: >-
+      #center > div > div > div > div > div:nth-child(3) > table >
+      tr:nth-child(2) > td:nth-child(2) > div > button
+    content: Click Create Visualisation.
+    placement: right
+  - title: Step 7 - editor workplace
+    element: 'div[tour_id="editor"]'
+    content: 'Here is a workplace for your BCS models modifications. All keywords shoud be higlighted. All parser errors are displayed on the left side with the error line number. '
+    placement: right
+  - title: Step 6
+    element: "#undo_btn"
+    content: 'You can undo your changes.'
+    placement: right
+  - title: Step 7
+    element: "#redo_btn"
+    content: 'As well as redo.'
+    placement: right
+  - title: Step 8
+    element: "#save_btn"
+    content: 'At the end, click Save modifications button in order to create new BCS model file in your history.'
+    placement: right
+  - title: Step 9 - Results
+    element: .list-items
+    content: >-
+      Now you have to wait while and your modified BCD model will be stored in the History.
+    placement: left

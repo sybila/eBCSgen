@@ -1,0 +1,64 @@
+﻿id: Simulation-Deterministic
+name: Simulation - Deterministic
+description: This is a tour created to describe deterministic simulation.
+title_default: Simulation - Deterministic
+steps:
+  - title: Step 1 - Begin
+    element: >-
+      #left .unified-panel .unified-panel-body .toolMenuContainer .toolMenu
+      .toolSectionTitle.tool-menu-section-default a[href$="javascript:void(0)"]
+      .name
+    content: Click here to list available tools.
+    placement: bottom
+  - title: Step 2 - Select tool
+    element: >-
+      #left > div.unified-panel > div.unified-panel-body > div > div.toolMenu >
+      div:nth-child(4) > div > div > div:nth-child(2) > div:nth-child(2) > a >
+      span.name.font-weight-bold
+    content: And click on Simulation.
+    placement: bottom
+  - title: Step 3 - Model file
+    element: 'div[tour_id="model"]'
+    content: >-
+      Choose your model file. This tool supports only .bcs files stored in your
+      history.
+    placement: bottom
+  - title: Single dataset
+    element: >-
+      #uid-42 > div.ui-form-field >
+      div.ui-select-content.d-flex.flex-row.flex-wrap.flex-lg-nowrap >
+      div:nth-child(1) > div
+    content: Please select Single dataset (current option).
+    placement: right
+  - title: Step 4 - Deterministic simulation
+    element: 'div[tour_id="type"]'
+    content: Click here and choose Deterministic.
+    placement: bottom
+  - title: Step 5 - Volume
+    element: 'div[tour_id="type|volume"]'
+    content: Specify volume of your sample in liters.
+    placement: auto
+  - title: Step 6 - Simulation step
+    element: 'div[tour_id="type|step"]'
+    content: >-
+      Enter fineness of steps. 
+    placement: auto
+  - title: Step 7 - Time
+    element: 'div[tour_id="max_time"]'
+    content: >-
+      Specify how long should one run take. (Only positive integers) (For
+      demonstration choose 200)
+    placement: auto
+  - title: Step 8 - Notifications
+    element: '#field-uid-61'
+    content: Select an option.
+  - title: Step 9 - Accomplishment
+    element: '#execute'
+    content: Just click Execute and it is done.
+    placement: auto
+  - title: Step 10 - Results
+    element: .list-items
+    content: >-
+      Now you have to wait while your data are processing and then you can view
+      or visualize your data.
+    placement: left
