@@ -114,16 +114,26 @@ def create_HTML_graph(): #data):
         if products == inf and substrates != inf:
             border_nodes.add(edge['s'])
 
+    border_nodes_write = []
     for id, state in nodes.items():
-        node_class = "border" if id in border_nodes else "default"
+        if id in border_nodes:
+            node_class = "border"
+            border_nodes_write.append((id, node_to_string(state), node_class))
+        else:
+            node_class = "default"
         output_file += write_node(id, node_to_string(state), node_class)
 
-    output_file += "\t]);\n\n\t// create an array with edges\n\tvar edges = new vis.DataSet([\n"
+    output_file += mid_1
+
+    for node in border_nodes_write:
+        output_file += write_node(*node)
+
+    output_file += mid_2
 
     for edge in edges:
         output_file += write_reaction(*edge)
 
-    output_file += mid
+    output_file += mid_3
 
     for edge in self_loops:
         output_file += write_reaction(*edge)
@@ -388,8 +398,22 @@ setTimeout(function () {
     var nodes = new vis.DataSet([
 '''
 
-mid = '''
-]);
+
+mid_1 = '''
+    ]);
+    var border_nodes = [
+
+'''
+
+mid_2 = '''
+    ];
+
+    var edges = new vis.DataSet([
+
+'''
+
+mid_3 = '''
+    ]);
 
     var self_loops = [
 '''
@@ -490,27 +514,15 @@ secondpart_1_2 = '''                    },
     });
 
     border_filter.addEventListener('change', (e) => {
-        var border_nodes = nodesView.get({filter: function (item){
-                return (item.class == 'border')
-            }})
-
         if (border_filter.checked){
             for (index = 0; index < border_nodes.length; index++) {
-                border_nodes[index].shape = "box"
+                nodes.update({id: border_nodes[index].id, shape: "box"});
             }
         } else {
             for (index = 0; index < border_nodes.length; index++) {
-                border_nodes[index].shape = "ellipse"
-           }
+                nodes.update({id: border_nodes[index].id, shape: "ellipse"});
+            }
         }
-
-        nodes.update(border_nodes)
-        nodesView = new vis.DataView(nodes, { filter: nodesFilter })
-        data = {
-            nodes: nodesView,
-            edges: edges
-        };
-        network.setData(data)
     });
 
     var stabil = true;
