@@ -15,30 +15,34 @@ from Errors.RatesNotSpecifiedError import RatesNotSpecifiedError
 
 """
 usage: ParameterSynthesis.py [-h] --model MODEL --output OUTPUT
-                             [--bound BOUND] --formula FORMULA --region REGION
+                             [--bound BOUND] --formula FORMULA
+                             [--region REGION] [--local_storm]
 
 Parameter synthesis
 
-arguments:
+required arguments:
   --model MODEL
   --output OUTPUT
   --formula FORMULA
 
 optional arguments:
-  -h, --help         show this help message and exit
   --bound BOUND
   --region REGION
   --local_storm
-
 """
 
 args_parser = argparse.ArgumentParser(description='Parameter synthesis')
-args_parser.add_argument('--model', type=str, required=True)
-args_parser.add_argument('--output', type=str, required=True)
-args_parser.add_argument('--bound', type=int, default=None)
-args_parser.add_argument('--formula', type=str, required=True)
-args_parser.add_argument('--region', type=str)
-args_parser.add_argument('--local_storm', nargs="?", const=True)
+
+args_parser._action_groups.pop()
+required = args_parser.add_argument_group('required arguments')
+optional = args_parser.add_argument_group('optional arguments')
+
+required.add_argument('--model', type=str, required=True)
+required.add_argument('--output', type=str, required=True)
+optional.add_argument('--bound', type=int, default=None)
+required.add_argument('--formula', type=str, required=True)
+optional.add_argument('--region', type=str)
+optional.add_argument('--local_storm', nargs="?", const=True)
 
 args = args_parser.parse_args()
 
