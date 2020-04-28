@@ -22,46 +22,45 @@ steps:
       Choose your model file. This tool supports only .bcs files stored in your
       history.
     placement: auto
-  - title: Single dataset
+  - title: Step 4 - Single dataset
     element: >-
-      #uid-460 > div.ui-form-field >
+      #uid-281 > div.ui-form-field >
       div.ui-select-content.d-flex.flex-row.flex-wrap.flex-lg-nowrap >
-      div:nth-child(1) > div > div.btn-group.ui-radiobutton >
-      label.btn.btn-secondary.m-0.ui-option.active
+      div:nth-child(1) > div
     content: Please select Single dataset (current option).
     placement: right
-  - title: Step 4 - Bound
+  - title: Step 5 - Bound
     element: 'div[tour_id="bound"]'
     content: >-
-      The attribute bound assigns the maximal capacity of each agent. (This attribute is optional, default
-      bound is the most numerous agent in the initial state.) 
+      The attribute bound assigns the maximal capacity of each agent. (This
+      attribute is optional, default bound is the most numerous agent in the
+      initial state.) 
     placement: auto
-  - title: Step 5 - Advanced options
-    element: 'div[tour_id="adv"]'
-    content: You can expand Advanced options to assign more attributes.
-    placement: right
-  - title: Maximal computational time
+  - title: Step 6 - Advanced options
+    element: '#uid-290 > div.portlet-header'
+    content: You can expand Advanced Options to edit more attributes.
+    placement: bottom
+  - title: Step 6 - Advanced options - Maximal computational time
     element: 'div[tour_id="adv|max_time"]'
     content: 'Select covetable computational time (undefined units). '
     placement: auto
-  - title: Maximal TS size
+  - title: Step 6 - Advanced options - Maximal TS size
     element: 'div[tour_id="adv|max_size"]'
-    content: Choose the maximum size of the final transition system.
+    content: Choose the maximum size of the final Transition System.
     placement: auto
-  - title: Precomputed TS file
+  - title: Step 6 - Advanced options - Precomputed TS file
     element: 'div[tour_id="adv|transition_file"]'
-    content: >-
-      You can insert precomputed trasition system file. 
+    content: 'You can insert precomputed Trasition System file. '
+    placement: bottom
+  - title: Step 7 - Notifications
+    element: '#field-uid-304'
+    content: Decide if you want to receive email notifications.
     placement: left
-  - title: Step 6 - Notifications
-    element: '#field-uid-187'
-    content: Select an option.
-    placement: right
-  - title: Step 7 - Accomplishment
+  - title: Step 8 - Accomplishment
     element: '#execute'
     content: Just click Execute and it is done.
     placement: right
-  - title: Step 8 - Results
+  - title: Step 9 - Results
     element: .list-items
     content: >-
       Now you have to wait while your data are processing and then you can view
