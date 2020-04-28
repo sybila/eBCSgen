@@ -22,34 +22,52 @@ steps:
       Choose your model file. This tool supports only .bcs files stored in your
       history.
     placement: auto
-  - title: Single dataset
+  - title: Step 4 - Single dataset
     element: >-
-      #uid-12 > div.ui-form-field >
+      #uid-436 > div.ui-form-field >
       div.ui-select-content.d-flex.flex-row.flex-wrap.flex-lg-nowrap >
       div:nth-child(1) > div
     content: Please select Single dataset (current option).
     placement: right
-  - title: Step 4 - PCTL Formula
+  - title: Step 5 - PCTL Formula
     element: 'div[tour_id="formula"]'
     content: Enter your PCTL (Probabilistic CTL) fromula.
     placement: auto
-  - title: Step 5 - Bound
-    element: 'div[tour_id="bound'
-    content: You may specify a boundary here.
+  - title: Step 6 - Bound
+    element: 'div[tour_id="bound"]'
+    content: Specify your boundary here. (Optional parameter)
     placement: auto
-  - title: Step 6 - Insert Intervals
-    element: '#uid-23'
+  - title: Step 7 - Insert Interval
+    element: '#uid-447'
+    content: >-
+      Insert interval for computation of areas of satisfaction. (You may insert
+      as many as you want.)
+    placement: auto
+  - title: Step 8 - Property Parameter
+    element: 'div[tour_id="regions_0|param"]'
     content: Insert intervals for computation of areas of satisfaction.
-    placement: auto
-  - title: Step 7 - Notifications
-    element: '#field-uid-24'
+    placement: bottom
+  - title: Step 9 - Property Interval start
+    element: 'div[tour_id="regions_0|from"]'
+    content: Insert intervals for computation of areas of satisfaction.
+    placement: bottom
+  - title: Step 10 - Property Interval end
+    element: 'div[tour_id="regions_0|to"]'
+    content: Insert intervals for computation of areas of satisfaction.
+    placement: bottom
+  - title: Step 11 - Delete Interval
+    element: '#button_delete'
+    content: Option to delete your interval.
+    placement: left
+  - title: Step 12 - Notifications
+    element: '#field-uid-448 > div.btn-group.ui-radiobutton'
     content: Select an option.
     placement: right
-  - title: Step 8 - Accomplishment
+  - title: Step 13 - Accomplishment
     element: '#execute'
     content: Just click Execute and it is done.
     placement: auto
-  - title: Step 9 - Results
+  - title: Step 14 - Results
     element: .list-items
     content: >-
       Now you have to wait while your data are processing and then you can view
