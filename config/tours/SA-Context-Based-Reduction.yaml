@@ -24,25 +24,24 @@ steps:
       Choose your model file. This tool supports only .bcs files stored in your
       history.
     placement: auto
-  - title: Single dataset
+  - title: Step 4 - Single dataset
     element: >-
-      #uid-58 > div.ui-form-field >
-      div.ui-select-content.d-flex.flex-row.flex-wrap.flex-lg-nowrap >
-      div:nth-child(1) > div
+      #uid-502 > div.ui-form-field > div.ui-select-content.d-flex.flex-row.flex-wrap.flex-lg-nowrap > div:nth-child(1) > div
     content: Please select Single dataset (current option).
     placement: right
-  - title: Step 4 - Choose method
-    element: '#s2id_field-uid-65_select > a'
-    content: Select Context based reduction.
+  - title: Step 5 - Choose method
+    element: 'div[tour_id="method"]'
+    content: Select Context based reduction method.
     placement: left
-  - title: Step 5 - Notifications
-    element: '#field-uid-70'
-    content: Select an option.
-  - title: Step 6 - Accomplishment
+  - title: Step 6 - Notifications
+    element: '#field-uid-514'
+    content: Decide if you want to receive email notifications.
+    placement: left
+  - title: Step 7 - Accomplishment
     element: '#execute'
     content: Just click Execute and it is done.
     placement: auto
-  - title: Step 7 - Results
+  - title: Step 8 - Results
     element: .list-items
     content: >-
       Now you have to wait while your data are processing and then you can view
