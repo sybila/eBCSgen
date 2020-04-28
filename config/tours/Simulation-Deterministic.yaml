@@ -23,40 +23,38 @@ steps:
       Choose your model file. This tool supports only .bcs files stored in your
       history.
     placement: bottom
-  - title: Single dataset
+  - title: Step 4 - Single dataset
     element: >-
-      #uid-42 > div.ui-form-field >
+      #uid-315 > div.ui-form-field >
       div.ui-select-content.d-flex.flex-row.flex-wrap.flex-lg-nowrap >
       div:nth-child(1) > div
     content: Please select Single dataset (current option).
     placement: right
-  - title: Step 4 - Deterministic simulation
-    element: 'div[tour_id="type"]'
+  - title: Step 5 - Deterministic simulation
+    element: '#s2id_field-uid-322_select'
     content: Click here and choose Deterministic.
     placement: bottom
-  - title: Step 5 - Volume
+  - title: Step 6 - Volume
     element: 'div[tour_id="type|volume"]'
     content: Specify volume of your sample in liters.
-    placement: auto
-  - title: Step 6 - Simulation step
+    placement: bottom
+  - title: Step 7 - Simulation step
     element: 'div[tour_id="type|step"]'
-    content: >-
-      Enter fineness of steps. 
-    placement: auto
-  - title: Step 7 - Time
+    content: 'Enter fineness of steps. '
+    placement: bottom
+  - title: Step 8 - Time
     element: 'div[tour_id="max_time"]'
-    content: >-
-      Specify how long should one run take. (Only positive integers) (For
-      demonstration choose 200)
-    placement: auto
-  - title: Step 8 - Notifications
-    element: '#field-uid-61'
-    content: Select an option.
-  - title: Step 9 - Accomplishment
+    content: Specify how long should one run take. (Only positive integers)
+    placement: bottom
+  - title: Step 9 - Notifications
+    element: '#field-uid-338'
+    content: Decide if you want to receive email notifications.
+    placement: left
+  - title: Step 10 - Accomplishment
     element: '#execute'
     content: Just click Execute and it is done.
     placement: auto
-  - title: Step 10 - Results
+  - title: Step 11 - Results
     element: .list-items
     content: >-
       Now you have to wait while your data are processing and then you can view
