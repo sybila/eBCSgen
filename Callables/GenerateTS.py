@@ -8,6 +8,7 @@ sys.path.append(os.path.split(sys.path[0])[0])
 from Parsing.ParseBCSL import Parser, load_TS_from_json
 from Errors.ModelParsingError import ModelParsingError
 from Errors.UnspecifiedParsingError import UnspecifiedParsingError
+from Errors.RatesNotSpecifiedError import RatesNotSpecifiedError
 
 """
 usage: GenerateTS.py [-h] --model MODEL --output OUTPUT [--bound BOUND]
@@ -49,6 +50,9 @@ model_str = open(args.model, "r").read()
 
 model = model_parser.parse(model_str)
 if model.success:
+    if not model.data.all_rates:
+        raise RatesNotSpecifiedError
+
     vm = model.data.to_vector_model(args.bound)
     ts = vm.generate_transition_system(ts, args.max_time, args.max_size)
     ts.save_to_json(args.output)

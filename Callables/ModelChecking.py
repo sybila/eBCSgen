@@ -10,6 +10,7 @@ from Errors.ModelParsingError import ModelParsingError
 from Errors.FormulaParsingError import FormulaParsingError
 from Errors.UnspecifiedParsingError import UnspecifiedParsingError
 from Errors.InvalidInputError import InvalidInputError
+from Errors.RatesNotSpecifiedError import RatesNotSpecifiedError
 
 """
 usage: ModelChecking.py [-h] --model MODEL --output OUTPUT [--bound BOUND]
@@ -55,6 +56,8 @@ else:
 if model.success:
     if len(model.data.params) != 0:
         raise InvalidInputError("Provided model is parametrised - model checking cannot be executed.")
+    if not model.data.all_rates:
+        raise RatesNotSpecifiedError
 
     formula = Parsing.ParsePCTLformula.PCTLparser().parse(args.formula)
     if formula.success:

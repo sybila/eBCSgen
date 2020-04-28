@@ -8,6 +8,7 @@ from Parsing.ParseBCSL import Parser
 from Errors.ModelParsingError import ModelParsingError
 from Errors.UnspecifiedParsingError import UnspecifiedParsingError
 from Errors.InvalidInputError import InvalidInputError
+from Errors.RatesNotSpecifiedError import RatesNotSpecifiedError
 
 """
 usage: Simulation.py [-h] --model MODEL --output OUTPUT --deterministic
@@ -47,6 +48,8 @@ model = model_parser.parse(model_str)
 if model.success:
     if len(model.data.params) != 0:
         raise InvalidInputError("Provided model is parametrised - simulation cannot be executed.")
+    if not model.data.all_rates:
+        raise RatesNotSpecifiedError
 
     vm = model.data.to_vector_model()
     if eval(args.deterministic):
