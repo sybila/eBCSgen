@@ -21,7 +21,7 @@ steps:
       .ui-select .select
     content: Select one of stored .bcs files from history.
     placement: left
-  - title: Step 5
+  - title: Step 5 - Start editor
     element: >-
       #center > div > div > div > div > div:nth-child(3) > table >
       tr:nth-child(2) > td:nth-child(2) > div > button
@@ -29,22 +29,29 @@ steps:
     placement: right
   - title: Step 7 - editor workplace
     element: 'div[tour_id="editor"]'
-    content: 'Here is a workplace for your BCS models modifications. All keywords shoud be higlighted. All parser errors are displayed on the left side with the error line number. '
+    content: Here is a workplace for your BCS models modifications.
     placement: right
-  - title: Step 6
-    element: "#undo_btn"
-    content: 'You can undo your changes.'
+  - title: Step 8 - Actual Position
+    element: '#actualPosition'
+    content: You can undo your changes.
     placement: right
-  - title: Step 7
-    element: "#redo_btn"
-    content: 'As well as redo.'
+  - title: Step 9 - Undo
+    element: '#undo_btn'
+    content: You can undo your changes.
     placement: right
-  - title: Step 8
-    element: "#save_btn"
-    content: 'At the end, click Save modifications button in order to create new BCS model file in your history.'
+  - title: Step 10 - Redo
+    element: '#redo_btn'
+    content: As well as redo.
     placement: right
-  - title: Step 9 - Results
+  - title: Step 11 - Save
+    element: '#save_btn'
+    content: >-
+      At the end, click Save modifications button in order to create new BCS
+      model file in your history.
+    placement: right
+  - title: Step 12 - Results
     element: .list-items
     content: >-
-      Now you have to wait while and your modified BCD model will be stored in the History.
+      Now you have to wait while and your modified BCD model will be stored in
+      the History.
     placement: left

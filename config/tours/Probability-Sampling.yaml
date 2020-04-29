@@ -22,34 +22,37 @@ steps:
       Choose your model file. This tool supports only .bcs files stored in your
       history.
     placement: auto
-  - title: Step 4 - Interval details
-    element: 'div[tour_id="regions_0|param"]'
-    content: 'Enter region parameter.'
-    placement: left
+  - title: Step 4 - Single dataset
+    element: >-
+      #uid-39 > div.ui-form-field >
+      div.ui-select-content.d-flex.flex-row.flex-wrap.flex-lg-nowrap >
+      div:nth-child(1) > div
+    content: Please select Single dataset (current option).
+    placement: right
   - title: Step 5 - Interval details
-    element: 'div[tour_id="regions_0|from"]'
-    content: 'Beginning of your interval.'
+    element: 'div[tour_id="regions_0|param"]'
+    content: Enter region parameter.
     placement: left
   - title: Step 6 - Interval details
-    element: 'div[tour_id="regions_0|to"]'
-    content: 'End of your interval.'
+    element: 'div[tour_id="regions_0|from"]'
+    content: Beginning of your interval.
     placement: left
   - title: Step 7 - Interval details
+    element: 'div[tour_id="regions_0|to"]'
+    content: End of your interval.
+    placement: left
+  - title: Step 8 - Interval details
     element: 'div[tour_id="regions_0|number"]'
-    content: 'Specify numebr of samples.'
+    content: Specify numebr of samples.
     placement: left
-  - title: Step 8 - Insert interval
-    element: 'div[tour_id="regions"]'
-    content: Insert another reagion and fill in all necessary parameters. 
+  - title: Step 9 - Insert interval
+    element: '#uid-47'
+    content: Insert another reagion and fill in all necessary parameters.
     placement: left
-  - title: Step 9 - Delete interval
+  - title: Step 10 - Delete interval
     element: '#button_delete'
     content: There is possibility to remove your region.
     placement: left
-  - title: Step 10 - Notifications
-    element: '#field-uid-187'
-    content: Select an option.
-    placement: right
   - title: Step 11 - Accomplishment
     element: '#execute'
     content: Just click Execute and it is done.
