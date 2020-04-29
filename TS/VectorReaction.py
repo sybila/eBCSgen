@@ -26,12 +26,10 @@ class VectorReaction:
     def apply(self, state: State, bound: float):
         """
         Applies the reaction on a given State.
-
         First, source is subtracted from the given State, then it is checked if all
         values are greater then 0. If so, new State is create as sum with target
         and rate is evaluated. Moreover, it is possible that the resulting state is greater
         than allowed bound, then infinite State is returned instead.
-
         :param state: given State
         :param bound: allow bound on particular values
         :return: new State and evaluated rate

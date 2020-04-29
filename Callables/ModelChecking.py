@@ -10,31 +10,35 @@ from Errors.ModelParsingError import ModelParsingError
 from Errors.FormulaParsingError import FormulaParsingError
 from Errors.UnspecifiedParsingError import UnspecifiedParsingError
 from Errors.InvalidInputError import InvalidInputError
+from Errors.RatesNotSpecifiedError import RatesNotSpecifiedError
 
 """
 usage: ModelChecking.py [-h] --model MODEL --output OUTPUT [--bound BOUND]
-                        --formula FORMULA
+                        --formula FORMULA [--local_storm]
 
 Model checking
 
-arguments:
+required arguments:
   --model MODEL
   --output OUTPUT
   --formula FORMULA
 
 optional arguments:
-  -h, --help         show this help message and exit
   --bound BOUND
   --local_storm
-
 """
 
 args_parser = argparse.ArgumentParser(description='Model checking')
-args_parser.add_argument('--model', type=str, required=True)
-args_parser.add_argument('--output', type=str, required=True)
-args_parser.add_argument('--bound', type=int, default=None)
-args_parser.add_argument('--formula', type=str, required=True)
-args_parser.add_argument('--local_storm', nargs="?", const=True)
+
+args_parser._action_groups.pop()
+required = args_parser.add_argument_group('required arguments')
+optional = args_parser.add_argument_group('optional arguments')
+
+required.add_argument('--model', type=str, required=True)
+required.add_argument('--output', type=str, required=True)
+optional.add_argument('--bound', type=int, default=None)
+required.add_argument('--formula', type=str, required=True)
+optional.add_argument('--local_storm', nargs="?", const=True)
 
 args = args_parser.parse_args()
 
@@ -55,6 +59,8 @@ else:
 if model.success:
     if len(model.data.params) != 0:
         raise InvalidInputError("Provided model is parametrised - model checking cannot be executed.")
+    if not model.data.all_rates:
+        raise RatesNotSpecifiedError
 
     formula = Parsing.ParsePCTLformula.PCTLparser().parse(args.formula)
     if formula.success:

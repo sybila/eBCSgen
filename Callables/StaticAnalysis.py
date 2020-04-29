@@ -20,21 +20,25 @@ usage: StaticAnalysis.py [-h] --model MODEL --output OUTPUT --method METHOD
 
 Static analysis
 
-arguments
+required arguments:
   --model MODEL
   --output OUTPUT
   --method METHOD
 
 optional arguments:
-  -h, --help         show this help message and exit
   --complex COMPLEX
 """
 
 args_parser = argparse.ArgumentParser(description='Static analysis')
-args_parser.add_argument('--model', type=str, required=True)
-args_parser.add_argument('--output', type=str, required=True)
-args_parser.add_argument('--method', type=str, required=True)
-args_parser.add_argument('--complex')
+
+args_parser._action_groups.pop()
+required = args_parser.add_argument_group('required arguments')
+optional = args_parser.add_argument_group('optional arguments')
+
+required.add_argument('--model', type=str, required=True)
+required.add_argument('--output', type=str, required=True)
+required.add_argument('--method', type=str, required=True)
+optional.add_argument('--complex')
 
 args = args_parser.parse_args()
 
