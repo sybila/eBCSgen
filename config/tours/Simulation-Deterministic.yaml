@@ -19,12 +19,12 @@ steps:
     placement: bottom
   - title: Step 3 - Model file
     element: 'div[tour_id="model"]'
-    content: >-
+    content:
       "Choose BCSL model file. <br>
       This tool supports only .bcs files stored in your history."
     placement: bottom
   - title: Step 4 - Simulation method
-    element: '#center .ui-select'
+    element: '#center .center-container .center-panel .ui-portlet .portlet-content .portlet-body .ui-form-element .ui-form-field .ui-select .select2-container'
     content: "Select Deterministic method."
     placement: bottom
   - title: Step 5 - Volume
@@ -45,7 +45,7 @@ steps:
     placement: auto
   - title: Step 9 - Results
     element: .list-items
-    content: >-
+    content:
       "Wait until the simulation is finished<br>
        and results stored in the History."
     placement: left

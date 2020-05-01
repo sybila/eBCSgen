@@ -18,7 +18,7 @@ steps:
     placement: bottom
   - title: Step 3 - Model file
     element: 'div[tour_id="model"]'
-    content: >-
+    content:
       "Choose BCSL model file. <br>
       This tool supports only .bcs files stored in your history."
     placement: auto
@@ -27,7 +27,7 @@ steps:
     content: "Specify agents boundary cap (optional)."
     placement: auto
   - title: Step 5 - Advanced options
-    element: '#center .portlet-header'
+    element: '#center .center-container .center-panel .ui-portlet .portlet-content .portlet-body .ui-portlet-section .portlet-header'
     content: "You can expand Advanced Options to edit more attributes."
     placement: bottom
   - title: Step 5.1 - Advanced options - Maximal computational time
@@ -48,7 +48,7 @@ steps:
     placement: auto
   - title: Step 7 - Results
     element: .list-items
-    content: >-
+    content:
       "Wait until the Transition System generating is <br>
        finished and results stored in the History."
     placement: left

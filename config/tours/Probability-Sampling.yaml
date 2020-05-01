@@ -18,7 +18,7 @@ steps:
     placement: bottom
   - title: Step 3 - Storm output file
     element: 'div[tour_id="storm_file"]'
-    content: >-
+    content:
       "Choose appropriate results of Parameter Synthesis."
     placement: auto
   - title: Step 4 - Parameter name
@@ -38,7 +38,7 @@ steps:
     content: "Specify number of samples for this parameter."
     placement: bottom
   - title: Step 8 - Insert interval
-    element: '#center .ui-button-default.btn.btn-secondary.float-none.form-repeat-add'
+    element: '#center .center-container .center-panel .ui-portlet .portlet-content .portlet-body .ui-form-element .ui-form-field button'
     content: Insert values for another parameter.<br>
     Please specify values for all unknown parameters."
     placement: right
@@ -52,7 +52,7 @@ steps:
     placement: auto
   - title: Step 11 - Results
     element: .list-items
-    content: >-
+    content:
       "Wait until the parameter sampling is <br>
        finished and results stored in the History."
     placement: left

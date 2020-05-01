@@ -20,12 +20,12 @@ steps:
     placement: bottom
   - title: Step 3 - Model file
     element: 'div[tour_id="model"]'
-    content: >-
+    content:
       "Choose BCSL model file. <br>
       This tool supports only .bcs files stored in your history."
     placement: auto
   - title: Step 4 - Choose method
-    element: '#center .ui-select'
+    element: '#center .center-container .center-panel .ui-portlet .portlet-content .portlet-body .ui-form-element .ui-form-field .ui-select .select2-container'
     content: "Select Context based reduction method."
     placement: bottom
   - title: Step 5 - Execute
@@ -34,7 +34,7 @@ steps:
     placement: auto
   - title: Step 6 - Results
     element: .list-items
-    content: >-
+    content:
       "Wait until the analysis is finished<br>
        and results stored in the History."
     placement: left
