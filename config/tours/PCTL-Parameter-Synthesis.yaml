@@ -31,7 +31,8 @@ steps:
     content: "Specify agents boundary cap (optional)."
     placement: auto
   - title: Step 6 - Insert Interval
-    element: '#center .center-container .center-panel .ui-portlet .portlet-content .portlet-body .ui-form-element .ui-form-field button'
+    element: '#center .center-container .center-panel .ui-portlet .portlet-content .portlet-body
+    .ui-form-element .ui-form-field button .ui-button-default.btn.btn-secondary.float-none.form-repeat-add'
     content:
       "Please specify values interval for<br>
       each unknown parameter."
