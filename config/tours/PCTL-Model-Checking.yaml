@@ -8,44 +8,36 @@ steps:
       #left .unified-panel .unified-panel-body .toolMenuContainer .toolMenu
       .toolSectionTitle.tool-menu-section-default a[href$="javascript:void(0)"]
       .name
-    content: Click here to list available tools.
+    content: "Click here to list available tools."
     placement: bottom
   - title: Step 2 - Select tool
     element: >-
       #left > div.unified-panel > div.unified-panel-body > div > div.toolMenu >
       div:nth-child(4) > div > div > div:nth-child(2) > div:nth-child(3) > a >
       span.description
-    content: And click on PCTL model checking tool.
+    content: "Click on PCTL Model Checking tool."
     placement: bottom
   - title: Step 3 - Model file
     element: 'div[tour_id="model"]'
     content: >-
-      Choose your model file. This tool supports only .bcs files stored in your
-      history. 
+      "Choose BCSL model file. <br>
+      This tool supports only .bcs files stored in your history."
     placement: auto
-  - title: Single dataset
-    element: '#uid-372 > div.ui-form-field > div.ui-select-content.d-flex.flex-row.flex-wrap.flex-lg-nowrap > div:nth-child(1) > div'
-    content: Please select Single dataset (current option).
-    placement: right
   - title: Step 4 - PCTL Formula
     element: 'div[tour_id="formula"]'
-    content: Enter your PCTL (Probabilistic CTL) fromula.
+    content: "Enter PCTL formula."
     placement: auto
   - title: Step 5 - Bound
     element: 'div[tour_id="bound"]'
-    content: Specify your boundary here. (Optional parameter)
+    content: "Specify agents boundary cap (optional)."
     placement: auto
-  - title: Step 6 - Notifications
-    element: '#field-uid-382'
-    content: Decide if you want to receive email notifications.
-    placement: left
-  - title: Step 7 - Accomplishment
+  - title: Step 6 - Execute
     element: '#execute'
-    content: Just click Execute and it is done.
+    content: "Click the button Execute <br>to start model checking."
     placement: auto
-  - title: Step 8 - Results
+  - title: Step 7 - Results
     element: .list-items
     content: >-
-      Now you have to wait while your data are processing and then you can view
-      or visualize your data.
+      "Wait until the model checking is finished<br>
+       and results stored in the History."
     placement: left

@@ -1,6 +1,6 @@
 ﻿id: ProbabilitySampling
-name: Probability Sampling tour
-description: This is a tour created to describe TProbability Sampling generator tool.
+name: Probability Sampling
+description: This is a tour created to describe Probability Sampling tool.
 title_default: Galaxy Tour
 steps:
   - title: Step 1 - Begin
@@ -14,52 +14,45 @@ steps:
     element: >-
       #left > div.unified-panel > div.unified-panel-body > div > div.toolMenu >
       div:nth-child(4) > div > div > div:nth-child(2) > div:nth-child(6) > a
-    content: And click on Probability Sampling.
+    content: "Click on Probability Sampling tool."
     placement: bottom
-  - title: Step 3 - Model file
+  - title: Step 3 - Storm output file
     element: 'div[tour_id="storm_file"]'
     content: >-
-      Choose your model file. This tool supports only .bcs files stored in your
-      history.
+      "Choose appropriate results of Parameter Synthesis."
     placement: auto
-  - title: Step 4 - Single dataset
-    element: >-
-      #uid-39 > div.ui-form-field >
-      div.ui-select-content.d-flex.flex-row.flex-wrap.flex-lg-nowrap >
-      div:nth-child(1) > div
-    content: Please select Single dataset (current option).
-    placement: right
-  - title: Step 5 - Interval details
+  - title: Step 4 - Parameter name
     element: 'div[tour_id="regions_0|param"]'
-    content: Enter region parameter.
-    placement: left
-  - title: Step 6 - Interval details
+    content: "Enter parameter name."
+    placement: bottom
+  - title: Step 5 - Parameter interval start
     element: 'div[tour_id="regions_0|from"]'
-    content: Beginning of your interval.
-    placement: left
-  - title: Step 7 - Interval details
+    content: "Enter start of the interval."
+    placement: bottom
+  - title: Step 6 - Parameter interval end
     element: 'div[tour_id="regions_0|to"]'
-    content: End of your interval.
-    placement: left
-  - title: Step 8 - Interval details
+    content: "Enter end of the interval."
+    placement: bottom
+  - title: Step 7 - Parameter number of samples
     element: 'div[tour_id="regions_0|number"]'
-    content: Specify numebr of samples.
-    placement: left
-  - title: Step 9 - Insert interval
-    element: '#uid-47'
-    content: Insert another reagion and fill in all necessary parameters.
-    placement: left
-  - title: Step 10 - Delete interval
-    element: '#button_delete'
-    content: There is possibility to remove your region.
-    placement: left
-  - title: Step 11 - Accomplishment
-    element: '#execute'
-    content: Just click Execute and it is done.
+    content: "Specify number of samples for this parameter."
+    placement: bottom
+  - title: Step 8 - Insert interval
+    element: '#center .ui-button-default.btn.btn-secondary.float-none.form-repeat-add'
+    content: Insert values for another parameter.<br>
+    Please specify values for all unknown parameters."
     placement: right
-  - title: Step 12 - Results
+  - title: Step 9 - Delete interval
+    element: '#button_delete'
+    content: "Option to delete a parameter."
+    placement: left
+  - title: Step 10 - Execute
+    element: '#execute'
+    content: "Click the button Execute <br>to start parameter sampling."
+    placement: auto
+  - title: Step 11 - Results
     element: .list-items
     content: >-
-      Now you have to wait while your data are processing and then you can view
-      or visualize your data.
+      "Wait until the parameter sampling is <br>
+       finished and results stored in the History."
     placement: left

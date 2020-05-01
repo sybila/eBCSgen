@@ -32,19 +32,19 @@ steps:
     content: "Here is a workspace for your BCSL model."
     placement: right
   - title: Step 8 - Cursor Position
-    element: '.actualPosition'
+    element: '#center #actualPosition'
     content: "Position of the <br>cursor in the file."
     placement: bottom
   - title: Step 9 - Undo
-    element: '.undo_btn'
+    element: '#center #undo_btn'
     content: "You can undo your changes."
     placement: bottom
   - title: Step 10 - Redo
-    element: '.redo_btn'
+    element: '#center #redo_btn'
     content: "As well as redo."
     placement: bottom
   - title: Step 11 - Save model
-    element: '.save_btn'
+    element: '#center #save_btn'
     content: >-
       "Finally, click Save modifications button <br>
       to create a new BCSL model file in your history."

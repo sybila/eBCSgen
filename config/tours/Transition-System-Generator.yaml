@@ -1,5 +1,5 @@
 ﻿id: TransitionSystemGenerator
-name: Transition System generator tour
+name: Transition System generator
 description: This is a tour created to describe Transition System generator tool.
 title_default: Transition System generator tour
 steps:
@@ -14,55 +14,41 @@ steps:
     element: >-
       #left > div.unified-panel > div.unified-panel-body > div > div.toolMenu >
       div:nth-child(4) > div > div > div:nth-child(2) > div:nth-child(1) > a
-    content: And click on Transition System generator.
+    content: "Click on Transition System generator tool."
     placement: bottom
   - title: Step 3 - Model file
     element: 'div[tour_id="model"]'
     content: >-
-      Choose your model file. This tool supports only .bcs files stored in your
-      history.
+      "Choose BCSL model file. <br>
+      This tool supports only .bcs files stored in your history."
     placement: auto
-  - title: Step 4 - Single dataset
-    element: >-
-      #uid-281 > div.ui-form-field >
-      div.ui-select-content.d-flex.flex-row.flex-wrap.flex-lg-nowrap >
-      div:nth-child(1) > div
-    content: Please select Single dataset (current option).
-    placement: right
-  - title: Step 5 - Bound
+  - title: Step 4 - Bound
     element: 'div[tour_id="bound"]'
-    content: >-
-      The attribute bound assigns the maximal capacity of each agent. (This
-      attribute is optional, default bound is the most numerous agent in the
-      initial state.) 
+    content: "Specify agents boundary cap (optional)."
     placement: auto
-  - title: Step 6 - Advanced options
-    element: '#uid-290 > div.portlet-header'
-    content: You can expand Advanced Options to edit more attributes.
+  - title: Step 5 - Advanced options
+    element: '#center .portlet-header'
+    content: "You can expand Advanced Options to edit more attributes."
     placement: bottom
-  - title: Step 6 - Advanced options - Maximal computational time
+  - title: Step 5.1 - Advanced options - Maximal computational time
     element: 'div[tour_id="adv|max_time"]'
-    content: 'Select covetable computational time (undefined units). '
-    placement: auto
-  - title: Step 6 - Advanced options - Maximal TS size
-    element: 'div[tour_id="adv|max_size"]'
-    content: Choose the maximum size of the final Transition System.
-    placement: auto
-  - title: Step 6 - Advanced options - Precomputed TS file
-    element: 'div[tour_id="adv|transition_file"]'
-    content: 'You can insert precomputed Trasition System file. '
+    content: "Select maximal allowed computational time (in seconds)."
     placement: bottom
-  - title: Step 7 - Notifications
-    element: '#field-uid-304'
-    content: Decide if you want to receive email notifications.
-    placement: left
-  - title: Step 8 - Accomplishment
+  - title: Step 5.2 - Advanced options - Maximal TS size
+    element: 'div[tour_id="adv|max_size"]'
+    content: "Select maximal allowed size of resulting Transition System."
+    placement: bottom
+  - title: Step 5.3 - Advanced options - Precomputed TS file
+    element: 'div[tour_id="adv|transition_file"]'
+    content: "You can choose a precomputed Transition System file."
+    placement: bottom
+  - title: Step 6 - Execute
     element: '#execute'
-    content: Just click Execute and it is done.
-    placement: right
-  - title: Step 9 - Results
+    content: "Click the button Execute <br>to start generating Transition System."
+    placement: auto
+  - title: Step 7 - Results
     element: .list-items
     content: >-
-      Now you have to wait while your data are processing and then you can view
-      or visualize your data.
+      "Wait until the Transition System generating is <br>
+       finished and results stored in the History."
     placement: left

@@ -16,34 +16,25 @@ steps:
     element: >-
       #left > div.unified-panel > div.unified-panel-body > div > div.toolMenu >
       div:nth-child(4) > div > div > div:nth-child(2) > div:nth-child(5) > a
-    content: And click on Static Analysis tool.
+    content: "Click on Static Analysis tool."
     placement: bottom
   - title: Step 3 - Model file
     element: 'div[tour_id="model"]'
     content: >-
-      Choose your model file. This tool supports only .bcs files stored in your
-      history.
+      "Choose BCSL model file. <br>
+      This tool supports only .bcs files stored in your history."
     placement: auto
-  - title: Step 4 - Single dataset
-    element: >-
-      #uid-502 > div.ui-form-field > div.ui-select-content.d-flex.flex-row.flex-wrap.flex-lg-nowrap > div:nth-child(1) > div
-    content: Please select Single dataset (current option).
-    placement: right
-  - title: Step 5 - Choose method
-    element: 'div[tour_id="method"]'
-    content: Select Context based reduction method.
-    placement: left
-  - title: Step 6 - Notifications
-    element: '#field-uid-514'
-    content: Decide if you want to receive email notifications.
-    placement: left
-  - title: Step 7 - Accomplishment
+  - title: Step 4 - Choose method
+    element: '#center .ui-select'
+    content: "Select Context based reduction method."
+    placement: bottom
+  - title: Step 5 - Execute
     element: '#execute'
-    content: Just click Execute and it is done.
+    content: "Click the button Execute <br>to start the analysis."
     placement: auto
-  - title: Step 8 - Results
+  - title: Step 6 - Results
     element: .list-items
     content: >-
-      Now you have to wait while your data are processing and then you can view
-      or visualize your data.
+      "Wait until the analysis is finished<br>
+       and results stored in the History."
     placement: left

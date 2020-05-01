@@ -8,68 +8,57 @@ steps:
       #left .unified-panel .unified-panel-body .toolMenuContainer .toolMenu
       .toolSectionTitle.tool-menu-section-default a[href$="javascript:void(0)"]
       .name
-    content: Click here to list available tools.
+    content: "Click here to list available tools."
     placement: bottom
   - title: Step 2 - Select tool
     element: >-
       #left > div.unified-panel > div.unified-panel-body > div > div.toolMenu >
       div:nth-child(4) > div > div > div:nth-child(2) > div:nth-child(4) > a
-    content: And click on PCTL Parameter Synthesis tool.
+    content: "Click on PCTL Parameter Synthesis tool."
     placement: bottom
   - title: Step 3 - Model file
     element: 'div[tour_id="model"]'
     content: >-
-      Choose your model file. This tool supports only .bcs files stored in your
-      history.
+      "Choose BCSL model file. <br>
+      This tool supports only .bcs files stored in your history."
     placement: auto
-  - title: Step 4 - Single dataset
-    element: >-
-      #uid-436 > div.ui-form-field >
-      div.ui-select-content.d-flex.flex-row.flex-wrap.flex-lg-nowrap >
-      div:nth-child(1) > div
-    content: Please select Single dataset (current option).
-    placement: right
-  - title: Step 5 - PCTL Formula
+  - title: Step 4 - PCTL Formula
     element: 'div[tour_id="formula"]'
-    content: Enter your PCTL (Probabilistic CTL) fromula.
+    content: "Enter PCTL formula."
     placement: auto
-  - title: Step 6 - Bound
+  - title: Step 5 - Bound
     element: 'div[tour_id="bound"]'
-    content: Specify your boundary here. (Optional parameter)
+    content: "Specify agents boundary cap (optional)."
     placement: auto
-  - title: Step 7 - Insert Interval
-    element: '#uid-447'
+  - title: Step 6 - Insert Interval
+    element: '#center .ui-button-default.btn.btn-secondary.float-none.form-repeat-add'
     content: >-
-      Insert interval for computation of areas of satisfaction. (You may insert
-      as many as you want.)
+      "Please specify values interval for<br>
+      each unknown parameter."
     placement: auto
-  - title: Step 8 - Property Parameter
+  - title: Step 7 - Parameter name
     element: 'div[tour_id="regions_0|param"]'
-    content: Insert intervals for computation of areas of satisfaction.
+    content: "Enter parameter name."
     placement: bottom
-  - title: Step 9 - Property Interval start
+  - title: Step 8 - Parameter interval start
     element: 'div[tour_id="regions_0|from"]'
-    content: Insert intervals for computation of areas of satisfaction.
+    content: "Enter start of the interval."
     placement: bottom
-  - title: Step 10 - Property Interval end
+  - title: Step 9 - Parameter interval end
     element: 'div[tour_id="regions_0|to"]'
-    content: Insert intervals for computation of areas of satisfaction.
+    content: "Enter end of the interval."
     placement: bottom
-  - title: Step 11 - Delete Interval
+  - title: Step 10 - Delete Interval
     element: '#button_delete'
-    content: Option to delete your interval.
+    content: "Option to delete your interval."
     placement: left
-  - title: Step 12 - Notifications
-    element: '#field-uid-448 > div.btn-group.ui-radiobutton'
-    content: Select an option.
-    placement: right
-  - title: Step 13 - Accomplishment
+  - title: Step 11 - Execute
     element: '#execute'
-    content: Just click Execute and it is done.
+    content: "Click the button Execute <br>to start parameter synthesis."
     placement: auto
-  - title: Step 14 - Results
+  - title: Step 12 - Results
     element: .list-items
     content: >-
-      Now you have to wait while your data are processing and then you can view
-      or visualize your data.
+      "Wait until the parameter synthesis is <br>
+       finished and results stored in the History."
     placement: left

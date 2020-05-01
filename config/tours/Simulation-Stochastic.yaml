@@ -15,44 +15,33 @@ steps:
       #left > div.unified-panel > div.unified-panel-body > div > div.toolMenu >
       div:nth-child(4) > div > div > div:nth-child(2) > div:nth-child(2) > a >
       span.name.font-weight-bold
-    content: And click on Simulation.
+    content: "Click on Simulation tool."
     placement: bottom
   - title: Step 3 - Model file
     element: 'div[tour_id="model"]'
     content: >-
-      Choose your model file. This tool supports only .bcs files stored in your
-      history.
+      "Choose BCSL model file. <br>
+      This tool supports only .bcs files stored in your history."
     placement: bottom
-  - title: Step 4 - Single dataset
-    element: >-
-      #uid-315 > div.ui-form-field >
-      div.ui-select-content.d-flex.flex-row.flex-wrap.flex-lg-nowrap >
-      div:nth-child(1) > div
-    content: Please select Single dataset (current option).
-    placement: right
-  - title: Step 5 - Stochastic simulation
-    element: 'div[tour_id="deterministic_choice"]'
-    content: Click here and choose Stochastic.
-    placement: auto
-  - title: Step 6 - Number of runs
+  - title: Step 4 - Simulation method
+    element: '#center .ui-select'
+    content: "Select Stochastic method."
+    placement: bottom
+  - title: Step 5 - Number of runs
     element: 'div[tour_id="type|num_of_runs"]'
-    content: Specify number of total runs. Only positive integers are allowed.
+    content: "Specify number of total runs."
     placement: auto
-  - title: Step 7 - Time
+  - title: Step 6 - Simulation time
     element: 'div[tour_id="max_time"]'
-    content: Specify how long should one run take. (Only positive integers)
+    content: "Specify simulation duration."
     placement: bottom
-  - title: Step 8 - Notifications
-    element: '#field-uid-338'
-    content: Decide if you want to receive email notifications.
-    placement: left
-  - title: Step 9 - Accomplishment
+  - title: Step 7 - Execute
     element: '#execute'
-    content: Just click Execute and it is done.
+    content: "Click the button Execute <br>to start the simulation."
     placement: auto
-  - title: Step 10 - Results
+  - title: Step 8 - Results
     element: .list-items
     content: >-
-      Now you have to wait while your data are processing and then you can view
-      or visualize your data.
+      "Wait until the simulation is finished<br>
+       and results stored in the History."
     placement: left
