@@ -41,8 +41,8 @@ steps:
     element: '#center .center-container .center-panel .ui-portlet .portlet-content .portlet-body
     .ui-form-element .ui-form-field button .ui-button-default.btn.btn-secondary.float-none.form-repeat-add'
     content:
-    "Insert values for another parameter.<br>
-    Please specify values for all unknown parameters."
+      "Insert values for another parameter.<br>
+      Please specify values for all unknown parameters."
     placement: right
   - title: Step 9 - Delete interval
     element: '#button_delete'
