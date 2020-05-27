@@ -126,6 +126,9 @@ class VectorModel:
             solution = self.init
             time = 0.0
             while time < max_time:
+                # add to data
+                df.loc[len(df)] = [time] + list(solution.sequence)
+
                 applied_reactions = pd.DataFrame(data=[reaction.apply(solution, np.math.inf)
                                                        for reaction in self.vector_reactions],
                                                  columns=["state", "rate"])
@@ -141,9 +144,6 @@ class VectorModel:
                     solution = sorted_applied.iloc[0]["state"]
                 else:
                     rates_sum = random.random()
-
-                # add to data
-                df.loc[len(df)] = [time] + list(solution.sequence)
 
                 # update time
                 time += time_step(rates_sum)
