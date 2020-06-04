@@ -88,11 +88,12 @@ class VectorModel:
             reaction.to_symbolic()
             for i in range(len(self.init)):
                 # negative effect
-                if reaction.source.sequence[i] == 1:
-                    ODEs[i] += " - " + str(reaction.rate)
-                # positive effect
-                if reaction.target.sequence[i] == 1:
-                    ODEs[i] += " + " + str(reaction.rate)
+                if reaction.source.sequence[i] > 0:
+                    ODEs[i] += " - {}*({})".format(reaction.source.sequence[i], reaction.rate)
+                    # positive effect
+                if reaction.target.sequence[i] > 0:
+                    ODEs[i] += " + {}*({})".format(reaction.target.sequence[i], reaction.rate)
+        
         t = np.arange(0, max_time + step, step)
         y_0 = list(map(lambda x: x / (AVOGADRO * volume), self.init.sequence))
         y = odeint(fun, y_0, t)
