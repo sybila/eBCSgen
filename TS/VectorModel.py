@@ -113,7 +113,7 @@ class VectorModel:
         :param runs: how many time the process should be repeated (then average behaviour is taken)
         :return: simulated data
         """
-        header = ["times"] + list(map(str, self.ordering))
+        header = list(map(str, self.ordering))
         result_df = pd.DataFrame(columns=header)
 
         if not testing:
@@ -123,12 +123,12 @@ class VectorModel:
             time_step = fake_expovariate
 
         for run in range(runs):
-            df = pd.DataFrame(columns=header)
+            df = pd.DataFrame(columns=header, dtype=float)
             solution = self.init
             time = 0.0
             while time < max_time:
                 # add to data
-                df.loc[len(df)] = [time] + list(solution.sequence)
+                df.loc[time] = list(solution.sequence)
 
                 applied_reactions = pd.DataFrame(data=[reaction.apply(solution, np.math.inf)
                                                        for reaction in self.vector_reactions],
@@ -144,15 +144,24 @@ class VectorModel:
                     sorted_applied.drop(sorted_applied[sorted_applied["cumsum"] < rand_number].index, inplace=True)
                     solution = sorted_applied.iloc[0]["state"]
                 else:
-                    rates_sum = random.random()
+                    rates_sum = random.uniform(0.5, 0.9)
 
                 # update time
                 time += time_step(rates_sum)
 
             if run != 0:
-                averages = (df.stack() + result_df.stack()) / 2
-                averages = averages.unstack()
-                result_df = averages.dropna()[header]
+                # union of the indexes
+                union_idx = df.index.union(result_df.index)
+                df = df.reindex(union_idx)
+                result_df = result_df.reindex(union_idx)
+
+                # interpolate both
+                df = df.interpolate(method='linear', limit_direction='forward', axis=0)
+                result_df = result_df.interpolate(method='linear', limit_direction='forward', axis=0)
+
+                # concat both and compute average
+                result_df = pd.concat([df, result_df])
+                result_df = result_df.groupby(level=0).mean()
             else:
                 result_df = df
         return result_df

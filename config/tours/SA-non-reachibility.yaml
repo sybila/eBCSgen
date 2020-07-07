@@ -26,7 +26,7 @@ steps:
     placement: auto
   - title: Step 4 - Choose method
     element: '#center .center-container .center-panel .ui-portlet .portlet-content .portlet-body .ui-form-element .ui-form-field .ui-select .select2-container'
-    content: "Select Context based reduction method."
+    content: "Select static non-reachability method."
     placement: bottom
   - title: Step 5 - Insert agent
     element: 'div[tour_id="Method|complex"]'

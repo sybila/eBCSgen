@@ -58,6 +58,8 @@ if model.success:
         df = vm.deterministic_simulation(args.max_time, args.volume, args.step)
     else:
         df = vm.stochastic_simulation(args.max_time, args.runs)
+        df.index.name = 'times'
+        df.reset_index(inplace=True)
 
     df.to_csv(args.output, index=None, header=True)
 else:
