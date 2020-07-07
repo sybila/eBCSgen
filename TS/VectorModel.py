@@ -164,6 +164,9 @@ class VectorModel:
                 result_df = result_df.groupby(level=0).mean()
             else:
                 result_df = df
+
+        result_df.index.name = 'times'
+        result_df.reset_index(inplace=True)
         return result_df
 
     def generate_transition_system(self, ts: TransitionSystem = None,
