@@ -25,9 +25,6 @@ class Model:
         # autocomplete
         self.atomic_signature, self.structure_signature = self.extract_signatures()
 
-    def export_sbml_multi(self):
-        pass
-
     def __eq__(self, other: 'Model') -> bool:
         return self.rules == other.rules and self.init == other.init and self.definitions == other.definitions
 
@@ -144,10 +141,6 @@ class Model:
         :return: True if exists compatible
         """
         return any(list(map(lambda a: a.exists_compatible_agent(agent), self.rules)))
-
-    def network_free_simulation(self, options) -> list:
-        # for this we need to be able to apply Rule on State
-        pass
 
     def PCTL_model_checking(self, PCTL_formula: Formula, bound: int = None, storm_local: bool = True):
         """
