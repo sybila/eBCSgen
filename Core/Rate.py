@@ -80,8 +80,8 @@ class Rate:
         expression = transformer.transform(self.expression)
         return Rate(expression)
 
-# Transformers for Tree
 
+# Transformers for Tree
 class ContextReducer(Transformer):
     def agent(self, matches):
         return Tree("agent", [matches[0].reduce_context()])

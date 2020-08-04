@@ -16,14 +16,17 @@ from Errors.StormNotAvailable import StormNotAvailable
 
 class Model:
     def __init__(self, rules: set, init: collections.Counter, definitions: dict, params: set):
-        self.rules = rules
-        self.init = init
-        self.definitions = definitions
-        self.params = params
-        self.all_rates = True
+        self.rules = rules              # set of Rules
+        self.init = init                # Counter: Complex -> int
+        self.definitions = definitions  # dict str -> float
+        self.params = params            # set of str
+        self.all_rates = True           # indicates whether model is quantitative
 
         # autocomplete
         self.atomic_signature, self.structure_signature = self.extract_signatures()
+
+    def export_sbml_multi(self):
+        pass
 
     def __eq__(self, other: 'Model') -> bool:
         return self.rules == other.rules and self.init == other.init and self.definitions == other.definitions
@@ -294,7 +297,6 @@ def call_storm(command: str, files: list, storm_local: bool):
         ssh.close()
         del ssh, ssh_stdin, ssh_stdout, ssh_stderr
         return output
-
 
 
 def call_local_storm(command: str):
