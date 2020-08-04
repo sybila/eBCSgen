@@ -1,8 +1,8 @@
 import collections
 import subprocess
-
 import copy
 from sortedcontainers import SortedList
+import libsbml
 
 from Core.Formula import Formula
 from Core.Atomic import AtomicAgent
@@ -24,9 +24,6 @@ class Model:
 
         # autocomplete
         self.atomic_signature, self.structure_signature = self.extract_signatures()
-
-    def export_sbml_multi(self):
-        pass
 
     def __eq__(self, other: 'Model') -> bool:
         return self.rules == other.rules and self.init == other.init and self.definitions == other.definitions
@@ -145,10 +142,6 @@ class Model:
         """
         return any(list(map(lambda a: a.exists_compatible_agent(agent), self.rules)))
 
-    def network_free_simulation(self, options) -> list:
-        # for this we need to be able to apply Rule on State
-        pass
-
     def PCTL_model_checking(self, PCTL_formula: Formula, bound: int = None, storm_local: bool = True):
         """
         Model checking of given PCTL formula.
@@ -266,6 +259,14 @@ class Model:
                         state_labels.get(ts.states_encoding[state], set()) | {AP_lables[ap]}
         state_labels[ts.init] = state_labels.get(ts.init, set()) | {"init"}
         return state_labels, AP_lables
+
+    def export_sbml(self) -> libsbml.SBMLDocument:
+        """
+        Convert model to a SBML model using SBML-multi package.
+
+        :return: SBML document
+        """
+        pass
 
 
 def call_storm(command: str, files: list, storm_local: bool):
