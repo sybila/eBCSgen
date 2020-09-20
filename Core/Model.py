@@ -287,9 +287,15 @@ def call_storm(command: str, files: list, storm_local: bool):
 
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
         output = ssh_stdout.read()
+        stderr = ssh_stderr.read()
         ssh.close()
         del ssh, ssh_stdin, ssh_stdout, ssh_stderr
-        return output
+
+        # if error output is empty, command was executed successfully, call local Storm otherwise
+        if stderr:
+            return call_local_storm(command)
+        else:
+            return output
 
 
 def call_local_storm(command: str):
