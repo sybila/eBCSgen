@@ -1,8 +1,10 @@
 import libsbml
-import Core.Rule
-import Core.Structure
 
 class ModelSBML:
+
+    '''Naming convention for BCSL -> SMBL-export:
+        TODO
+    '''
 
     def __init__(self):
         self.document = libsbml.SBMLDocument(libsbml.SBMLNamespaces(3,1,"multi", 1))
@@ -45,20 +47,53 @@ class ModelSBML:
                 new_component_index.setId(subcomponent+"_component_index_of_"+struct)
                 new_component_index.setComponent(subcomponent+"_instance_of_"+struct)
             self.speciesTypes.append(new_species_type)
-    def set_compartments_to_species_types(self, compartments: dict):
-        """Function adds compartments to existing speciesTypes, representing complexes in BCSL"""
-        for compartment in compartments:
-            c = self.model.createCompartment()
-            c.setId(compartment)
-            c.setConstant(True)
-            compPlug = c.getPlugin("multi")
-            compPlug.setIsType(True)
-            for complex_name in compartments[compartment]:
-                species = self.modelPlug.getMultiSpeciesType(complex_name)
-                species.setCompartment(compartment)
 
-    def create_all_species_types(self,  compartments: dict, atomics: dict, structs: dict):
-        '''Function creates all species types from signatures and compartments'''
+
+    def create_all_species_types(self,atomics: dict, structs: dict):
+        '''Function creates SBML speciesTypes from signatures. speciesTypes do not have compartments by default.
+        compartment is added in specific species later and they are cereated using map compartments -> outside agents
+        '''
         self.create_species_types_from_atomic(atomics)
         self.create_species_types_from_structure(structs)
-        self.set_compartments_to_species_types(compartments)
+
+    def create_compartment(self, compartment: str):
+
+        """Function creates SBML-compartment using string name of compartment
+
+        :param: compartment -> string name of compartment
+        """
+        c = self.model.createCompartment()
+        c.setId(compartment)
+        c.setConstant(True)
+        compPlug = c.getPlugin("multi")
+        compPlug.setIsType(True)
+
+
+    def create_all_species_and_compartments(self, compartments: dict):
+
+        """Function creates SBML-species and calls creation of every compartment"""
+        libsbml.ListOfSpecies(libsbml.SBMLNamespaces(3,1,"multi",1)) # Creates Species tag for multi extension
+        for compartment in compartments:
+            self.create_compartment(compartment)
+            for complex_name in compartments[compartment]:
+                new_species = self.model.createSpecies()
+                new_speciesPlug =  new_species.getPlugin("multi")
+                new_speciesPlug.setSpeciesType(complex_name)
+                new_species.setId(complex_name+"_"+compartment) # : is invalid character in id thus _ is used
+                new_species.setCompartment(compartment)
+                new_species.setInitialAmount(10) # setting initial amount/concentration otherwise warning occurs
+                # necessary attributes
+                new_species.setBoundaryCondition(False)
+                new_species.setHasOnlySubstanceUnits(False)
+                new_species.setConstant(False)
+                # Species features...
+                #TODO
+
+
+    def create_full_document(self, compartments:dict, atomics: dict, structs: dict):
+        """Function creates everything in SBML document"""
+
+        self.create_all_species_types(atomics, structs)
+        self.create_all_species_and_compartments(compartments)
+
+        #TODO - Variables, Reactions

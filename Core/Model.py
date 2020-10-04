@@ -266,25 +266,23 @@ class Model:
         :return: SBML document
         """
         translated_model = ModelSBML()
-        translated_model.create_all_species_types(self.map_agents_to_compartments(), self.atomic_signature, self.structure_signature)
         translated_model.docPlug.setRequired(True) #necesary for SBML-multi document
+        translated_model.create_full_document(self.map_agents_to_compartments(), self.atomic_signature, self.structure_signature)
 
         #test print for validation here: http://constraint.caltech.edu:8888/validator_servlet/index.jsp
         print(libsbml.writeSBMLToString(translated_model.document))
         return translated_model.document
 
-    def map_agents_to_compartments(self) -> dict: # might not be necessary if self.init is sufficient
+    def map_agents_to_compartments(self) -> dict:
         """
         Maps all 'outside agents' to compartments where theirs spatial location is.
 
-        :return: dictionary of compartment -> Atomic agents or Structure agents
+        :return: dictionary of compartment -> Atomic or Structure agent names
         """
         mapped_agents_to_compartment = collections.defaultdict(lambda : set())
         for rule in self.rules:
-            for side in rule.create_complexes():
-                for complex_object in side.agents: #sometimes side.agents might be empty ?? - thus for loop will not happen
-                    for agent in complex_object.agents:
-                        mapped_agents_to_compartment[complex_object.compartment].update([agent.name])
+            for num, agent in enumerate(rule.agents, start=0):
+                mapped_agents_to_compartment[rule.compartments[num]].update([agent.name])
         return dict(mapped_agents_to_compartment)
 
 def call_storm(command: str, files: list, storm_local: bool):
