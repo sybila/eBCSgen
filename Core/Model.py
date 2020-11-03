@@ -267,23 +267,31 @@ class Model:
         """
         translated_model = ModelSBML()
         translated_model.docPlug.setRequired(True) #necesary for SBML-multi document
-        translated_model.create_full_document(self.map_agents_to_compartments(), self.atomic_signature, self.structure_signature)
+        translated_model.create_full_document(self.unique_complexes_and_compartments(), self.atomic_signature, self.structure_signature)
 
         #test print for validation here: http://constraint.caltech.edu:8888/validator_servlet/index.jsp
         print(libsbml.writeSBMLToString(translated_model.document))
         return translated_model.document
 
-    def map_agents_to_compartments(self) -> dict:
+    def unique_complexes_and_compartments(self) -> set:
         """
-        Maps all 'outside agents' to compartments where theirs spatial location is.
+        Extracts unique complexes and compartments from rules
 
-        :return: dictionary of compartment -> Atomic or Structure agent names
+        :return: set of unique complexes represented by a tuple of all their outside agents
+         and compartment on 0 index of the tuple
         """
-        mapped_agents_to_compartment = collections.defaultdict(lambda : set())
+        unique_complexes = set()
         for rule in self.rules:
-            for num, agent in enumerate(rule.agents, start=0):
-                mapped_agents_to_compartment[rule.compartments[num]].update([agent.name])
-        return dict(mapped_agents_to_compartment)
+            for agent_indexes in rule.complexes:
+                if len(agent_indexes) == 2 and agent_indexes[0] == agent_indexes[1]: # is reflexivity
+                    unique_complexes.add((rule.compartments[0],rule.agents[agent_indexes[0]])) # (comp, agent)
+                else:
+                    complex_parts = [rule.compartments[agent_indexes[0]]] # [comp]
+                    for index in agent_indexes:
+                        complex_parts.append(rule.agents[index])
+                    unique_complexes.add(tuple(complex_parts)) # (comp, agent, agent, ..., agent)
+
+        return unique_complexes
 
 def call_storm(command: str, files: list, storm_local: bool):
     """
