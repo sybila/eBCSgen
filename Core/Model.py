@@ -267,7 +267,7 @@ class Model:
         """
         translated_model = ModelSBML()
         translated_model.docPlug.setRequired(True) #necesary for SBML-multi document
-        translated_model.create_full_document(self.unique_complexes_and_compartments(), self.atomic_signature, self.structure_signature)
+        translated_model.create_full_document(self.unique_complexes_and_compartments(), self.atomic_signature, self.structure_signature, self.rules)
 
         #test print for validation here: http://constraint.caltech.edu:8888/validator_servlet/index.jsp
         print(libsbml.writeSBMLToString(translated_model.document))

@@ -2,6 +2,7 @@ import libsbml
 import Core.Rule
 import Core.Atomic
 import Core.Structure
+import Core.Complex
 class ModelSBML:
 
     '''
@@ -15,6 +16,7 @@ class ModelSBML:
         self.modelPlug = self.model.getPlugin("multi")
         self.finishedCompartments = []
         self.finishedComplexSpeciesTypes = []
+        self.speciesNamses = []
 
 
     #FUNCTIONS TO CREATE TEMPLATE OF SPECIES
@@ -88,6 +90,35 @@ class ModelSBML:
         self.finishedCompartments.append(compartment)
 
     ####################################################
+    #FUNCTION TO TRANSLATE COMPLEX AGENT TO SPECIES NAME
+
+    def translate_complex_name(self, compl:Core.Complex):
+        '''Translates complex agent in reaction to its name ID in species
+        function is there to find link between object and id of Species. Used in
+        reaction
+        TODO
+        *Find some better way for Naming convention of id's objects in SBML
+        *Requirements:
+        1.Fast Forward
+        2.Logical
+        3.Readable
+        '''
+
+        result_id = []
+        agents = compl.agents
+        for agent_index in range (len(agents)):
+            if isinstance(agents[agent_index], Core.Atomic.AtomicAgent):
+                atomic_agent = agents[agent_index]#
+                result_id.append(atomic_agent.name)
+                result_id.append(atomic_agent.state)
+            elif isinstance(agents[agent_index], Core.Structure.StructureAgent):
+                result_id.append(agents[agent_index].name+"_"+str(agent_index+1))
+                for atomic_agent in agents[agent_index].composition: #struct can only contain atomic or set is empty
+                    result_id.append(atomic_agent.name)
+                    result_id.append(atomic_agent.state)
+        return "sp_"+"_".join(result_id)
+
+    ####################################################
 
     #FUNCTIONS TO CREATE SPECIES
 
@@ -155,13 +186,43 @@ class ModelSBML:
 
             self.create_species(complex, name)
 
+    def create_all_reactions(self, rules: set):
+        '''This function creates all reactions from rules
+            At first, it translates to RHS/LHS
+            TODO
+            *Can be simplified
+            *Concentrations/Quantities will be introduced together with Variables
+            *Decide whether to include MathML in KineticLaw-> will be obsolete in 3 v 2
+        '''
+        for i, r in enumerate(rules):
+            reaction = self.model.createReaction()
+            reaction.setId("rc_"+str(i))
+            reaction.setName(str(r))
+            reaction.setReversible(False)
+            reaction.setFast(False)
+            reac = r.to_reaction()
+            for itm in list(reac.lhs.to_counter().items()):
+                reactant = reaction.createReactant()
+                reactant.setSpecies(self.translate_complex_name(itm[0]))
+                reactant.setConstant(False)
+                reactant.setStoichiometry(itm[1])
+
+            for itm in list(reac.rhs.to_counter().items()):
+                product = reaction.createProduct()
+                product.setSpecies(self.translate_complex_name(itm[0]))
+                product.setConstant(False)
+                product.setStoichiometry(itm[1])
+
 
     ########################
     ## CREATE THE WHOLE THING
 
-    def create_full_document(self, complexes : set(), atomics: dict, structs: dict):
+    def create_full_document(self, complexes : set(), atomics: dict, structs: dict, rules: set):
         """Function creates everything in SBML document"""
         self.create_basic_species_types(atomics, structs)#1
         self.create_all_species_compartments_and_complex_species_types(complexes) #2
+        self.create_all_reactions(rules)#3
 
-        #TODO - Variables, Reactions
+        #TODO - Variables
+        #TODO -Reasonable naming convention for species + Prettier code
+        #TODO -Testing, testing, testing...

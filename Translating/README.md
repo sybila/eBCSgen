@@ -66,13 +66,18 @@ For ```KaiB4``` 2 Species are created: ```KaiB4{a}::cyt, KaiB4{i}::cyt```
 
 >notice that Spieces have compartment parameter set, so if there is same Species in different compartment
 >new has to be created to ensure individuallity
+
+###Reactions
+Amounts & concentrations 
+Documentation tbd.
+
 ------
 ###TODO
 
 * Make the code prettier
 * Create some less messy algorithm of how to set ID's for objects in SBML-multi (if that is possible)
+  hash() is too long and returns different output every time. 
 * Introduce Variables to translation, initial quanitities and concentrations
-* Introduce reaction to translation
 * Find possible bugs and create some usefull tests (using http://constraint.caltech.edu:8888/validator_servlet/index.jsp)
 as output checker, might be usefull
 * Test the application further, try to describe it or make it more effective
