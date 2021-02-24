@@ -10,6 +10,12 @@ from Parsing.ParseBCSL import Parser
 from TS.State import State
 
 
+CORRECT_MATHML = """
+<kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><divide><times><cn>3.0</cn>\
+<ci>K(T{i}).X()::cyt</ci></times><plus><power><ci>K()::cyt</ci><cn>2.0</cn></power><times>\
+<cn>4.0</cn><ci>p</ci></times></plus></divide></apply></math></kineticLaw>"""
+
+
 class TestRate(unittest.TestCase):
     def setUp(self):
         # agents
@@ -89,3 +95,13 @@ class TestRate(unittest.TestCase):
         rate = Core.Rate.Rate(self.parser.parse(rate_expr).data)
 
         self.assertEqual(rate.reduce_context(), self.rate_1)
+
+    def test_mathML(self):
+        rate_expr = "(3.0*[K(T{i}).X()::cyt]) / ([K()::cyt]**2.0 + 4*p)"
+        rate = Core.Rate.Rate(self.parser.parse(rate_expr).data)
+        expression = rate.to_mathML()
+
+        from lxml import etree
+        expression_tree = etree.tostring(etree.fromstring(expression))
+        correct_tree = etree.tostring(etree.fromstring(CORRECT_MATHML))
+        self.assertEqual(expression_tree, correct_tree)

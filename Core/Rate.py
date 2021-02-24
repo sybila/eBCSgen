@@ -1,9 +1,11 @@
 import numpy as np
 import sympy
-from lark import Transformer, Tree
+from lark import Transformer, Tree, Token
 from sortedcontainers import SortedList
 
 import TS.State
+
+STATIC_MATH = """<kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply>{}</apply></math></kineticLaw>"""
 
 
 class Rate:
@@ -80,6 +82,11 @@ class Rate:
         expression = transformer.transform(self.expression)
         return Rate(expression)
 
+    def to_mathML(self):
+        transformer = MathMLtransformer()
+        expression = transformer.transform(self.expression)
+        return STATIC_MATH.format(expression)
+
 
 # Transformers for Tree
 class ContextReducer(Transformer):
@@ -131,6 +138,59 @@ class Evaluater(Transformer):
         name = matches[0]
         self.locals[name] = sympy.Symbol(name)
         return name
+
+
+class MathMLtransformer(Transformer):
+    def __init__(self):
+        super(Transformer, self).__init__()
+        self.operators = {'STAR': 'times',
+                          'PLUS': 'plus',
+                          'MINUS': 'minus',
+                          'POW': 'power',
+                          'DIVIDE': 'divide'}
+
+    def rate_agent(self, matches):
+        return self.create_unary_item('ci', matches[1].children[0])
+
+    def param(self, matches):
+        return self.create_unary_item('ci', matches[0].value)
+
+    def fun(self, matches):
+        if len(matches) == 1:
+            return self.process_leaf(matches[0])
+        elif len(matches) == 3:
+            if type(matches[0]) == Token:
+                # ignore parentheses
+                return matches[1]
+            elif type(matches[1]) == Token:
+                # binary operator
+                second = self.process_leaf(matches[2]) if matches[1].type == 'POW' else matches[2]
+                return self.create_binary_operator(matches[1].type, [matches[0], second])
+
+        # this should never happen if the expression is parsed correctly
+        raise Exception('Wrong syntax.')
+
+    def rate(self, matches):
+        if len(matches) == 3:
+            # rational function
+            return self.create_binary_operator('DIVIDE', [matches[0], matches[2]])
+        else:
+            return matches[0]
+
+    def process_leaf(self, item):
+        if type(item) == int or type(item) == float:
+            # const
+            return self.create_unary_item('cn', item)
+        else:
+            # param or agent
+            return item
+
+    def create_binary_operator(self, operator, items):
+        return '<{0}>{1}</{0}>'.format(self.operators[operator], "".join(items))
+
+    @staticmethod
+    def create_unary_item(name, data):
+        return '<{0}>{1}</{0}>'.format(name, data)
 
 
 def tree_to_string(tree):
