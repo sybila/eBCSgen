@@ -3,6 +3,7 @@ import Core.Rule
 import Core.Atomic
 import Core.Structure
 import Core.Complex
+import collections
 class ModelSBML:
 
     '''
@@ -16,7 +17,17 @@ class ModelSBML:
         self.modelPlug = self.model.getPlugin("multi")
         self.finishedCompartments = []
         self.finishedComplexSpeciesTypes = []
-        self.speciesNamses = []
+        self.speciesNamses = {}
+        #it is good to save all components in structure
+        # for internal testing
+        #self.ids = {"species":{},
+        #            "species_types":{},
+        #            "species_features":{},
+        #            "species_feature_types":{},
+        #            "instances":{},
+        #            "component_indexes":{},
+        #            "reactions":{},
+        #           "compartments":{}}
 
 
     #FUNCTIONS TO CREATE TEMPLATE OF SPECIES
@@ -116,6 +127,7 @@ class ModelSBML:
                 for atomic_agent in agents[agent_index].composition: #struct can only contain atomic or set is empty
                     result_id.append(atomic_agent.name)
                     result_id.append(atomic_agent.state)
+        self.speciesNamses[".".join(list(map(str, agents))) + "::" + compl.compartment] ="sp_"+"_".join(result_id)
         return "sp_"+"_".join(result_id)
 
     ####################################################
@@ -143,8 +155,7 @@ class ModelSBML:
         new_species_multi_plugin = new_species.getPlugin("multi")
         new_species_multi_plugin.setSpeciesType(name)  # uses speciesType template
         new_species.setCompartment(complex[0])
-        new_species.setInitialAmount(10)  # setting initial amount/concentration otherwise warning occurs
-        # necessary attributes
+
         new_species.setBoundaryCondition(False)
         new_species.setHasOnlySubstanceUnits(False)
         new_species.setConstant(False)
@@ -175,7 +186,7 @@ class ModelSBML:
             for i in range(1, len(complex)):
                 name_of_species_type_id.append(complex[i].name)
             name_of_species_type_id.sort() # Names of individual complex components are sorted to avoid inconsistency
-                                         # E.g in BCSL order of agents in complex has no role, but in SBML-multi it has to be strictly given
+                                         # E.g in BCSL order of agents in complex has no role, but in SBML-multi id has to be strictly given
                                          # thus this order of SpeciesType_id will be determined alphabetically
             name = "_".join(name_of_species_type_id)
             # Creates SpeciesType for complex, if length of tuple is more than 2,
@@ -186,6 +197,22 @@ class ModelSBML:
 
             self.create_species(complex, name)
 
+    def parse_expression_to_ML(self, expression):
+        result = ''
+        operators = ['-', '+', '*', '/']
+        parentheses = ['[', ']', '(',')']
+        removable = ['[',']']
+        actors = []
+        for e in expression:
+            if e in operators:
+                result += ' {} '.format(e)
+            elif e not in parentheses and ':' in e:
+                result += self.speciesNamses[e]
+                actors.append(self.speciesNamses[e])
+            elif e not in removable:
+                result += e
+        return result, actors
+
     def create_all_reactions(self, rules: set):
         '''This function creates all reactions from rules
             At first, it translates to RHS/LHS
@@ -194,6 +221,10 @@ class ModelSBML:
             *Concentrations/Quantities will be introduced together with Variables
             *Decide whether to include MathML in KineticLaw-> will be obsolete in 3 v 2
         '''
+        saved = [] #tu sa ukladaju reakcie aby sa na ne dalo odkazovat
+        #prebehnu az 2 behy najskor sa vytvoria reakcie aj s prekaldmi
+        #apotom sa da vyhladavat aj v prekladoch - upravit krajsie behy
+        #ukladat si veci do struktur
         for i, r in enumerate(rules):
             reaction = self.model.createReaction()
             reaction.setId("rc_"+str(i))
@@ -201,6 +232,8 @@ class ModelSBML:
             reaction.setReversible(False)
             reaction.setFast(False)
             reac = r.to_reaction()
+            saved.append(reaction)
+
             for itm in list(reac.lhs.to_counter().items()):
                 reactant = reaction.createReactant()
                 reactant.setSpecies(self.translate_complex_name(itm[0]))
@@ -213,15 +246,52 @@ class ModelSBML:
                 product.setConstant(False)
                 product.setStoichiometry(itm[1])
 
+        #create mathML
+        for i, r in enumerate(rules):
+            reac = r.to_reaction()
+            rate = reac.rate
+            res, actors = self.parse_expression_to_ML(rate.get_formula_in_list())
+            law = saved[i].createKineticLaw()
+            num_of_products = saved[i].getListOfProducts().getListOfAllElements().getSize()
+            num_of_reactants = saved[i].getListOfReactants().getListOfAllElements().getSize()
+
+            law.setMath(libsbml.parseFormula(res))
+            for n in range(num_of_products):
+                product = saved[i].getListOfProducts().getListOfAllElements().get(n).getSpecies()
+                if product in actors:
+                    actors.pop(actors.index(product))
+            for u in range(num_of_reactants):
+                reactant = saved[i].getListOfReactants().getListOfAllElements().get(u).getSpecies()
+                if reactant in actors:
+                    actors.pop(actors.index(reactant))
+            for remaining_actor in actors:
+                modifier = saved[i].createModifier()
+                modifier.setSpecies(remaining_actor)
 
     ########################
     ## CREATE THE WHOLE THING
 
-    def create_full_document(self, complexes : set(), atomics: dict, structs: dict, rules: set):
+    def create_parameters(self, definitions: set):
+        for definition in definitions:
+            param = self.model.createParameter()
+            param.setId(definition)
+            param.setValue(definitions[definition])
+            param.setConstant(True)
+
+    def set_initial_amounts(self, init):
+        for i in init.items():
+            asignment = self.model.createInitialAssignment()
+            asignment.setSymbol(self.translate_complex_name(i[0]))
+            parsed_math, actors= self.parse_expression_to_ML(str(i[1]))
+            asignment.setMath(libsbml.parseFormula(parsed_math))
+
+    def create_full_document(self, complexes : set, atomics: dict, structs: dict, rules: set, definitions: set, init: collections.Counter):
         """Function creates everything in SBML document"""
         self.create_basic_species_types(atomics, structs)#1
         self.create_all_species_compartments_and_complex_species_types(complexes) #2
         self.create_all_reactions(rules)#3
+        self.create_parameters(definitions)#4
+        self.set_initial_amounts(init)#5
 
         #TODO - Variables
         #TODO -Reasonable naming convention for species + Prettier code

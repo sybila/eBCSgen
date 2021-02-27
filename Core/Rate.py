@@ -87,6 +87,9 @@ class Rate:
         expression = transformer.transform(self.expression)
         return STATIC_MATH.format(expression)
 
+    def get_formula_in_list(self):
+        return tree_to_string(self.expression)
+
 
 # Transformers for Tree
 class ContextReducer(Transformer):
