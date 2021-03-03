@@ -82,6 +82,16 @@ class Rate:
         expression = transformer.transform(self.expression)
         return Rate(expression)
 
+    def get_params_and_agents(self):
+        """
+        Extracts all agents (Complex objects) and params (strings) used in the rate expression.
+
+        :return: set of agents and params
+        """
+        transformer = Extractor()
+        transformer.transform(self.expression)
+        return transformer.agents, transformer.params
+
     def to_mathML(self):
         transformer = MathMLtransformer()
         expression = transformer.transform(self.expression)
@@ -89,6 +99,7 @@ class Rate:
 
     def get_formula_in_list(self):
         return tree_to_string(self.expression)
+
 
 
 # Transformers for Tree
@@ -105,7 +116,7 @@ class SymbolicAgents(Transformer):
 
 class Vectorizer(Transformer):
     def __init__(self, ordering, definitions):
-        super(Transformer, self).__init__()
+        super(Vectorizer, self).__init__()
         self.ordering = ordering
         self.definitions = definitions
         self.visited = []
@@ -130,7 +141,7 @@ class Vectorizer(Transformer):
 
 class Evaluater(Transformer):
     def __init__(self, state):
-        super(Transformer, self).__init__()
+        super(Evaluater, self).__init__()
         self.state = state
         self.locals = dict()
 
@@ -143,9 +154,24 @@ class Evaluater(Transformer):
         return name
 
 
+class Extractor(Transformer):
+    def __init__(self):
+        super(Extractor, self).__init__()
+        self.agents = set()
+        self.params = set()
+
+    def agent(self, matches):
+        self.agents.add(matches[0])
+        return Tree("agent", matches)
+
+    def param(self, matches):
+        self.params.add(matches[0])
+        return Tree("param", matches)
+
+
 class MathMLtransformer(Transformer):
     def __init__(self):
-        super(Transformer, self).__init__()
+        super(MathMLtransformer, self).__init__()
         self.operators = {'STAR': 'times',
                           'PLUS': 'plus',
                           'MINUS': 'minus',

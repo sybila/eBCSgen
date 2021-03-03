@@ -1,3 +1,4 @@
+import copy
 import unittest
 import numpy as np
 import sympy
@@ -105,3 +106,15 @@ class TestRate(unittest.TestCase):
         expression_tree = etree.tostring(etree.fromstring(expression))
         correct_tree = etree.tostring(etree.fromstring(CORRECT_MATHML))
         self.assertEqual(expression_tree, correct_tree)
+
+    def test_get_params_and_agents(self):
+        rate_expr = "k1*[K(T{i}).X(S{a})::cyt] + [K()::cyt] + (4*p)"
+        rate = Core.Rate.Rate(self.parser.parse(rate_expr).data)
+        original_rate = copy.deepcopy(rate)
+        correct_agents = {self.c1, self.c4}
+        correct_params = {'k1', 'p'}
+
+        result_agents, result_params = rate.get_params_and_agents()
+        self.assertEqual(rate, original_rate)
+        self.assertEqual(correct_agents, result_agents)
+        self.assertEqual(correct_params, result_params)
