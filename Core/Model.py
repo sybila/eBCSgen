@@ -265,31 +265,35 @@ class Model:
 
         :return: SBML document
         """
-        translated_model = ModelSBML()
-        translated_model.docPlug.setRequired(True) #necesary for SBML-multi document
-        translated_model.create_full_document(self.unique_complexes_and_compartments(), self.atomic_signature, self.structure_signature, self.rules, self.definitions, self.init)
+        test_model = ModelSBML()
+        test_model.docPlug.setRequired(True)
+        unique_complexes = self.create_unique_complexes()
 
-        #test print for validation here: http://constraint.caltech.edu:8888/validator_servlet/index.jsp
-        print(libsbml.writeSBMLToString(translated_model.document))
-        return translated_model.document
 
-    def unique_complexes_and_compartments(self) -> set:
+        test_model.create_basic_species_types(self.atomic_signature, self.structure_signature) #1
+        test_model.create_all_species_compartments_and_complex_species_types(list(unique_complexes))#2
+        test_model.create_all_reactions(self.rules)#3
+        test_model.create_parameters(self.definitions)#4
+        test_model.set_initial_amounts(self.init)#5
+
+
+        print(libsbml.writeSBMLToString(test_model.document))
+
+    def create_unique_complexes(self):
         """
         Extracts unique complexes and compartments from rules
 
-        :return: set of unique complexes represented by a tuple of all their outside agents
-         and compartment on 0 index of the tuple
+        :return: set of unique complexes
+
+         Isomorphism should be avoided by using set() on Complex Agents
+         Comparing them by its __equals__
         """
         unique_complexes = set()
+        unique_params_from_rate = set() # Might be usefull later
         for rule in self.rules:
-            for agent_indexes in rule.complexes:
-                if len(agent_indexes) == 2 and agent_indexes[0] == agent_indexes[1]: # is reflexivity
-                    unique_complexes.add((rule.compartments[0],rule.agents[agent_indexes[0]])) # (comp, agent)
-                else:
-                    complex_parts = [rule.compartments[agent_indexes[0]]] # [comp]
-                    for index in agent_indexes:
-                        complex_parts.append(rule.agents[index])
-                    unique_complexes.add(tuple(complex_parts)) # (comp, agent, agent, ..., agent)
+            agents, params = rule.rate.get_params_and_agents()
+            unique_complexes = unique_complexes.union(rule.get_unique_complexes_from_rule()).union(agents)
+            unique_params_from_rate =unique_params_from_rate.union(params)
 
         return unique_complexes
 

@@ -55,6 +55,15 @@ class Rule:
 
     def __hash__(self):
         return hash(str(self))
+    def get_unique_complexes_from_rule(self) -> set:
+        """Creates complexes from rule and returns them in set for better handling
+            :return: set of Complexes
+        """
+        unique_complexes_from_rule = set()
+        for (f, t) in self.complexes:
+            c = Complex(self.agents[f:t + 1], self.compartments[f])
+            unique_complexes_from_rule.add(c)
+        return unique_complexes_from_rule
 
     def create_complexes(self):
         """

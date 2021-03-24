@@ -42,6 +42,37 @@ class Complex:
         """
         return "VAR_" + str(number)
 
+    def get_agent_names(self):
+        """
+        Maps names to all agents in complex
+        :return: list of agent names in this complex
+        """
+        return [agent.name for agent in self.agents]
+
+    def to_SBML_speciesTypes_code(self):
+        """
+        :return: <str> id of SBML - speciesType of this complex agent
+
+        """
+        return "st_"+"_".join(sorted(self.get_agent_names()))
+
+    def to_SBML_species_code(self):
+        """Using hash for now. Instead of '-' symbol we use '_'
+        so it is compatible with SBML - id naming later some nicer
+        id could be implemented
+
+        :return: <str> id of SBML - species of this complex agent"""
+        code = str(self.__hash__())
+        return "sp_" + code[1:] if code[0] == "-" else "sp_" + code
+
+    def is_composed(self):
+
+        """
+            Determines if this complex agent is composed out of more
+            atomic/structure agents
+         :return: <bool>"""
+        return len(self.agents) > 1
+
     def extend_signature(self, atomic_signature: dict, structure_signature: dict):
         """
         Extend given signatures by possibly new context.
