@@ -1,12 +1,13 @@
 import unittest
-
+import libsbml
 
 from Parsing.ParseBCSL import Parser
 
 
 class TestSBMLexport(unittest.TestCase):
     def setUp(self):
-        model_parser = Parser("model") #kcat1, kcat3 might be removed from definitions later
+        model_parser = Parser("model")
+        self.models_to_test = {}
         model_exp = """
             #! rules
             KaiC(S{u},T{u}).KaiC(S{u},T{u})::cyt => KaiC(S{p},T{u}).KaiC(S{p},T{u})::cyt @ (kcat1*[KaiA2()::cyt]*[KaiC(S{u},T{u}).KaiC(S{u},T{u})::cyt])/(Km + [KaiC(S{u},T{u}).KaiC(S{u},T{u})::cyt])
@@ -20,6 +21,7 @@ class TestSBMLexport(unittest.TestCase):
             2 KaiC()::cyt => KaiC().KaiC()::cyt @ kdimer*[KaiC()::cyt]*([KaiC()::cyt] - 1)
 
             #! inits
+            2 KaiC(S{u},T{u})::cyt
             2 KaiC(S{u},T{u}).KaiC(S{u},T{u})::cyt
             1 KaiB4{a}::cyt
             1 KaiA2()::cyt
@@ -27,8 +29,6 @@ class TestSBMLexport(unittest.TestCase):
             #! definitions
             kcat2 = 0.539
             kcat4 = 0.89
-            kcat1 = 5
-            kcat3 = 4
             Km = 0.602
             kcatb2 = 0.346
             kcatb1 = 0.602
@@ -59,12 +59,15 @@ class TestSBMLexport(unittest.TestCase):
             kdimer = 1.77
         
         """
-        self.model = model_parser.parse(model_exp).data
-        self.model_iz = model_parser.parse(model_izo).data
+        self.models_to_test["general"] = model_parser.parse(model_exp).data
+       # self.models_to_test["izomorphic"] = model_parser.parse(model_izo).data
 
-    def test_export_SBML(self):
-        self.model.export_sbml()
-        #self.model_iz.export_sbml()
-        # load a store correct SBML file
-        # compare them (on the level of SBML)
-        #self.fail()
+    def test_by_validator(self):
+        validator = libsbml.SBMLValidator()
+        for model in self.models_to_test:
+            validator.clearFailures()
+            document = self.models_to_test[model].export_sbml()
+            validator.setDocument(document)
+            validator.validate()
+            self.assertEquals(validator.getNumFailures(), 0)
+            libsbml.writeSBMLToFile(document, "../Translating/Output/"+model+".xml")

@@ -45,13 +45,10 @@ class ModelSBML:
         for struct in structs:
             new_species_type = self.modelPlug.createMultiSpeciesType()
             new_species_type.setId("st_"+struct)
-            for num, subcomponent in enumerate(structs[struct], start=0):
+            for num, subcomponent in enumerate(sorted(structs[struct]), start=0):
                 new_instance = new_species_type.createSpeciesTypeInstance()
-                new_instance.setId(subcomponent+"_instance_of_"+struct+"_"+str(num))
-                new_instance.setSpeciesType("st_"+subcomponent) #estimates existance of it
-                new_component_index = new_species_type.createSpeciesTypeComponentIndex()
-                new_component_index.setId(subcomponent+"_component_index_of_"+struct+"_"+str(num))
-                new_component_index.setComponent(subcomponent+"_instance_of_"+struct+"_"+str(num))
+                new_instance.setId(subcomponent)
+                new_instance.setSpeciesType("st_"+subcomponent)
 
     def create_species_type_from_complex(self, comp_agent : Core.Complex):
         """All composed complex agents are translated to SpeciesTypes Here"""
@@ -61,11 +58,15 @@ class ModelSBML:
 
         for num, subcomponent in enumerate(comp_agent.get_agent_names(), start=0):
             new_instance = new_species_type.createSpeciesTypeInstance()
-            new_instance.setId(subcomponent+"_instance_of_"+name+"_"+str(num))
+            new_instance.setId(subcomponent+"_"+str(num))
             new_instance.setSpeciesType("st_"+subcomponent)
-            new_component_index = new_species_type.createSpeciesTypeComponentIndex()
-            new_component_index.setId(subcomponent + "_component_index_of_" + name+"_"+str(num))
-            new_component_index.setComponent(subcomponent + "_instance_of_" + name+"_"+str(num))
+            agent = sorted(comp_agent.agents)[num]
+            if isinstance(agent, Core.Structure.StructureAgent):
+                for atomic in agent.composition:
+                    comp_index = new_species_type.createSpeciesTypeComponentIndex()
+                    comp_index.setId(subcomponent +"_" + str(num) + "_" + atomic.name )
+                    comp_index.setComponent(atomic.name)
+                    comp_index.setIdentifyingParent(subcomponent+"_"+str(num))
 
     def create_basic_species_types(self,atomics: dict, structs: dict):
         '''Function creates SBML speciesTypes from signatures. speciesTypes do not have compartments by default.
@@ -96,10 +97,12 @@ class ModelSBML:
     #FUNCTIONS TO CREATE SPECIES
 
 
-    def set_species_feature(self, agent, plugin):
+    def set_species_feature(self, agent, plugin, component_ref, is_component):
         """Creates and sets up species feature"""
         sf = libsbml.SpeciesFeature(3, 1, 1)
         sf.setSpeciesFeatureType(agent.name + "_feature_type")
+        if is_component:
+            sf.setComponent(component_ref)
         sf.setOccur(1)
         sfv = sf.createSpeciesFeatureValue()
         sfv.setValue(agent.name + "_" + agent.state)
@@ -107,12 +110,14 @@ class ModelSBML:
 
     def create_species_features(self, comp_agent: Core.Complex, new_species_multi_plugin):
         """Creates all species features for given speces"""
-        for agent in comp_agent.agents:
+        for num, agent in enumerate(sorted(comp_agent.agents)):
             if isinstance(agent,Core.Atomic.AtomicAgent):
-                self.set_species_feature(agent, new_species_multi_plugin)
+                component_ref = ""
+                self.set_species_feature(agent, new_species_multi_plugin, component_ref, is_component=False)
             elif isinstance(agent,Core.Structure.StructureAgent):
-                for atomic_agent in agent.composition:
-                    self.set_species_feature(atomic_agent, new_species_multi_plugin)
+                for atomic_agent in sorted(agent.composition):
+                    component_ref = agent.name+"_"+str(num)+"_"+atomic_agent.name
+                    self.set_species_feature(atomic_agent, new_species_multi_plugin, component_ref, is_component=True)
 
     def create_species(self, comp_agent):
         '''Creates all species in the model'''
@@ -245,30 +250,25 @@ class ModelSBML:
         self.create_kinetic_law_and_modifiers(rules, reaction_objects)
 
 ### THIS WILL BE IMPROVED
-    def create_parameters(self, definitions: dict):
+    def create_parameters(self, definitions: dict, unique_params: set):
         """Sets up parameters from definitions"""
         for definition in definitions:
             param = self.model.createParameter()
             param.setId(definition)
             param.setValue(definitions[definition])
             param.setConstant(True)
+        for par in unique_params:
+            if par not in definitions:
+                new_param = self.model.createParameter()
+                new_param.setId(str(par))
+                new_param.setConstant(False)
+
 
     def set_initial_amounts(self, init):
         """Sets up initial Amount of Complex agents from inits
-        there is 1 flaw that has to be fixed
-
-        If there is initialization of agent that was not in rules
-        it fails
-        TBD..
-
         """
         for i in init.items():
             asignment = self.model.createInitialAssignment()
             asignment.setSymbol(i[0].to_SBML_species_code())
             parsed_math, actors= self.parse_expression_to_ML(str(i[1]))
             asignment.setMath(libsbml.parseFormula(parsed_math))
-
-#TODO
-# Referencing of Components,
-# Handling of Not-set Parameters,
-# Handling of initalAmounts of Complex Agents that were not present in rules

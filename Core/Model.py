@@ -267,19 +267,20 @@ class Model:
         """
         test_model = ModelSBML()
         test_model.docPlug.setRequired(True)
-        unique_complexes = self.create_unique_complexes()
+        unique_complexes, unique_params = self.create_unique_complexes_and_params()
 
 
         test_model.create_basic_species_types(self.atomic_signature, self.structure_signature) #1
         test_model.create_all_species_compartments_and_complex_species_types(list(unique_complexes))#2
         test_model.create_all_reactions(self.rules)#3
-        test_model.create_parameters(self.definitions)#4
+        test_model.create_parameters(self.definitions, unique_params)#4
         test_model.set_initial_amounts(self.init)#5
 
+        return test_model.document
+        #libsbml.writeSBMLToFile(test_model.document, "../Translating/Output/output.xml")
+        #print(libsbml.writeSBMLToString(test_model.document))
 
-        print(libsbml.writeSBMLToString(test_model.document))
-
-    def create_unique_complexes(self):
+    def create_unique_complexes_and_params(self):
         """
         Extracts unique complexes and compartments from rules
 
@@ -289,13 +290,13 @@ class Model:
          Comparing them by its __equals__
         """
         unique_complexes = set()
+        initialization_complexes = set(map(lambda x : x[0],self.init.items()))
         unique_params_from_rate = set() # Might be usefull later
         for rule in self.rules:
             agents, params = rule.rate.get_params_and_agents()
             unique_complexes = unique_complexes.union(rule.get_unique_complexes_from_rule()).union(agents)
             unique_params_from_rate =unique_params_from_rate.union(params)
-
-        return unique_complexes
+        return unique_complexes.union(initialization_complexes), unique_params_from_rate
 
 def call_storm(command: str, files: list, storm_local: bool):
     """
