@@ -227,3 +227,16 @@ def tree_to_string(tree):
         return sum(list(map(tree_to_string, tree.children)), [])
     else:
         return [str(tree)]
+
+
+#transformer to string
+setup = """http://sbml.org/Software/libSBML/5.15.0/docs/python-api/namespacelibsbml.html#af8887153d0992abc2ee36457a2cb15a7"""
+# stačí prepísať rate do stringu cez transformer podľa týchto pravidiel.
+# V prípade že transformer objaví komplex agent, tak ho stačí prepísať na string
+# ktorý sa získa ako <Complex>.to_SBML_species_code()
+# Nasledne použijem vstavanú funkciu lbsbml na vytvorenie nasetupovaneho ASTNODE
+
+#Druhá možnosť je nastaviť priamo objekt ASTNode bolo by však k nemu študovat dokumentáciu libsbml
+#Pre názov komplexu platí to isté
+setup2 = 'http://sbml.org/Software/libSBML/5.15.0/docs/python-api/classlibsbml_1_1_a_s_t_node.html'
+#prvá možnosť je jednoduchšia, prípadne ju viem neskôr zmeniť na druhú

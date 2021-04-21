@@ -169,6 +169,8 @@ class ModelSBML:
         parentheses = ['[', ']', '(',')']
         removable = ['[',']']
         actors = []
+        print("pred transformáciou")
+        print(expression)
         for e in expression:
             if e in operators:
                 result += ' {} '.format(e)
@@ -208,6 +210,8 @@ class ModelSBML:
             reac = r.to_reaction()
             rate = reac.rate
             res, actors = self.parse_expression_to_ML(rate.get_formula_in_list())
+            print("po transformácii")
+            print(res)
             law = reaction_objects[i].createKineticLaw()
             num_of_products = reaction_objects[i].getListOfProducts().getListOfAllElements().getSize()
             num_of_reactants = reaction_objects[i].getListOfReactants().getListOfAllElements().getSize()
