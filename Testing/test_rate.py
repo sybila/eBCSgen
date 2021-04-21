@@ -98,14 +98,19 @@ class TestRate(unittest.TestCase):
         self.assertEqual(rate.reduce_context(), self.rate_1)
 
     def test_mathML(self):
-        rate_expr = "(3.0*[K(T{i}).X()::cyt]) / ([K()::cyt]**2.0 + 4*p)"
+        rate_expr = "(3.0*[K(T{i}).X()::cyt])/([K()::cyt]**2.0+4.0*p)"
         rate = Core.Rate.Rate(self.parser.parse(rate_expr).data)
         expression = rate.to_mathML()
+        agents, params = rate.get_params_and_agents()
+        str_to_code = {"[" + str(agent) + "]": agent.to_SBML_species_code() for agent in agents}
 
-        from lxml import etree
-        expression_tree = etree.tostring(etree.fromstring(expression))
-        correct_tree = etree.tostring(etree.fromstring(CORRECT_MATHML))
-        self.assertEqual(expression_tree, correct_tree)
+        operators = {'**': ' ^ ', '*': ' * ', '+': ' + ', '-': ' - ', '/': ' / '}
+        for agent in str_to_code:
+            rate_expr = rate_expr.replace(agent, str_to_code[agent])
+        for op in operators:
+            rate_expr = rate_expr.replace(op, operators[op])
+
+        self.assertEqual(expression, rate_expr)
 
     def test_get_params_and_agents(self):
         rate_expr = "k1*[K(T{i}).X(S{a})::cyt] + [K()::cyt] + (4*p)"

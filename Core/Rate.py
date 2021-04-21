@@ -95,7 +95,7 @@ class Rate:
     def to_mathML(self):
         transformer = MathMLtransformer()
         expression = transformer.transform(self.expression)
-        return STATIC_MATH.format(expression)
+        return "".join(tree_to_string(expression))
 
     def get_formula_in_list(self):
         return tree_to_string(self.expression)
@@ -172,54 +172,37 @@ class Extractor(Transformer):
 class MathMLtransformer(Transformer):
     def __init__(self):
         super(MathMLtransformer, self).__init__()
-        self.operators = {'STAR': 'times',
-                          'PLUS': 'plus',
-                          'MINUS': 'minus',
-                          'POW': 'power',
-                          'DIVIDE': 'divide'}
+        self.operators = {'STAR': ' * ',
+                          'PLUS': ' + ',
+                          'MINUS': ' - ',
+                          'POW': ' ^ ',
+                          'SLASH': ' / '}
 
     def rate_agent(self, matches):
-        return self.create_unary_item('ci', matches[1].children[0])
-
-    def param(self, matches):
-        return self.create_unary_item('ci', matches[0].value)
+        return Tree('rate_agent', [matches[1].children[0].to_SBML_species_code()])
 
     def fun(self, matches):
         if len(matches) == 1:
-            return self.process_leaf(matches[0])
+            # leaf
+            return Tree('fun', matches)
         elif len(matches) == 3:
             if type(matches[0]) == Token:
-                # ignore parentheses
-                return matches[1]
+                # parentheses
+                return Tree('fun', matches)
             elif type(matches[1]) == Token:
                 # binary operator
-                second = self.process_leaf(matches[2]) if matches[1].type == 'POW' else matches[2]
-                return self.create_binary_operator(matches[1].type, [matches[0], second])
-
-        # this should never happen if the expression is parsed correctly
-        raise Exception('Wrong syntax.')
+                return self.fix_operator('fun', matches)
 
     def rate(self, matches):
         if len(matches) == 3:
             # rational function
-            return self.create_binary_operator('DIVIDE', [matches[0], matches[2]])
+            return self.fix_operator('rate', matches)
         else:
             return matches[0]
 
-    def process_leaf(self, item):
-        if type(item) == int or type(item) == float:
-            # const
-            return self.create_unary_item('cn', item)
-        else:
-            # param or agent
-            return item
-
-    def create_binary_operator(self, operator, items):
-        return '<{0}>{1}</{0}>'.format(self.operators[operator], "".join(items))
-
-    @staticmethod
-    def create_unary_item(name, data):
-        return '<{0}>{1}</{0}>'.format(name, data)
+    def fix_operator(self, node, matches):
+        operator = self.operators[matches[1].type]
+        return Tree(node, [matches[0], Token(matches[1].type, operator), matches[2]])
 
 
 def tree_to_string(tree):
@@ -227,16 +210,3 @@ def tree_to_string(tree):
         return sum(list(map(tree_to_string, tree.children)), [])
     else:
         return [str(tree)]
-
-
-#transformer to string
-setup = """http://sbml.org/Software/libSBML/5.15.0/docs/python-api/namespacelibsbml.html#af8887153d0992abc2ee36457a2cb15a7"""
-# stačí prepísať rate do stringu cez transformer podľa týchto pravidiel.
-# V prípade že transformer objaví komplex agent, tak ho stačí prepísať na string
-# ktorý sa získa ako <Complex>.to_SBML_species_code()
-# Nasledne použijem vstavanú funkciu lbsbml na vytvorenie nasetupovaneho ASTNODE
-
-#Druhá možnosť je nastaviť priamo objekt ASTNode bolo by však k nemu študovat dokumentáciu libsbml
-#Pre názov komplexu platí to isté
-setup2 = 'http://sbml.org/Software/libSBML/5.15.0/docs/python-api/classlibsbml_1_1_a_s_t_node.html'
-#prvá možnosť je jednoduchšia, prípadne ju viem neskôr zmeniť na druhú
