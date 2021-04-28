@@ -60,7 +60,7 @@ class TestSBMLexport(unittest.TestCase):
         
         """
         self.models_to_test["general"] = model_parser.parse(model_exp).data
-       # self.models_to_test["izomorphic"] = model_parser.parse(model_izo).data
+        self.models_to_test["izomorphic"] = model_parser.parse(model_izo).data
 
     def test_by_validator(self):
         validator = libsbml.SBMLValidator()
@@ -69,5 +69,5 @@ class TestSBMLexport(unittest.TestCase):
             document = self.models_to_test[model].export_sbml()
             validator.setDocument(document)
             validator.validate()
-            self.assertEquals(validator.getNumFailures(), 0)
+            self.assertEqual(validator.getNumFailures(), 0)
             libsbml.writeSBMLToFile(document, "../Translating/Output/"+model+".xml")

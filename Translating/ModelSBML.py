@@ -152,37 +152,6 @@ class ModelSBML:
 
             self.create_species(comp_agent)
 
-#THIS CAN BE DONE NICER
-    def parse_expression_to_ML(self, expression):
-        """Parses string expresion to string that can be used by
-        internal function of libsbml to create KineticLaw
-
-
-        *** This can be avoided by setting up libsbml object directly
-        in transformer ***
-
-        :return: <str> expresion that can be parsed by libsbml to MathML,
-                <list> list of str representation of Complexes that were used in Rate
-                  this is used in determining modifiers"""
-        result = ''
-        operators = ['-', '+', '*', '/']
-        parentheses = ['[', ']', '(',')']
-        removable = ['[',']']
-        actors = []
-        print("pred transformáciou")
-        print(expression)
-        for e in expression:
-            if e in operators:
-                result += ' {} '.format(e)
-            elif e not in parentheses and ':' in e:
-
-                result += self.complex_names_map[e]
-                actors.append(self.complex_names_map[e])
-            elif e not in removable:
-                result += e
-        return result, actors
-
-
     def create_reactants(self, items:list(), reaction):
         """Creates all reactants from Complexes in list of tuples"""
         for itm in items:
@@ -209,9 +178,13 @@ class ModelSBML:
         for i, r in enumerate(rules):
             reac = r.to_reaction()
             rate = reac.rate
-            res, actors = self.parse_expression_to_ML(rate.get_formula_in_list())
-            print("po transformácii")
-            print(res)
+            #res, actors = self.parse_expression_to_ML(rate.get_formula_in_list())
+            res = rate.to_mathML()
+            agents, params = rate.get_params_and_agents()
+            actors = []
+            for agent in agents:
+                actors.append(agent.to_SBML_species_code())
+            #
             law = reaction_objects[i].createKineticLaw()
             num_of_products = reaction_objects[i].getListOfProducts().getListOfAllElements().getSize()
             num_of_reactants = reaction_objects[i].getListOfReactants().getListOfAllElements().getSize()
@@ -274,5 +247,5 @@ class ModelSBML:
         for i in init.items():
             asignment = self.model.createInitialAssignment()
             asignment.setSymbol(i[0].to_SBML_species_code())
-            parsed_math, actors= self.parse_expression_to_ML(str(i[1]))
-            asignment.setMath(libsbml.parseFormula(parsed_math))
+            formula= str(i[1])
+            asignment.setMath(libsbml.parseFormula(formula))
