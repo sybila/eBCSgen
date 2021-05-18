@@ -381,6 +381,26 @@ class TestModel(unittest.TestCase):
             KaiC6 = KaiC().KaiC().KaiC().KaiC().KaiC().KaiC()
             """
 
+        self.model_for_matching = """
+            #! rules
+            K(S{i}).B()::cyt + C{_}::cell => K(S{i})::cyt + B()::cyt + C{_}::cell @ 3*[K(S{i}).B()::cyt]/2*v_1
+            A{p}.K(S{i})::cyt => A{i}::cyt + K(S{a})::cyt @ 0.3*[A{p}.K(S{i})::cyt]
+            K(S{i},T{i})::cyt => K(S{a},T{i})::cyt @ k2*[K(S{i},T{i})::cyt]
+            C{_}::cell + C{_}::cell => C{_}.C{_}::cell @ v_1*[C{_}::cell]**2
+            C{_}::cell + K()::cell => C{_}.K()::cell @ v_1*[C{_}::cell]**2
+    
+            #! inits
+            2 K(S{i}).B(T{a})::cyt
+            1 A{p}.K(S{i},T{i})::cyt
+            2 C{i}::cell
+            1 C{a}::cell
+    
+            #! definitions
+            v_1 = 0.05
+            k2 = 0.12
+            """
+
+
     def test_str(self):
         model = self.model_parser.parse(self.model_str_1).data
         back_to_str = repr(model)
@@ -524,3 +544,7 @@ class TestModel(unittest.TestCase):
 
         ordering = model.create_ordering()
         self.assertEqual(unique_complexes, set(ordering))
+
+    def test_network_free_simulation(self):
+        model = self.model_parser.parse(self.model_for_matching).data
+        model.network_free_simulation(1)

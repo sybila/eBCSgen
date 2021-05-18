@@ -1,5 +1,6 @@
 import itertools
-from copy import copy
+import random
+from copy import copy, deepcopy
 
 from Core import Rate
 from Core.Complex import Complex
@@ -172,10 +173,10 @@ class Rule:
     def create_matching_map(self, state):
         self.matching_map = []
         for lhs_complex in self.lhs.agents:
-            matches = []
-            for (state_complex, count) in state.items():
+            matches = set()
+            for state_complex in list(state):
                 if lhs_complex.compatible(state_complex):
-                    matches.append((state_complex, count))
+                    matches.add(state_complex)
             self.matching_map.append(matches)
 
     def update_matching_map(self, change):
@@ -191,4 +192,31 @@ class Rule:
         return self.rate.evaluate_direct(values, params)
 
     def is_applicable(self):
-        return [] in self.matching_map
+        return [] not in self.matching_map
+
+    def choose_a_match(self, state, all=False):
+        if self.is_applicable():
+            choices = find_all_matches(deepcopy(self.matching_map), deepcopy(state))
+            if choices:
+                if not all:
+                    return random.choice(choices)
+                else:
+                    return choices
+        return None
+
+    def apply(self, match):
+        # TODO: implement apply
+        print('CHOSEN:', self)
+        print('MATCH:', match)
+
+
+def find_all_matches(matching_map, state):
+    choices = []
+    if len(matching_map) == 0:
+        return [choices]
+    for match in matching_map[0]:
+        if match in state and state[match] > 0:
+            state[match] -= 1
+            for branch in find_all_matches(matching_map[1:], deepcopy(state)):
+                choices.append([match] + branch)
+    return choices

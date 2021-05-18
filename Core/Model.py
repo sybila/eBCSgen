@@ -1,6 +1,7 @@
 import collections
+import random
 import subprocess
-
+import pandas as pd
 import copy
 from sortedcontainers import SortedList
 
@@ -260,16 +261,47 @@ class Model:
         state_labels[ts.init] = state_labels.get(ts.init, set()) | {"init"}
         return state_labels, AP_lables
 
-    def network_free_simulation(self):
+    def network_free_simulation(self,  max_time: float):
         # TODO include regulations
+        state = copy.deepcopy(self.init)
         for rule in self.rules:
             # precompute complexes for each rule
-            lhs, rhs = rule.create_complexes()
-            rule.lhs = lhs
-            # create map of possible matching for init
-            rule.create_matching_map(self.init)
-            # check if rule can be applied at all
-            # enumerate rates
+            rule.lhs, _ = rule.create_complexes()
+            # create map of possible matchings for init
+            rule.create_matching_map(state)
+
+        history = dict()
+        collected_agents = set(state)
+        time = 0.0
+        while time < max_time:
+            history[time] = state
+
+            candidate_rules = pd.DataFrame(data=[(rule,
+                                                  rule.evaluate_rate(state, self.definitions),
+                                                  rule.choose_a_match(state)) for rule in self.rules],
+                                           columns=["rule", "rate", "match"])
+
+            # drop rules which cannot be actually used (do not pass stoichiometry check)
+            candidate_rules = candidate_rules.dropna()
+
+            if not candidate_rules.empty:
+                rates_sum = candidate_rules['rate'].sum()
+                sorted_candidates = candidate_rules.sort_values(by=["rate"])
+                sorted_candidates["cumsum"] = sorted_candidates["rate"].cumsum()
+
+                # pick random rule based on rates
+                rand_number = rates_sum * random.random()
+                sorted_candidates.drop(sorted_candidates[sorted_candidates["cumsum"] < rand_number].index, inplace=True)
+
+                # apply chosen rule to matched agents
+                state = sorted_candidates.iloc[0]["rule"].apply(sorted_candidates.iloc[0]["match"])
+            else:
+                rates_sum = random.uniform(0.5, 0.9)
+
+            # update time
+            time += random.expovariate(rates_sum)
+            collected_agents = collected_agents.union(set(state))
+            # TODO: update of matching map for all rules
 
 
 def call_storm(command: str, files: list, storm_local: bool):
