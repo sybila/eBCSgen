@@ -80,6 +80,35 @@ class Rate:
         expression = transformer.transform(self.expression)
         return Rate(expression)
 
+    def get_params_and_agents(self):
+        """
+        Extracts all agents (Complex objects) and params (strings) used in the rate expression.
+        :return: set of agents and params
+        """
+        transformer = Extractor()
+        transformer.transform(self.expression)
+        return transformer.agents, transformer.params
+
+    def evaluate_direct(self, values, params) -> float:
+        """
+        Evaluates
+
+        If the result is nan, None is returned instead.
+
+        :param values: given mapping complex -> count
+        :return: Sympy object for expression representation
+        """
+        evaluater = DirectEvaluater(values, params)
+        result = evaluater.transform(self.expression)
+
+        try:
+            value = sympy.sympify("".join(tree_to_string(result)))
+            if value == sympy.nan:
+                return None
+            return value
+        except TypeError:
+            return None
+
 
 # Transformers for Tree
 class ContextReducer(Transformer):
@@ -131,6 +160,37 @@ class Evaluater(Transformer):
         name = matches[0]
         self.locals[name] = sympy.Symbol(name)
         return name
+
+
+class DirectEvaluater(Transformer):
+    def __init__(self, values, params):
+        super(Transformer, self).__init__()
+        self.values = values
+        self.params = params
+
+    def rate_agent(self, matches):
+        return Tree('fun', [matches[1]])
+
+    def agent(self, matches):
+        return self.values.get(matches[0], 0)
+
+    def param(self, matches):
+        return Tree('fun', [self.params[matches[0]]])
+
+
+class Extractor(Transformer):
+    def __init__(self):
+        super(Extractor, self).__init__()
+        self.agents = set()
+        self.params = set()
+
+    def agent(self, matches):
+        self.agents.add(matches[0])
+        return Tree("agent", matches)
+
+    def param(self, matches):
+        self.params.add(matches[0])
+        return Tree("param", matches)
 
 
 def tree_to_string(tree):

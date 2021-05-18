@@ -168,3 +168,27 @@ class Rule:
         :return: set of all created Complexes
         """
         return self.to_reaction().create_all_compatible(atomic_signature, structure_signature)
+
+    def create_matching_map(self, state):
+        self.matching_map = []
+        for lhs_complex in self.lhs.agents:
+            matches = []
+            for (state_complex, count) in state.items():
+                if lhs_complex.compatible(state_complex):
+                    matches.append((state_complex, count))
+            self.matching_map.append(matches)
+
+    def update_matching_map(self, change):
+        pass
+
+    def evaluate_rate(self, state, params):
+        agents, _ = self.rate.get_params_and_agents()
+        values = dict()
+        for (state_complex, count) in state.items():
+            for agent in agents:
+                if agent.compatible(state_complex):
+                    values[agent] = count
+        return self.rate.evaluate_direct(values, params)
+
+    def is_applicable(self):
+        return [] in self.matching_map

@@ -260,6 +260,17 @@ class Model:
         state_labels[ts.init] = state_labels.get(ts.init, set()) | {"init"}
         return state_labels, AP_lables
 
+    def network_free_simulation(self):
+        # TODO include regulations
+        for rule in self.rules:
+            # precompute complexes for each rule
+            lhs, rhs = rule.create_complexes()
+            rule.lhs = lhs
+            # create map of possible matching for init
+            rule.create_matching_map(self.init)
+            # check if rule can be applied at all
+            # enumerate rates
+
 
 def call_storm(command: str, files: list, storm_local: bool):
     """
