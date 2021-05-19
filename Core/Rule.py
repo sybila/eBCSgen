@@ -171,6 +171,11 @@ class Rule:
         return self.to_reaction().create_all_compatible(atomic_signature, structure_signature)
 
     def create_matching_map(self, state):
+        """
+        Identifies compatible complexes from given state for each complex in LHS of rule.
+
+        @param state: given state
+        """
         self.matching_map = []
         for lhs_complex in self.lhs.agents:
             matches = set()
@@ -183,6 +188,13 @@ class Rule:
         pass
 
     def evaluate_rate(self, state, params):
+        """
+        Evaluate rate based on current state and parameter values.
+
+        @param state: given state
+        @param params: mapping of params to its value
+        @return: a real number of the rate
+        """
         agents, _ = self.rate.get_params_and_agents()
         values = dict()
         for (state_complex, count) in state.items():
@@ -192,9 +204,21 @@ class Rule:
         return self.rate.evaluate_direct(values, params)
 
     def is_applicable(self):
+        """
+        Check if every complex from LHS has candidates for match.
+
+        @return: True of match is possible
+        """
         return [] not in self.matching_map
 
     def choose_a_match(self, state, all=False):
+        """
+        Choose possible matchings of the rule to given state.
+
+        @param state: given state
+        @param all: bool to indicate if choose one matching randomly or return all of them
+        @return: random match/all matchings
+        """
         if self.is_applicable():
             choices = find_all_matches(deepcopy(self.matching_map), deepcopy(state))
             if choices:
@@ -205,12 +229,25 @@ class Rule:
         return None
 
     def apply(self, match):
-        # TODO: implement apply
+        # align agents based on LHS
+        aligned_agents = []
+        for i, pair in enumerate(list(filter(lambda item: item[0] < self.mid, self.complexes))):
+            agents = self.agents[pair[0]:pair[1]+1]
+            aligned_agents += match[i].align_match(agents)
+
         print('CHOSEN:', self)
         print('MATCH:', match)
+        print(aligned_agents)
 
 
 def find_all_matches(matching_map, state):
+    """
+    Finds all possible matchings which actually can be used for given state (validate stoichiometry).
+
+    @param matching_map: given matching map of a rule
+    @param state: state to be applied to
+    @return: candidates for match
+    """
     choices = []
     if len(matching_map) == 0:
         return [choices]

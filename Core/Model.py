@@ -301,7 +301,10 @@ class Model:
             # update time
             time += random.expovariate(rates_sum)
             collected_agents = collected_agents.union(set(state))
-            # TODO: update of matching map for all rules
+
+            for rule in self.rules:
+                # TODO: update of matching map
+                rule.update_matching_map(state)
 
 
 def call_storm(command: str, files: list, storm_local: bool):

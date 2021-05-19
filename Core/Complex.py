@@ -1,5 +1,7 @@
 import collections
 import itertools
+import random
+from copy import deepcopy
 
 import Core.Atomic
 
@@ -113,3 +115,35 @@ class Complex:
         for result in itertools.product(*results):
             output_complexes.add(Complex(list(result), self.compartment))
         return output_complexes
+
+    def align_match(self, agents):
+        """
+        Align self.agents based on given order.
+        An alignment must exist (because respective complex is compatible)
+        If multiple options, choose one randomly.
+
+        @param agents: order of agents
+        @return: aligned self.agents
+        """
+        choices = align_agents(agents, self.agents)
+        return random.choice(choices)
+
+
+def align_agents(ordered, to_align):
+    """
+    Recursively align two lists of agents based on compatibility.
+
+    @param ordered: reference list of agents
+    @param to_align: target list of agents
+    @return: all possible alignments
+    """
+    choices = []
+    if len(ordered) == 0:
+        return [choices]
+    for agent in to_align:
+        if ordered[0].compatible(agent):
+            new_to_align = deepcopy(to_align)
+            new_to_align.remove(agent)
+            for branch in align_agents(ordered[1:], new_to_align):
+                choices.append([agent] + branch)
+    return choices
