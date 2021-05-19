@@ -295,6 +295,7 @@ class Model:
 
                 # apply chosen rule to matched agents
                 state = sorted_candidates.iloc[0]["rule"].apply(sorted_candidates.iloc[0]["match"])
+                # TODO how to compute difference? using Counters?
             else:
                 rates_sum = random.uniform(0.5, 0.9)
 

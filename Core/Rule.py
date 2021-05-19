@@ -229,15 +229,32 @@ class Rule:
         return None
 
     def apply(self, match):
+        """
+        Apply rule to chosen match.
+        Match contains agents which satisfy LHS of the rule an can be safely replaced based on RHS
+
+        @param match: complexes fitting LHS of the rule
+        """
         # align agents based on LHS
         aligned_agents = []
         for i, pair in enumerate(list(filter(lambda item: item[0] < self.mid, self.complexes))):
             agents = self.agents[pair[0]:pair[1]+1]
             aligned_agents += match[i].align_match(agents)
 
-        print('CHOSEN:', self)
-        print('MATCH:', match)
-        print(aligned_agents)
+        # replace respective agents
+        resulting_rhs = []
+        for i, rhs_agent in enumerate(self.agents[self.mid:]):
+            if len(aligned_agents) <= i:
+                resulting_rhs.append(rhs_agent)
+            else:
+                resulting_rhs.append(rhs_agent.replace(aligned_agents[i]))
+
+        # construct resulting complexes
+        output_complexes = []
+        for (f, t) in list(filter(lambda item: item[0] >= self.mid, self.complexes)):
+            output_complexes.append(Complex(resulting_rhs[f - self.mid:t - self.mid + 1], self.compartments[f]))
+
+        # TODO what to return?
 
 
 def find_all_matches(matching_map, state):

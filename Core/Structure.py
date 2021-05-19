@@ -1,4 +1,6 @@
 import itertools
+from copy import deepcopy
+
 from Core.Atomic import AtomicAgent
 
 
@@ -124,3 +126,21 @@ class StructureAgent:
         :return: new StructureAgent with reduced context
         """
         return StructureAgent(self.name, set())
+
+    def replace(self, agent):
+        """
+        Replace agent based on a pattern.
+
+        @param agent: given agent to be changed
+        @return: changed agent
+        """
+        result = set()
+        for other_atomic in agent.composition:
+            match = False
+            for self_atomic in self.composition:
+                if other_atomic.name == self_atomic.name:
+                    result.add(self_atomic.replace(other_atomic))
+                    match = True
+            if not match:
+                result.add(deepcopy(other_atomic))
+        return StructureAgent(self.name, result)
