@@ -384,8 +384,8 @@ class TestModel(unittest.TestCase):
         self.model_for_matching = """
             #! rules
             K(S{i}).B()::cyt + C{_}::cell => K(S{i})::cyt + B()::cyt + C{_}::cell @ 3*[K(S{i}).B()::cyt]/2*v_1
-            A{p}.K(S{i})::cyt => A{i}::cyt + K(S{a})::cyt @ 0.3*[A{p}.K(S{i})::cyt]
-            K(S{i},T{i})::cyt => K(S{a},T{i})::cyt @ k2*[K(S{i},T{i})::cyt]
+            A{p}.K(S{i})::cyt => A{i}::cyt + K(S{a})::cyt + C{a}::cyt @ 0.3*[A{p}.K(S{i})::cyt]
+            K(S{i},T{i})::cyt + C{_}::cell => K(S{a},T{i})::cyt @ k2*[K(S{i},T{i})::cyt]
             C{_}::cell + C{_}::cell => C{_}.C{_}::cell @ v_1*[C{_}::cell]**2
             C{_}::cell + K()::cell => C{_}.K()::cell @ v_1*[C{_}::cell]**2
     
@@ -399,7 +399,6 @@ class TestModel(unittest.TestCase):
             v_1 = 0.05
             k2 = 0.12
             """
-
 
     def test_str(self):
         model = self.model_parser.parse(self.model_str_1).data

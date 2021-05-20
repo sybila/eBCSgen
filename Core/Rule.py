@@ -184,8 +184,19 @@ class Rule:
                     matches.add(state_complex)
             self.matching_map.append(matches)
 
-    def update_matching_map(self, change):
-        pass
+    def update_matching_map(self, to_add, to_delete):
+        """
+        Updates matching map with deleted and added complexes.
+
+        @param to_add: agents to be added
+        @param to_delete: agents to be discarded
+        """
+        for i, lhs_complex in enumerate(self.lhs.agents):
+            for delete_complex in to_delete:
+                self.matching_map[i].discard(delete_complex)
+            for add_complex in to_add:
+                if lhs_complex.compatible(add_complex):
+                    self.matching_map[i].add(add_complex)
 
     def evaluate_rate(self, state, params):
         """
@@ -254,7 +265,7 @@ class Rule:
         for (f, t) in list(filter(lambda item: item[0] >= self.mid, self.complexes)):
             output_complexes.append(Complex(resulting_rhs[f - self.mid:t - self.mid + 1], self.compartments[f]))
 
-        # TODO what to return?
+        return output_complexes
 
 
 def find_all_matches(matching_map, state):

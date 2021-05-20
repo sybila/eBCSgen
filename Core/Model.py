@@ -273,9 +273,8 @@ class Model:
         history = dict()
         collected_agents = set(state)
         time = 0.0
+        history[time] = state
         while time < max_time:
-            history[time] = state
-
             candidate_rules = pd.DataFrame(data=[(rule,
                                                   rule.evaluate_rate(state, self.definitions),
                                                   rule.choose_a_match(state)) for rule in self.rules],
@@ -294,18 +293,22 @@ class Model:
                 sorted_candidates.drop(sorted_candidates[sorted_candidates["cumsum"] < rand_number].index, inplace=True)
 
                 # apply chosen rule to matched agents
-                state = sorted_candidates.iloc[0]["rule"].apply(sorted_candidates.iloc[0]["match"])
-                # TODO how to compute difference? using Counters?
+                match = sorted_candidates.iloc[0]["match"]
+                produced_agents = sorted_candidates.iloc[0]["rule"].apply(match)
+
+                # determine which agents were deleted and which are new
+                state, to_delete, to_add = update_state(state, match, produced_agents)
+
+                for rule in self.rules:
+                    # update of matching map
+                    rule.update_matching_map(to_add, to_delete)
             else:
                 rates_sum = random.uniform(0.5, 0.9)
 
             # update time
             time += random.expovariate(rates_sum)
             collected_agents = collected_agents.union(set(state))
-
-            for rule in self.rules:
-                # TODO: update of matching map
-                rule.update_matching_map(state)
+            history[time] = state
 
 
 def call_storm(command: str, files: list, storm_local: bool):
@@ -359,3 +362,13 @@ def call_local_storm(command: str):
         return stdout
     else:
         raise StormNotAvailable
+
+
+def update_state(state, consumed, produced):
+    consumed = collections.Counter(consumed)
+    produced = collections.Counter(produced)
+
+    deleted = set(state) - set(state - consumed)
+    added = set(produced) - set(state)
+    state = state - consumed + produced
+    return state, deleted, added
