@@ -296,27 +296,11 @@ class Model:
                 match = sorted_candidates.iloc[0]["match"]
                 produced_agents = sorted_candidates.iloc[0]["rule"].apply(match)
 
-                print("---------------------------------------------------")
-                print("RULE:", sorted_candidates.iloc[0]["rule"])
-                print("STATE:", state)
-                print('MATCH:', match)
-
                 # determine which agents were deleted and which are new
                 state, to_delete, to_add = update_state(state, match, produced_agents)
-
-                print('new STATE:', state)
-                print('to_delete:', to_delete)
-                print('to_add:', to_add)
-
-                print(' +++++++++++++++ rules maps ++++++++++++++++++')
                 for rule in self.rules:
                     # update of matching map
                     rule.update_matching_map(to_add, to_delete)
-                    print("RULE:", rule)
-                    print(rule.matching_map)
-
-                print(" +++++++++++++++++++++++++++++++++++++++++++++")
-
             else:
                 rates_sum = random.uniform(0.5, 0.9)
 
@@ -324,10 +308,19 @@ class Model:
             time += random.expovariate(rates_sum)
             collected_agents = collected_agents.union(set(state))
             history[time] = state
-            print('TIME:', time)
 
+        # create pandas DataFrame
+        ordered_agents = list(collected_agents)
+        header = list(map(str, ordered_agents))
+        df = pd.DataFrame(columns=header)
         for time in history:
-            print(time, ": ", history[time])
+            vector = [history[time][agent] for agent in ordered_agents]
+            df.loc[time] = vector
+
+        # TODO: change index?
+        # df.index.name = 'times'
+        # df.reset_index(inplace=True)
+        return df
 
 
 def call_storm(command: str, files: list, storm_local: bool):
