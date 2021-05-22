@@ -296,12 +296,27 @@ class Model:
                 match = sorted_candidates.iloc[0]["match"]
                 produced_agents = sorted_candidates.iloc[0]["rule"].apply(match)
 
+                print("---------------------------------------------------")
+                print("RULE:", sorted_candidates.iloc[0]["rule"])
+                print("STATE:", state)
+                print('MATCH:', match)
+
                 # determine which agents were deleted and which are new
                 state, to_delete, to_add = update_state(state, match, produced_agents)
 
+                print('new STATE:', state)
+                print('to_delete:', to_delete)
+                print('to_add:', to_add)
+
+                print(' +++++++++++++++ rules maps ++++++++++++++++++')
                 for rule in self.rules:
                     # update of matching map
                     rule.update_matching_map(to_add, to_delete)
+                    print("RULE:", rule)
+                    print(rule.matching_map)
+
+                print(" +++++++++++++++++++++++++++++++++++++++++++++")
+
             else:
                 rates_sum = random.uniform(0.5, 0.9)
 
@@ -309,6 +324,10 @@ class Model:
             time += random.expovariate(rates_sum)
             collected_agents = collected_agents.union(set(state))
             history[time] = state
+            print('TIME:', time)
+
+        for time in history:
+            print(time, ": ", history[time])
 
 
 def call_storm(command: str, files: list, storm_local: bool):

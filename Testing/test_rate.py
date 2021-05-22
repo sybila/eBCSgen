@@ -45,6 +45,10 @@ class TestRate(unittest.TestCase):
 
         self.rate_2 = Core.Rate.Rate(self.parser.parse(rate_expr).data)
 
+        rate_expr = "(3.0*[K()::cyt])/(2.0*v_1)"
+
+        self.rate_3 = Core.Rate.Rate(self.parser.parse(rate_expr).data)
+
         # states
 
         self.state_1 = State(np.array([2, 3]))
@@ -89,3 +93,8 @@ class TestRate(unittest.TestCase):
         rate = Core.Rate.Rate(self.parser.parse(rate_expr).data)
 
         self.assertEqual(rate.reduce_context(), self.rate_1)
+
+    def test_evaluate_direct(self):
+        values = {self.c1: 3}
+        params = {"v_1": 5}
+        self.assertEqual(self.rate_3.evaluate_direct(values, params), 9/10)
