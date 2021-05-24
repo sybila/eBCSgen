@@ -432,151 +432,151 @@ class TestModel(unittest.TestCase):
             v_1 = 0.05
             k2 = 0.12
             """
-    #
-    # def test_str(self):
-    #     model = self.model_parser.parse(self.model_str_1).data
-    #     back_to_str = repr(model)
-    #     parsed_again = self.model_parser.parse(back_to_str).data
-    #     self.assertEqual(model, parsed_again)
-    #
-    # def test_comments(self):
-    #     model_with_comments = self.model_parser.parse(self.model_with_comments)
-    #     model_without_comments = self.model_parser.parse(self.model_str_2).data
-    #
-    #     self.assertEqual(model_with_comments.data, model_without_comments)
-    #
-    # def test_parser(self):
-    #     self.assertEqual(self.model_parser.parse(self.model_str_1).data, self.model)
-    #
-    # def test_signatures(self):
-    #     model = self.model_parser.parse(self.model_str_2).data
-    #     self.assertEqual(model.atomic_signature, {'K': {'c', 'i', 'p'}, 'T': {'e', 'a', 'o', 'j'},
-    #                                               'P': {'g', 'f'}, 'N': {'l'}})
-    #     self.assertEqual(model.structure_signature, {'X': {'K', 'T'}, 'Y': {'P', 'N'}})
-    #
-    # def test_to_vector_model(self):
-    #     model = self.model_parser.parse(self.model_str_1).data
-    #     self.assertTrue(model.to_vector_model() == self.vm_1)
-    #
-    # def test_parser_errors(self):
-    #     self.assertEqual(self.model_parser.parse(self.model_wrong_1).data,
-    #                      {"unexpected": ";", "expected": {'?', 'name'}, "line": 3, "column": 37})
-    #
-    #     self.assertEqual(self.model_parser.parse(self.model_wrong_2).data,
-    #                      {"expected": {'decimal', '#! inits', ']', '#! definitions', '=>', '@', 'int',
-    #                                    '+', 'name', ';'},
-    #                       "line": 3, "column": 26, "unexpected": "="})
-    #
-    # def test_zooming_syntax(self):
-    #     model_abstract = self.model_parser.parse(self.model_with_complexes).data
-    #     model_base = self.model_parser.parse(self.model_without_complexes).data
-    #     self.assertEqual(model_abstract, model_base)
-    #
-    # def test_variables(self):
-    #     model_abstract = self.model_parser.parse(self.model_with_variable).data
-    #     model_base = self.model_parser.parse(self.model_without_variable).data
-    #     self.assertEqual(model_abstract, model_base)
-    #
-    # def test_redundant(self):
-    #     model = self.model_parser.parse(self.model_with_redundant).data
-    #     model.eliminate_redundant()
-    #
-    #     model_eliminated = self.model_parser.parse(repr(model)).data
-    #     model_check = self.model_parser.parse(self.model_without_redundant).data
-    #     self.assertEqual(model_eliminated, model_check)
-    #
-    # def test_reduce_context(self):
-    #     model = self.model_parser.parse(self.model_with_context).data
-    #     model.reduce_context()
-    #
-    #     model_check = self.model_parser.parse(self.model_without_context).data
-    #     self.assertEqual(model, model_check)
-    #
-    # def test_nonreachability(self):
-    #     complex_parser = Parser("rate_complex")
-    #     agent = "K(S{a}).A{a}::cyt"
-    #     complex = complex_parser.parse(agent).data.children[0]
-    #
-    #     model_reach = self.model_parser.parse(self.model_reachable).data
-    #     model_nonreach = self.model_parser.parse(self.model_nonreachable).data
-    #
-    #     self.assertTrue(model_reach.static_non_reachability(complex))
-    #     self.assertFalse(model_nonreach.static_non_reachability(complex))
-    #
-    # def test_parametrised_model(self):
-    #     model = self.model_parser.parse(self.model_parametrised).data
-    #     self.assertTrue(len(model.params) == 2)
-    #
-    # def test_create_complex_labels(self):
-    #     model = Model(set(), collections.Counter(), dict(), set())
-    #     complex_parser = Parser("rate_complex")
-    #     complex_1 = complex_parser.parse("K(S{i},T{a}).B{o}::cyt").data.children[0]
-    #     complex_2 = complex_parser.parse("K(S{a},T{a}).B{o}::cyt").data.children[0]
-    #     complex_3 = complex_parser.parse("K(S{a},T{i}).B{o}::cyt").data.children[0]
-    #     complex_abstract = complex_parser.parse("K(S{a}).B{_}::cyt").data.children[0]
-    #
-    #     ordering = (complex_1, complex_2, complex_3)
-    #     complexes = [complex_2, complex_abstract, complex_1]
-    #
-    #     result_labels = {complex_2: "VAR_1",complex_abstract: "ABSTRACT_VAR_12", complex_1: "VAR_0"}
-    #     result_formulas = ['ABSTRACT_VAR_12 = VAR_1+VAR_2; // K(S{a}).B{_}::cyt']
-    #
-    #     labels, prism_formulas = model.create_complex_labels(complexes, ordering)
-    #     self.assertEqual(labels, result_labels)
-    #     self.assertEqual(prism_formulas, result_formulas)
-    #
-    # def test_create_AP_labels(self):
-    #     model = Model(set(), collections.Counter(), dict(), set())
-    #
-    #     complex_parser = Parser("rate_complex")
-    #     complex_1 = complex_parser.parse("K(S{i},T{a}).B{o}::cyt").data.children[0]
-    #     complex_2 = complex_parser.parse("K(S{a},T{a}).B{o}::cyt").data.children[0]
-    #     complex_3 = complex_parser.parse("K(S{a},T{i}).B{o}::cyt").data.children[0]
-    #
-    #     complex_abstract = complex_parser.parse("K(S{a}).B{_}::cyt").data.children[0]
-    #
-    #     ordering = (complex_1, complex_2, complex_3)
-    #
-    #     APs = [Core.Formula.AtomicProposition(complex_abstract, " >= ", "3"),
-    #            Core.Formula.AtomicProposition(complex_1, " < ", 2)]
-    #
-    #     s1 = State(np.array((1, 2, 2)))
-    #     s2 = State(np.array((5, 1, 1)))
-    #     s3 = State(np.array((2, 4, 3)))
-    #     s4 = State(np.array((1, 4, 3)))
-    #
-    #     states_encoding = {s1: 1, s2: 2, s3: 3, s4: 4}
-    #
-    #     result_AP_lables = {APs[0]: 'property_0', APs[1]: 'property_1'}
-    #     result_state_labels = {1: {'property_0', 'property_1'},
-    #                            3: {'property_0', 'init'},
-    #                            4: {'property_0', 'property_1'}}
-    #
-    #     ts = TS.TransitionSystem.TransitionSystem(ordering)
-    #     ts.states_encoding = states_encoding
-    #     ts.init = 3
-    #
-    #     state_labels, AP_lables = model.create_AP_labels(APs, ts, 0)
-    #     self.assertEqual(state_labels, result_state_labels)
-    #     self.assertEqual(AP_lables, result_AP_lables)
-    #
-    # def test_create_unique_agents(self):
-    #     model = self.model_parser.parse(self.miyoshi).data
-    #
-    #     reactions = set()
-    #     unique_complexes = set()
-    #
-    #     for rule in model.rules:
-    #         reactions |= rule.create_reactions(model.atomic_signature, model.structure_signature)
-    #
-    #     for reaction in reactions:
-    #         unique_complexes |= set(reaction.lhs.to_counter()) | set(reaction.rhs.to_counter())
-    #
-    #     unique_complexes |= set(model.init)
-    #
-    #     ordering = model.create_ordering()
-    #     self.assertEqual(unique_complexes, set(ordering))
 
-    def test_network_free_simulation(self):
-        model = self.model_parser.parse(self.miyoshi_non_param).data
-        model.network_free_simulation(5)
+    def test_str(self):
+        model = self.model_parser.parse(self.model_str_1).data
+        back_to_str = repr(model)
+        parsed_again = self.model_parser.parse(back_to_str).data
+        self.assertEqual(model, parsed_again)
+
+    def test_comments(self):
+        model_with_comments = self.model_parser.parse(self.model_with_comments)
+        model_without_comments = self.model_parser.parse(self.model_str_2).data
+
+        self.assertEqual(model_with_comments.data, model_without_comments)
+
+    def test_parser(self):
+        self.assertEqual(self.model_parser.parse(self.model_str_1).data, self.model)
+
+    def test_signatures(self):
+        model = self.model_parser.parse(self.model_str_2).data
+        self.assertEqual(model.atomic_signature, {'K': {'c', 'i', 'p'}, 'T': {'e', 'a', 'o', 'j'},
+                                                  'P': {'g', 'f'}, 'N': {'l'}})
+        self.assertEqual(model.structure_signature, {'X': {'K', 'T'}, 'Y': {'P', 'N'}})
+
+    def test_to_vector_model(self):
+        model = self.model_parser.parse(self.model_str_1).data
+        self.assertTrue(model.to_vector_model() == self.vm_1)
+
+    def test_parser_errors(self):
+        self.assertEqual(self.model_parser.parse(self.model_wrong_1).data,
+                         {"unexpected": ";", "expected": {'?', 'name'}, "line": 3, "column": 37})
+
+        self.assertEqual(self.model_parser.parse(self.model_wrong_2).data,
+                         {"expected": {'decimal', '#! inits', ']', '#! definitions', '=>', '@', 'int',
+                                       '+', 'name', ';'},
+                          "line": 3, "column": 26, "unexpected": "="})
+
+    def test_zooming_syntax(self):
+        model_abstract = self.model_parser.parse(self.model_with_complexes).data
+        model_base = self.model_parser.parse(self.model_without_complexes).data
+        self.assertEqual(model_abstract, model_base)
+
+    def test_variables(self):
+        model_abstract = self.model_parser.parse(self.model_with_variable).data
+        model_base = self.model_parser.parse(self.model_without_variable).data
+        self.assertEqual(model_abstract, model_base)
+
+    def test_redundant(self):
+        model = self.model_parser.parse(self.model_with_redundant).data
+        model.eliminate_redundant()
+
+        model_eliminated = self.model_parser.parse(repr(model)).data
+        model_check = self.model_parser.parse(self.model_without_redundant).data
+        self.assertEqual(model_eliminated, model_check)
+
+    def test_reduce_context(self):
+        model = self.model_parser.parse(self.model_with_context).data
+        model.reduce_context()
+
+        model_check = self.model_parser.parse(self.model_without_context).data
+        self.assertEqual(model, model_check)
+
+    def test_nonreachability(self):
+        complex_parser = Parser("rate_complex")
+        agent = "K(S{a}).A{a}::cyt"
+        complex = complex_parser.parse(agent).data.children[0]
+
+        model_reach = self.model_parser.parse(self.model_reachable).data
+        model_nonreach = self.model_parser.parse(self.model_nonreachable).data
+
+        self.assertTrue(model_reach.static_non_reachability(complex))
+        self.assertFalse(model_nonreach.static_non_reachability(complex))
+
+    def test_parametrised_model(self):
+        model = self.model_parser.parse(self.model_parametrised).data
+        self.assertTrue(len(model.params) == 2)
+
+    def test_create_complex_labels(self):
+        model = Model(set(), collections.Counter(), dict(), set())
+        complex_parser = Parser("rate_complex")
+        complex_1 = complex_parser.parse("K(S{i},T{a}).B{o}::cyt").data.children[0]
+        complex_2 = complex_parser.parse("K(S{a},T{a}).B{o}::cyt").data.children[0]
+        complex_3 = complex_parser.parse("K(S{a},T{i}).B{o}::cyt").data.children[0]
+        complex_abstract = complex_parser.parse("K(S{a}).B{_}::cyt").data.children[0]
+
+        ordering = (complex_1, complex_2, complex_3)
+        complexes = [complex_2, complex_abstract, complex_1]
+
+        result_labels = {complex_2: "VAR_1",complex_abstract: "ABSTRACT_VAR_12", complex_1: "VAR_0"}
+        result_formulas = ['ABSTRACT_VAR_12 = VAR_1+VAR_2; // K(S{a}).B{_}::cyt']
+
+        labels, prism_formulas = model.create_complex_labels(complexes, ordering)
+        self.assertEqual(labels, result_labels)
+        self.assertEqual(prism_formulas, result_formulas)
+
+    def test_create_AP_labels(self):
+        model = Model(set(), collections.Counter(), dict(), set())
+
+        complex_parser = Parser("rate_complex")
+        complex_1 = complex_parser.parse("K(S{i},T{a}).B{o}::cyt").data.children[0]
+        complex_2 = complex_parser.parse("K(S{a},T{a}).B{o}::cyt").data.children[0]
+        complex_3 = complex_parser.parse("K(S{a},T{i}).B{o}::cyt").data.children[0]
+
+        complex_abstract = complex_parser.parse("K(S{a}).B{_}::cyt").data.children[0]
+
+        ordering = (complex_1, complex_2, complex_3)
+
+        APs = [Core.Formula.AtomicProposition(complex_abstract, " >= ", "3"),
+               Core.Formula.AtomicProposition(complex_1, " < ", 2)]
+
+        s1 = State(np.array((1, 2, 2)))
+        s2 = State(np.array((5, 1, 1)))
+        s3 = State(np.array((2, 4, 3)))
+        s4 = State(np.array((1, 4, 3)))
+
+        states_encoding = {s1: 1, s2: 2, s3: 3, s4: 4}
+
+        result_AP_lables = {APs[0]: 'property_0', APs[1]: 'property_1'}
+        result_state_labels = {1: {'property_0', 'property_1'},
+                               3: {'property_0', 'init'},
+                               4: {'property_0', 'property_1'}}
+
+        ts = TS.TransitionSystem.TransitionSystem(ordering)
+        ts.states_encoding = states_encoding
+        ts.init = 3
+
+        state_labels, AP_lables = model.create_AP_labels(APs, ts, 0)
+        self.assertEqual(state_labels, result_state_labels)
+        self.assertEqual(AP_lables, result_AP_lables)
+
+    def test_create_unique_agents(self):
+        model = self.model_parser.parse(self.miyoshi).data
+
+        reactions = set()
+        unique_complexes = set()
+
+        for rule in model.rules:
+            reactions |= rule.create_reactions(model.atomic_signature, model.structure_signature)
+
+        for reaction in reactions:
+            unique_complexes |= set(reaction.lhs.to_counter()) | set(reaction.rhs.to_counter())
+
+        unique_complexes |= set(model.init)
+
+        ordering = model.create_ordering()
+        self.assertEqual(unique_complexes, set(ordering))
+
+    # def test_network_free_simulation(self):
+    #     model = self.model_parser.parse(self.miyoshi_non_param).data
+    #     model.network_free_simulation(5)

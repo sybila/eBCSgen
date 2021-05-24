@@ -261,7 +261,7 @@ class Model:
         state_labels[ts.init] = state_labels.get(ts.init, set()) | {"init"}
         return state_labels, AP_lables
 
-    def network_free_simulation(self,  max_time: float):
+    def network_free_simulation(self, max_time: float):
         # TODO include regulations
         state = copy.deepcopy(self.init)
         for rule in self.rules:
@@ -285,6 +285,7 @@ class Model:
 
             if not candidate_rules.empty:
                 rates_sum = candidate_rules['rate'].sum()
+                print(rates_sum)
                 sorted_candidates = candidate_rules.sort_values(by=["rate"])
                 sorted_candidates["cumsum"] = sorted_candidates["rate"].cumsum()
 
@@ -317,9 +318,8 @@ class Model:
             vector = [history[time][agent] for agent in ordered_agents]
             df.loc[time] = vector
 
-        # TODO: change index?
-        # df.index.name = 'times'
-        # df.reset_index(inplace=True)
+        df.index.name = 'times'
+        df.reset_index(inplace=True)
         return df
 
 
