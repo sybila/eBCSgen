@@ -285,7 +285,6 @@ class Model:
 
             if not candidate_rules.empty:
                 rates_sum = candidate_rules['rate'].sum()
-                print(rates_sum)
                 sorted_candidates = candidate_rules.sort_values(by=["rate"])
                 sorted_candidates["cumsum"] = sorted_candidates["rate"].cumsum()
 

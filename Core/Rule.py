@@ -211,7 +211,7 @@ class Rule:
         for (state_complex, count) in state.items():
             for agent in agents:
                 if agent.compatible(state_complex):
-                    values[agent] = count
+                    values[agent] = values.get(agent, 0) + count
         return self.rate.evaluate_direct(values, params)
 
     def is_applicable(self):
