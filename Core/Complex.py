@@ -116,22 +116,22 @@ class Complex:
             output_complexes.add(Complex(list(result), self.compartment))
         return output_complexes
 
-    def align_match(self, agents):
+    def align_match(self, complex):
         """
         Align self.agents based on given order.
         An alignment must exist (because respective complex is compatible)
-        If multiple options, choose one randomly.
 
-        @param agents: order of agents
+        @param complex: given reference (from lhs) complex
         @return: aligned self.agents
         """
-        choices = align_agents(agents, self.agents)
-        return random.choice(choices)
+        return align_agents(complex.agents, self.agents)
 
 
 def align_agents(ordered, to_align):
     """
     Recursively align two lists of agents based on compatibility.
+
+    TODO: recognize equal agents when aligning them !!!
 
     @param ordered: reference list of agents
     @param to_align: target list of agents

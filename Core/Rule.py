@@ -170,34 +170,6 @@ class Rule:
         """
         return self.to_reaction().create_all_compatible(atomic_signature, structure_signature)
 
-    def create_matching_map(self, state):
-        """
-        Identifies compatible complexes from given state for each complex in LHS of rule.
-
-        @param state: given state
-        """
-        self.matching_map = []
-        for lhs_complex in self.lhs.agents:
-            matches = set()
-            for state_complex in list(state):
-                if lhs_complex.compatible(state_complex):
-                    matches.add(state_complex)
-            self.matching_map.append(matches)
-
-    def update_matching_map(self, to_add, to_delete):
-        """
-        Updates matching map with deleted and added complexes.
-
-        @param to_add: agents to be added
-        @param to_delete: agents to be discarded
-        """
-        for i, lhs_complex in enumerate(self.lhs.agents):
-            for delete_complex in to_delete:
-                self.matching_map[i].discard(delete_complex)
-            for add_complex in to_add:
-                if lhs_complex.compatible(add_complex):
-                    self.matching_map[i].add(add_complex)
-
     def evaluate_rate(self, state, params):
         """
         Evaluate rate based on current state and parameter values.
@@ -213,51 +185,39 @@ class Rule:
                     values[agent] = values.get(agent, 0) + count
         return self.rate.evaluate_direct(values, params)
 
-    def is_applicable(self):
+    def match(self, state, all=False):
         """
-        Check if every complex from LHS has candidates for match.
-
-        @return: True of match is possible
-        """
-        return [] not in self.matching_map
-
-    def choose_a_match(self, state, all=False):
-        """
-        Choose possible matchings of the rule to given state.
+        Find all possible matches of the rule to given state.
 
         @param state: given state
         @param all: bool to indicate if choose one matching randomly or return all of them
-        @return: random match/all matchings
+        @return: random match/all matches
         """
-        if self.is_applicable():
-            choices = find_all_matches(deepcopy(self.matching_map), deepcopy(state))
-            if choices:
-                if not all:
-                    return random.choice(choices)
-                else:
-                    return choices
-        return None
+        matches = find_all_matches(self.lhs.agents, state)
+        matches = [sum(match, []) for match in matches]
+        print("RULE:", self)
+        print(len(matches))
+        print("\n")
+        if len(matches) == 0:
+            return None
+        if not all:
+            return random.choice(matches)
+        return matches
 
-    def apply(self, match):
+    def replace(self, aligned_match):
         """
         Apply rule to chosen match.
         Match contains agents which satisfy LHS of the rule an can be safely replaced based on RHS
 
-        @param match: complexes fitting LHS of the rule
+        @param aligned_match: complexes fitting LHS of the rule
         """
-        # align agents based on LHS
-        aligned_agents = []
-        for i, pair in enumerate(list(filter(lambda item: item[0] < self.mid, self.complexes))):
-            agents = self.agents[pair[0]:pair[1]+1]
-            aligned_agents += match[i].align_match(agents)
-
         # replace respective agents
         resulting_rhs = []
         for i, rhs_agent in enumerate(self.agents[self.mid:]):
-            if len(aligned_agents) <= i:
+            if len(aligned_match) <= i:
                 resulting_rhs.append(rhs_agent)
             else:
-                resulting_rhs.append(rhs_agent.replace(aligned_agents[i]))
+                resulting_rhs.append(rhs_agent.replace(aligned_match[i]))
 
         # construct resulting complexes
         output_complexes = []
@@ -267,20 +227,24 @@ class Rule:
         return output_complexes
 
 
-def find_all_matches(matching_map, state):
+def find_all_matches(lhs_agents, state):
     """
-    Finds all possible matchings which actually can be used for given state (validate stoichiometry).
+    Finds all possible matches which actually can be used for given state.
 
-    @param matching_map: given matching map of a rule
+    @param lhs_agents: given LHS of a rule
     @param state: state to be applied to
     @return: candidates for match
     """
     choices = []
-    if len(matching_map) == 0:
+    if len(lhs_agents) == 0:
         return [choices]
-    for match in matching_map[0]:
-        if match in state and state[match] > 0:
-            state[match] -= 1
-            for branch in find_all_matches(matching_map[1:], deepcopy(state)):
-                choices.append([match] + branch)
+
+    lhs_complex = lhs_agents[0]
+    for candidate in list(state):
+        if lhs_complex.compatible(candidate):
+            state[candidate] -= 1
+            aligns = candidate.align_match(lhs_complex)
+            for branch in find_all_matches(lhs_agents[1:], deepcopy(+state)):
+                for align in aligns:
+                    choices.append([align] + branch)
     return choices
