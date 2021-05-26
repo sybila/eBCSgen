@@ -281,6 +281,7 @@ class Model:
         time = 0.0
         history[time] = state
         while time < max_time:
+            print('TIME', time)
             candidate_rules = pd.DataFrame(data=[(rule,
                                                   rule.evaluate_rate(state, self.definitions),
                                                   rule.match(state)) for rule in self.rules],
@@ -288,8 +289,6 @@ class Model:
 
             # drop rules which cannot be actually used (do not pass stoichiometry check)
             candidate_rules = candidate_rules.dropna()
-
-            print(candidate_rules)
 
             if not candidate_rules.empty:
                 rates_sum = candidate_rules['rate'].sum()

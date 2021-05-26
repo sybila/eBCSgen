@@ -193,11 +193,10 @@ class Rule:
         @param all: bool to indicate if choose one matching randomly or return all of them
         @return: random match/all matches
         """
+        state = deepcopy(state)
         matches = find_all_matches(self.lhs.agents, state)
         matches = [sum(match, []) for match in matches]
-        print("RULE:", self)
-        print(len(matches))
-        print("\n")
+
         if len(matches) == 0:
             return None
         if not all:

@@ -124,26 +124,24 @@ class Complex:
         @param complex: given reference (from lhs) complex
         @return: aligned self.agents
         """
-        return align_agents(complex.agents, self.agents)
+        return align_agents(complex.agents, collections.Counter(self.agents))
 
 
 def align_agents(ordered, to_align):
     """
     Recursively align two lists of agents based on compatibility.
 
-    TODO: recognize equal agents when aligning them !!!
-
     @param ordered: reference list of agents
-    @param to_align: target list of agents
+    @param to_align: target counter of agents
     @return: all possible alignments
     """
     choices = []
     if len(ordered) == 0:
         return [choices]
-    for agent in to_align:
+    for agent in list(to_align):
         if ordered[0].compatible(agent):
             new_to_align = deepcopy(to_align)
-            new_to_align.remove(agent)
-            for branch in align_agents(ordered[1:], new_to_align):
+            new_to_align[agent] -= 1
+            for branch in align_agents(ordered[1:], +new_to_align):
                 choices.append([agent] + branch)
     return choices
