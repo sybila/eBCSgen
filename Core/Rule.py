@@ -206,10 +206,9 @@ class Rule:
         @param params: mapping of params to its value
         @return: a real number of the rate
         """
-        agents, _ = self.rate.get_params_and_agents()
         values = dict()
         for (state_complex, count) in state.items():
-            for agent in agents:
+            for agent in self.rate_agents:
                 if agent.compatible(state_complex):
                     values[agent] = values.get(agent, 0) + count
         return self.rate.evaluate_direct(values, params)

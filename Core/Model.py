@@ -269,6 +269,7 @@ class Model:
             rule.lhs, _ = rule.create_complexes()
             # create map of possible matchings for init
             rule.create_matching_map(state)
+            rule.rate_agents, _ = rule.rate.get_params_and_agents()
 
         history = dict()
         collected_agents = set(state)
