@@ -55,3 +55,7 @@ class TestStructure(unittest.TestCase):
 
     def test_reduce_context(self):
         self.assertEqual(self.s11.reduce_context(), self.s12)
+
+    def test_replace(self):
+        self.assertEqual(self.s7.replace(self.s8), self.s9)
+        self.assertEqual(self.s12.replace(self.s8), self.s8)

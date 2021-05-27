@@ -85,3 +85,14 @@ class AtomicAgent:
         :return: new AtomicAgent with reduced context
         """
         return AtomicAgent(self.name, "_")
+
+    def replace(self, agent):
+        """
+        Replace agent based on a pattern.
+
+        @param agent: given agent to be changed
+        @return: changed agent
+        """
+        if self.state == "_":
+            return AtomicAgent(self.name, agent.state)
+        return AtomicAgent(self.name, self.state)

@@ -12,8 +12,8 @@ from Errors.RatesNotSpecifiedError import RatesNotSpecifiedError
 
 """
 usage: Simulation.py [-h] --model MODEL --output OUTPUT --deterministic
-                     DETERMINISTIC --runs RUNS --max_time MAX_TIME --volume
-                     VOLUME --step STEP
+                     DETERMINISTIC --direct DIRECT --runs RUNS 
+                     --max_time MAX_TIME --volume VOLUME --step STEP
 
 Simulation
 
@@ -21,6 +21,7 @@ required arguments:
   --model MODEL
   --output OUTPUT
   --deterministic DETERMINISTIC
+  --direct DIRECT
   --runs RUNS
   --max_time MAX_TIME
   --volume VOLUME
@@ -35,6 +36,7 @@ required = args_parser.add_argument_group('required arguments')
 required.add_argument('--model', type=str, required=True)
 required.add_argument('--output', type=str, required=True)
 required.add_argument('--deterministic', required=True)
+required.add_argument('--direct', required=True)
 required.add_argument('--runs', type=int, required=True)
 required.add_argument('--max_time', type=float, required=True)
 required.add_argument('--volume', type=float, required=True)
@@ -53,11 +55,15 @@ if model.success:
     if not model.data.all_rates:
         raise RatesNotSpecifiedError
 
-    vm = model.data.to_vector_model()
     if eval(args.deterministic):
+        vm = model.data.to_vector_model()
         df = vm.deterministic_simulation(args.max_time, args.volume, args.step)
     else:
-        df = vm.stochastic_simulation(args.max_time, args.runs)
+        if eval(args.direct):
+            df = model.data.network_free_simulation(args.max_time)
+        else:
+            vm = model.data.to_vector_model()
+            df = vm.stochastic_simulation(args.max_time, args.runs)
 
     df.to_csv(args.output, index=None, header=True)
 else:

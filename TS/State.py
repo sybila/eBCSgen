@@ -123,3 +123,25 @@ class State:
         aps = "'" if apostrophe else ""
         vars = list(map(lambda i: "(VAR_{}{}={})".format(i, aps, self.sequence[i]), range(len(self))))
         return " & ".join(vars)
+
+
+class DirectState:
+    def __init__(self, multiset):
+        self.multiset = multiset
+        self.is_inf = self.is_hell()
+
+    def __eq__(self, other):
+        return self.multiset == other.multiset
+
+    def __ge__(self, other) -> bool:
+        return all([self.multiset[agent] >= other.multiset.get(agent, 0) for agent in self.multiset])
+
+    def __hash__(self):
+        return hash(frozenset(self.multiset.items()))
+
+    def is_hell(self):
+        """
+        Checks whether state is special "hell" infinite state.
+        :return: True if is special
+        """
+        return all([np.isinf(self.multiset[agent]) for agent in self.multiset])
