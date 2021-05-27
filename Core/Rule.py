@@ -225,6 +225,18 @@ class Rule:
 
         return output_complexes
 
+    def reconstruct_complexes_from_match(self, match):
+        """
+        Create complexes from agents matched to the LHS
+
+        @param match: sequence of
+        @return:
+        """
+        output_complexes = []
+        for (f, t) in list(filter(lambda item: item[1] < self.mid, self.complexes)):
+            output_complexes.append(Complex(match[f:t + 1], self.compartments[f]))
+        return output_complexes
+
 
 def find_all_matches(lhs_agents, state):
     """

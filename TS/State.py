@@ -1,3 +1,6 @@
+import collections
+from copy import deepcopy
+
 import numpy as np
 
 import Core.Formula
@@ -125,18 +128,26 @@ class State:
         return " & ".join(vars)
 
 
-class DirectState:
+class RegulatedState:
     def __init__(self, multiset):
         self.multiset = multiset
         self.is_inf = self.is_hell()
+        self.used_rules_path = []
+
+    def __str__(self):
+        return str(self.multiset)
+
+    def __repr__(self):
+        return str(self)
 
     def __eq__(self, other):
-        return self.multiset == other.multiset
+        return self.multiset == other.multiset and self.used_rules_path == other.used_rules_path
 
     def __ge__(self, other) -> bool:
         return all([self.multiset[agent] >= other.multiset.get(agent, 0) for agent in self.multiset])
 
     def __hash__(self):
+        # TODO: does not include path
         return hash(frozenset(self.multiset.items()))
 
     def is_hell(self):
@@ -145,3 +156,16 @@ class DirectState:
         :return: True if is special
         """
         return all([np.isinf(self.multiset[agent]) for agent in self.multiset])
+
+    def update_state(self, consumed, produced, used_rule_label):
+        consumed = collections.Counter(consumed)
+        produced = collections.Counter(produced)
+        new_state = RegulatedState(deepcopy(self.multiset - consumed + produced))
+        new_state.used_rules_path.append(used_rule_label)
+        return new_state
+
+    def to_vector(self, ordering):
+        vector = np.zeros(len(ordering))
+        for agent in self.multiset:
+            vector[ordering.index(agent)] = self.multiset[agent]
+        return State(vector)

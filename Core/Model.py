@@ -14,7 +14,7 @@ from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
 from Core.Side import Side
 from TS.DirectTS import DirectTS
-from TS.State import DirectState
+from TS.State import RegulatedState
 from TS.TSworker import DirectTSworker
 from TS.TransitionSystem import TransitionSystem
 from TS.VectorModel import VectorModel, handle_number_of_threads
@@ -281,7 +281,6 @@ class Model:
         time = 0.0
         history[time] = state
         while time < max_time:
-            print('TIME', time)
             candidate_rules = pd.DataFrame(data=[(rule,
                                                   rule.evaluate_rate(state, self.definitions),
                                                   rule.match(state)) for rule in self.rules],
@@ -301,9 +300,11 @@ class Model:
 
                 # apply chosen rule to matched agents
                 match = sorted_candidates.iloc[0]["match"]
-                produced_agents = sorted_candidates.iloc[0]["rule"].replace(match)
+                rule = sorted_candidates.iloc[0]["rule"]
+                produced_agents = rule.replace(match)
 
                 # update state based on match & replace operation
+                match = rule.reconstruct_complexes_from_match(match)
                 state = update_state(state, match, produced_agents)
             else:
                 rates_sum = random.uniform(0.5, 0.9)
@@ -328,10 +329,17 @@ class Model:
     def generate_direct_transition_system(self, ts=None, max_time: float = np.inf, max_size: float = np.inf):
         if not ts:
             ts = DirectTS()
-            ts.unprocessed = {DirectState(self.init)}
+            init = RegulatedState(self.init)
+            ts.unprocessed = {init}
+            ts.unique_complexes.update(set(init.multiset))
         else:
             pass
             # TODO: if a TS is given, extract all the data
+
+        for rule in self.rules:
+            # precompute complexes for each rule
+            rule.lhs, _ = rule.create_complexes()
+            rule.rate_agents, _ = rule.rate.get_params_and_agents()
 
         workers = [DirectTSworker(ts, self) for _ in range(multiprocessing.cpu_count())]
         for worker in workers:
@@ -343,7 +351,7 @@ class Model:
         try:
             while any([worker.work.is_set() for worker in workers]) \
                     and time.time() - start_time < max_time \
-                    and len(ts.processed) + len(ts.states_encoding) < max_size:
+                    and len(ts.processed) < max_size:
                 handle_number_of_threads(len(ts.unprocessed), workers)
                 time.sleep(1)
         except (KeyboardInterrupt, EOFError) as e:
@@ -356,7 +364,7 @@ class Model:
             time.sleep(1)
 
         # TODO: transform to classic TS (vectors)
-        normal_ts = ts.to_TS(self.init)
+        normal_ts = ts.to_TS(init)
         return normal_ts
 
 

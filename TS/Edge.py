@@ -80,6 +80,11 @@ class Edge:
         """
         return str(self.probability) + " : " + decoding[self.target].to_PRISM_string(True)
 
+    def to_vector(self, ordering):
+        source = self.source.to_vector(ordering)
+        target = self.target.to_vector(ordering)
+        return Edge(source, target, self.probability)
+
 
 def edge_from_dict(d: dict) -> Edge:
     """
