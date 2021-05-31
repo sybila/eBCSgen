@@ -363,7 +363,7 @@ class Model:
         while any([worker.is_alive() for worker in workers]):
             time.sleep(1)
 
-        # TODO: transform to classic TS (vectors)
+        # transform to classic TS (vectors)
         normal_ts = ts.to_TS(init)
         return normal_ts
 

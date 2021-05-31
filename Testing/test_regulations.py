@@ -2,8 +2,12 @@ import collections
 import unittest
 
 from Core.Model import Model
-from Core.Regulations.Programmed import Programmed
+from Regulations.ConcurrentFree import ConcurrentFree
+from Regulations.Conditional import Conditional
+from Regulations.Ordered import Ordered
+from Regulations.Programmed import Programmed
 from Parsing.ParseBCSL import Parser
+from Regulations.Regular import Regular
 
 
 class TestRegulations(unittest.TestCase):
@@ -36,3 +40,44 @@ class TestRegulations(unittest.TestCase):
         ts = self.model_mini.generate_direct_transition_system()
         ts.encode(ts.init)
         ts.save_to_json("Testing/regulated_ts.json")
+        self.fail()
+
+    def test_ordered(self):
+        regulation = {('r3', 'r1'), ('r1', 'r2')}
+        self.model_mini.regulation = Ordered(regulation)
+
+        ts = self.model_mini.generate_direct_transition_system()
+        ts.encode(ts.init)
+        ts.save_to_json("Testing/regulated_ts.json")
+        self.fail()
+
+    def test_conditional(self):
+        regulation = {'r3': {self.complex_parser.parse("A(S{a},T{i})::cell").data.children[0]},
+                      'r1': set(), 'r2': set()}
+        self.model_mini.regulation = Conditional(regulation)
+
+        ts = self.model_mini.generate_direct_transition_system()
+        ts.encode(ts.init)
+        ts.save_to_json("Testing/regulated_ts.json")
+        self.fail()
+
+    def test_concurrent_free(self):
+        regulation = {('r3', 'r2')}
+        self.model_mini.regulation = ConcurrentFree(regulation)
+
+        ts = self.model_mini.generate_direct_transition_system()
+        ts.encode(ts.init)
+        ts.save_to_json("Testing/regulated_ts.json")
+        self.fail()
+
+    def test_regular(self):
+        regulation = ('r1', 'r2')
+        self.model_mini.regulation = Regular(regulation)
+
+        ts = self.model_mini.generate_direct_transition_system()
+        ts.encode(ts.init)
+        ts.save_to_json("Testing/regulated_ts.json")
+        self.fail()
+
+    def test_interrupt(self):
+        self.fail()

@@ -1,7 +1,11 @@
-from Core.Regulations.Base import BaseRegulation
+from Regulations.Base import BaseRegulation
 
 
 class Programmed(BaseRegulation):
+    """
+    Regulation defined as successor function for every rule.
+    Only set of successor rules is allowed to be used in the next step.
+    """
     def filter(self, current_state, candidates):
         if len(current_state.used_rules_path) == 0:
             return candidates
