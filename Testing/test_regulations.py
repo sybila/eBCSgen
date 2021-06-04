@@ -81,3 +81,10 @@ class TestRegulations(unittest.TestCase):
 
     def test_interrupt(self):
         self.fail()
+
+    def test_network_free_simulation_regulated(self):
+        regulation = {'r1': {'r2'}}
+        self.model_mini.regulation = Programmed(regulation)
+
+        result = self.model_mini.network_free_simulation(5)
+        result.to_csv('Testing/regulated_sim.csv', index=None, header=True)

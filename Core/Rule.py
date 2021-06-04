@@ -179,7 +179,7 @@ class Rule:
         @return: a real number of the rate
         """
         values = dict()
-        for (state_complex, count) in state.items():
+        for (state_complex, count) in state.multiset.items():
             for agent in self.rate_agents:
                 if agent.compatible(state_complex):
                     values[agent] = values.get(agent, 0) + count
@@ -193,7 +193,7 @@ class Rule:
         @param all: bool to indicate if choose one matching randomly or return all of them
         @return: random match/all matches
         """
-        state = deepcopy(state)
+        state = deepcopy(state.multiset)
         matches = find_all_matches(self.lhs.agents, state)
         matches = [sum(match, []) for match in matches]
 

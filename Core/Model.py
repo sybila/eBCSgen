@@ -29,6 +29,7 @@ class Model:
         self.definitions = definitions  # dict str -> float
         self.params = params  # set of str
         self.all_rates = True  # indicates whether model is quantitative
+        self.regulation = None  # used to rules filtering, can be unspecified
 
         # autocomplete
         self.atomic_signature, self.structure_signature = self.extract_signatures()
@@ -269,17 +270,17 @@ class Model:
         return state_labels, AP_lables
 
     def network_free_simulation(self, max_time: float):
-        # TODO include regulations
-        state = copy.deepcopy(self.init)
+        state = RegulatedState(copy.deepcopy(self.init))
         for rule in self.rules:
             # precompute complexes for each rule
             rule.lhs, _ = rule.create_complexes()
             rule.rate_agents, _ = rule.rate.get_params_and_agents()
 
         history = dict()
-        collected_agents = set(state)
+        collected_agents = set(state.multiset)
         time = 0.0
-        history[time] = state
+        history[time] = state.multiset
+        used_rules_path = []
         while time < max_time:
             candidate_rules = pd.DataFrame(data=[(rule,
                                                   rule.evaluate_rate(state, self.definitions),
@@ -288,6 +289,12 @@ class Model:
 
             # drop rules which cannot be actually used (do not pass stoichiometry check)
             candidate_rules = candidate_rules.dropna()
+
+            if self.regulation:
+                rules = {item: None for item in candidate_rules['rule']}
+                state.used_rules_path = used_rules_path
+                applicable_rules = self.regulation.filter(state, rules)
+                candidate_rules = candidate_rules[candidate_rules['rule'].isin(applicable_rules)]
 
             if not candidate_rules.empty:
                 rates_sum = candidate_rules['rate'].sum()
@@ -305,14 +312,16 @@ class Model:
 
                 # update state based on match & replace operation
                 match = rule.reconstruct_complexes_from_match(match)
-                state = update_state(state, match, produced_agents)
+                state = RegulatedState(update_state(state.multiset, match, produced_agents))
+                if self.regulation:
+                    used_rules_path.append(rule.label)
             else:
                 rates_sum = random.uniform(0.5, 0.9)
 
             # update time
             time += random.expovariate(rates_sum)
-            collected_agents = collected_agents.union(set(state))
-            history[time] = state
+            collected_agents = collected_agents.union(set(state.multiset))
+            history[time] = state.multiset
 
         # create pandas DataFrame
         ordered_agents = list(collected_agents)
