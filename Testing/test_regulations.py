@@ -71,7 +71,7 @@ class TestRegulations(unittest.TestCase):
         self.fail()
 
     def test_regular(self):
-        regulation = ('r1', 'r2')
+        regulation = r'r1r2'  # r'(r1|r2|r3)*'
         self.model_mini.regulation = Regular(regulation)
 
         ts = self.model_mini.generate_direct_transition_system()
