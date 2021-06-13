@@ -59,7 +59,7 @@ class TestRegulations(unittest.TestCase):
         self.fail()
 
     def test_concurrent_free(self):
-        regulation = {('r1_S', 'r2'), ('r1_t', 'r2')}
+        regulation = {('r1_S', 'r2'), ('r1_T', 'r2')}
         self.model_mini.regulation = ConcurrentFree(regulation)
 
         ts = self.model_mini.generate_direct_transition_system()
@@ -67,11 +67,17 @@ class TestRegulations(unittest.TestCase):
         self.fail()
 
     def test_regular(self):
-        regulation = r'(r1_S r1_T | r1_T r1_S) r2'
+        # TODO not working properly
+        regulation = r'(r1_Sr1_Tr2|r1_Tr1_Sr2)'
         self.model_mini.regulation = Regular(regulation)
 
         ts = self.model_mini.generate_direct_transition_system()
         ts.export("Testing/regulations/regular_ts.json")
+        self.fail()
+
+    def test_no_regulation(self):
+        ts = self.model_mini.generate_direct_transition_system()
+        ts.export("Testing/regulations/no_regulation_ts.json")
         self.fail()
 
     def test_network_free_simulation_regulated(self):

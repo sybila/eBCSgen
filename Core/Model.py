@@ -338,12 +338,15 @@ class Model:
     def generate_direct_transition_system(self, ts=None, max_time: float = np.inf, max_size: float = np.inf):
         if not ts:
             ts = DirectTS()
-            if self.regulation.memory == 0:
-                ts.init = MultisetState(self.init)
-            elif self.regulation.memory == 1:
-                ts.init = OneStepMemoryState(self.init)
+            if self.regulation:
+                if self.regulation.memory == 0:
+                    ts.init = MultisetState(self.init)
+                elif self.regulation.memory == 1:
+                    ts.init = OneStepMemoryState(self.init)
+                else:
+                    ts.init = FullMemoryState(self.init)
             else:
-                ts.init = FullMemoryState(self.init)
+                ts.init = MultisetState(self.init)
             ts.unprocessed = {ts.init}
             ts.unique_complexes.update(set(ts.init.multiset))
         else:
