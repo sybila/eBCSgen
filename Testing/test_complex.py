@@ -1,3 +1,4 @@
+import collections
 import unittest
 
 import Parsing.ParseBCSL
@@ -110,6 +111,6 @@ class TestComplex(unittest.TestCase):
         pattern = complex_parser.parse(pattern).data.children[0]
 
         expected_result = {(self.s2, self.s7, self.s1), (self.s7, self.s2, self.s1)}
-        result = align_agents(pattern.agents, complex.agents)
+        result = align_agents(pattern.agents, collections.Counter(complex.agents))
         result = {tuple(item) for item in result}
         self.assertEqual(expected_result, result)
