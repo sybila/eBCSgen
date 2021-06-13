@@ -13,6 +13,6 @@ class Regular(BaseRegulation):
         self.memory = 2
 
     def filter(self, current_state, candidates):
-        path = "".join(current_state.used_rules_path)
+        path = "".join(current_state.used_rules)
         return {rule: values for rule, values in candidates.items()
                 if self.regulation.fullmatch(path + rule.label, partial=True) is not None}

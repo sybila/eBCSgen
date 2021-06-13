@@ -174,13 +174,13 @@ class OneStepMemoryState(MultisetState):
         self.used_rules = []
 
     def __eq__(self, other):
-        return self.multiset == other.multiset and self.used_rules == other.last_rule
+        return self.multiset == other.multiset and self.used_rules == other.used_rules
 
     def __ge__(self, other) -> bool:
         return all([self.multiset[agent] >= other.multiset.get(agent, 0) for agent in self.multiset])
 
     def __hash__(self):
-        return hash(frozenset(self.multiset.items())) + hash(self.used_rules[0])
+        return hash(frozenset(self.multiset.items())) + hash(tuple(self.used_rules))
 
     def update_state(self, consumed, produced, used_rule_label):
         consumed = collections.Counter(consumed)
@@ -202,7 +202,7 @@ class FullMemoryState(MultisetState):
         return all([self.multiset[agent] >= other.multiset.get(agent, 0) for agent in self.multiset])
 
     def __hash__(self):
-        return hash(frozenset(self.multiset.items())) + hash(tuple(self.used_rules))    
+        return hash(frozenset(self.multiset.items())) + hash(tuple(self.used_rules))
 
     def update_state(self, consumed, produced, used_rule_label):
         consumed = collections.Counter(consumed)

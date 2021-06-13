@@ -21,69 +21,66 @@ class TestRegulations(unittest.TestCase):
 
         rule_exp = "A(S{i})::cell => A(S{a})::cell @ k1*[A(S{i})::cell]"
         rule_1 = self.rule_parser.parse(rule_exp).data
-        rule_1.label = "r1"
+        rule_1.label = "r1_S"
 
-        rule_exp = "A(S{a})::cell => A(S{a})::cyt @ k2*[A(S{a})::cell]"
+        rule_exp = "A(T{i})::cell => A(T{a})::cell @ k2*[A(T{i})::cell]"
         rule_2 = self.rule_parser.parse(rule_exp).data
-        rule_2.label = "r2"
+        rule_2.label = "r1_T"
 
-        rule_exp = "A(S{a},T{i})::cell => A(S{a},T{a})::cell @ k3*[A(T{i})::cell]"
+        rule_exp = "A()::cell => A()::out @ k3*[A()::cell]"
         rule_3 = self.rule_parser.parse(rule_exp).data
-        rule_3.label = "r3"
+        rule_3.label = "r2"
 
         self.model_mini = Model({rule_1, rule_2, rule_3}, init, {'k1': 0.3, 'k2': 0.5, 'k3': 0.1}, set())
 
     def test_programmed(self):
-        regulation = {'r1': {'r2'}}
+        regulation = {'r1_S': {'r1_T', 'r2'}, 'r1_T': {'r1_S'}}
         self.model_mini.regulation = Programmed(regulation)
 
         ts = self.model_mini.generate_direct_transition_system()
         ts.encode(ts.init)
-        ts.save_to_json("Testing/regulated_ts.json")
+        ts.save_to_json("Testing/regulations/programmed_ts.json")
         self.fail()
 
     def test_ordered(self):
-        regulation = {('r3', 'r1'), ('r1', 'r2')}
+        regulation = {('r1_S', 'r2'), ('r1_T', 'r2')}
         self.model_mini.regulation = Ordered(regulation)
 
         ts = self.model_mini.generate_direct_transition_system()
         ts.encode(ts.init)
-        ts.save_to_json("Testing/regulated_ts.json")
+        ts.save_to_json("Testing/regulations/ordered_ts.json")
         self.fail()
 
     def test_conditional(self):
-        regulation = {'r3': {self.complex_parser.parse("A(S{a},T{i})::cell").data.children[0]},
-                      'r1': set(), 'r2': set()}
+        regulation = {'r2': {self.complex_parser.parse("A(S{a},T{i})::cell").data.children[0]},
+                      'r1_S': set(), 'r1_T': set()}
         self.model_mini.regulation = Conditional(regulation)
 
         ts = self.model_mini.generate_direct_transition_system()
         ts.encode(ts.init)
-        ts.save_to_json("Testing/regulated_ts.json")
+        ts.save_to_json("Testing/regulations/conditional_ts.json")
         self.fail()
 
     def test_concurrent_free(self):
-        regulation = {('r3', 'r2')}
+        regulation = {('r1_S', 'r2'), ('r1_t', 'r2')}
         self.model_mini.regulation = ConcurrentFree(regulation)
 
         ts = self.model_mini.generate_direct_transition_system()
         ts.encode(ts.init)
-        ts.save_to_json("Testing/regulated_ts.json")
+        ts.save_to_json("Testing/regulations/concurrent_free_ts.json")
         self.fail()
 
     def test_regular(self):
-        regulation = r'r1r2'  # r'(r1|r2|r3)*'
+        regulation = r'(r1_S r1_T | r1_T r1_S) r2'
         self.model_mini.regulation = Regular(regulation)
 
         ts = self.model_mini.generate_direct_transition_system()
         ts.encode(ts.init)
-        ts.save_to_json("Testing/regulated_ts.json")
-        self.fail()
-
-    def test_interrupt(self):
+        ts.save_to_json("Testing/regulations/regular_ts.json")
         self.fail()
 
     def test_network_free_simulation_regulated(self):
-        regulation = {'r1': {'r2'}}
+        regulation = {'r1_S': {'r1_T'}, 'r1_T': {'r2'}}
         self.model_mini.regulation = Programmed(regulation)
 
         result = self.model_mini.network_free_simulation(5)
