@@ -121,7 +121,7 @@ class DirectTSworker(threading.Thread):
                             if new_state in unique_states:
                                 unique_states[new_state].add_rate(applicable_rules[rule][0])
                             else:
-                                edge = Edge(state, new_state, applicable_rules[rule][0])
+                                edge = Edge(state, new_state, applicable_rules[rule][0], rule.label)
                                 unique_states[new_state] = edge
 
                     edges = set(unique_states.values())
@@ -134,7 +134,7 @@ class DirectTSworker(threading.Thread):
                             self.ts.edges.add(edge)
                     else:
                         # self loop to create correct DTMC
-                        self.ts.edges.add(Edge(state, state, 1))
+                        self.ts.edges.add(Edge(state, state, 1, 'ε'))
 
             except KeyError:
                 self.work.clear()

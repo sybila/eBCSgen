@@ -339,13 +339,13 @@ class Model:
         if not ts:
             ts = DirectTS()
             if self.regulation.memory == 0:
-                init = MultisetState(self.init)
+                ts.init = MultisetState(self.init)
             elif self.regulation.memory == 1:
-                init = OneStepMemoryState(self.init)
+                ts.init = OneStepMemoryState(self.init)
             else:
-                init = FullMemoryState(self.init)
-            ts.unprocessed = {init}
-            ts.unique_complexes.update(set(init.multiset))
+                ts.init = FullMemoryState(self.init)
+            ts.unprocessed = {ts.init}
+            ts.unique_complexes.update(set(ts.init.multiset))
         else:
             pass
             # TODO: if a TS is given, extract all the data
@@ -377,9 +377,7 @@ class Model:
         while any([worker.is_alive() for worker in workers]):
             time.sleep(1)
 
-        # transform to classic TS (vectors)
-        normal_ts = ts.to_TS(init)
-        return normal_ts
+        return ts
 
 
 def call_storm(command: str, files: list, storm_local: bool):

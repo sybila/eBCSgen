@@ -1,8 +1,9 @@
 class Edge:
-    def __init__(self, source, target, probability, encoded=False):
+    def __init__(self, source, target, probability, label=None, encoded=False):
         self.source = source
         self.target = target
         self.probability = probability
+        self.label = label
         self._is_encoded = encoded
 
     def __hash__(self):
@@ -70,7 +71,10 @@ class Edge:
 
         :return: dict representing the edge
         """
-        return {'s': self.source, 't': self.target, 'p': self.probability}
+        result = {'s': self.source, 't': self.target, 'p': self.probability}
+        if self.label:
+            result['label'] = self.label
+        return result
 
     def to_PRISM_string(self, decoding) -> str:
         """

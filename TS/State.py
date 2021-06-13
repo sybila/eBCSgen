@@ -164,8 +164,8 @@ class MultisetState:
     def to_vector(self, ordering):
         vector = np.zeros(len(ordering))
         for agent in self.multiset:
-            vector[ordering.index(agent)] = self.multiset[agent]
-        return MemorylessState(vector)
+            vector[ordering.index(agent)] = int(self.multiset[agent])
+        return tuple(vector)
 
 
 class OneStepMemoryState(MultisetState):

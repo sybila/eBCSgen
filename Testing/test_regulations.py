@@ -38,8 +38,7 @@ class TestRegulations(unittest.TestCase):
         self.model_mini.regulation = Programmed(regulation)
 
         ts = self.model_mini.generate_direct_transition_system()
-        ts.encode(ts.init)
-        ts.save_to_json("Testing/regulations/programmed_ts.json")
+        ts.export("Testing/regulations/programmed_ts.json")
         self.fail()
 
     def test_ordered(self):
@@ -47,8 +46,7 @@ class TestRegulations(unittest.TestCase):
         self.model_mini.regulation = Ordered(regulation)
 
         ts = self.model_mini.generate_direct_transition_system()
-        ts.encode(ts.init)
-        ts.save_to_json("Testing/regulations/ordered_ts.json")
+        ts.export("Testing/regulations/ordered_ts.json")
         self.fail()
 
     def test_conditional(self):
@@ -57,8 +55,7 @@ class TestRegulations(unittest.TestCase):
         self.model_mini.regulation = Conditional(regulation)
 
         ts = self.model_mini.generate_direct_transition_system()
-        ts.encode(ts.init)
-        ts.save_to_json("Testing/regulations/conditional_ts.json")
+        ts.export("Testing/regulations/conditional_ts.json")
         self.fail()
 
     def test_concurrent_free(self):
@@ -66,8 +63,7 @@ class TestRegulations(unittest.TestCase):
         self.model_mini.regulation = ConcurrentFree(regulation)
 
         ts = self.model_mini.generate_direct_transition_system()
-        ts.encode(ts.init)
-        ts.save_to_json("Testing/regulations/concurrent_free_ts.json")
+        ts.export("Testing/regulations/concurrent_free_ts.json")
         self.fail()
 
     def test_regular(self):
@@ -75,8 +71,7 @@ class TestRegulations(unittest.TestCase):
         self.model_mini.regulation = Regular(regulation)
 
         ts = self.model_mini.generate_direct_transition_system()
-        ts.encode(ts.init)
-        ts.save_to_json("Testing/regulations/regular_ts.json")
+        ts.export("Testing/regulations/regular_ts.json")
         self.fail()
 
     def test_network_free_simulation_regulated(self):

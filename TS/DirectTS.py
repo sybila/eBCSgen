@@ -1,7 +1,5 @@
 from sortedcontainers import SortedList
-
-
-from TS.TransitionSystem import TransitionSystem
+import json
 
 
 class DirectTS:
@@ -10,6 +8,7 @@ class DirectTS:
         self.unprocessed = set()
         self.processed = set()
         self.unique_complexes = set()
+        self.init = None
 
     def __str__(self):
         return str(self.processed) + "\n" + "\n".join(list(map(str, self.edges))) + "\n"
@@ -17,18 +16,42 @@ class DirectTS:
     def __repr__(self):
         return str(self)
 
-    def to_TS(self, init):
+    def export(self, output_file):
         ordering = SortedList(sorted(self.unique_complexes))
-        states = set()
+        # state -> unique ID
+        states_encoding = self.create_encoding()
+        # replace states to unique IDs in edges
+        self.encode_edges(states_encoding)
+
+        states = dict()
+        for state in states_encoding:
+            # unique ID -> numpy vector
+            states[states_encoding[state]] = str(state.to_vector(ordering))
+
+        init = states_encoding[self.init]
+        save_to_json(states, self.edges, init, ordering, output_file)
+
+    def create_encoding(self):
+        # for now assume generating is complete i.e. ignore unprocessed states
+        states_encoding = dict()
         for state in self.processed:
-            states.add(state.to_vector(ordering))
+            states_encoding[state] = len(states_encoding) + 1
+        return states_encoding
 
-        edges = set()
+    def encode_edges(self, states_encoding):
         for edge in self.edges:
-            edges.add(edge.to_vector(ordering))
+            edge.encode(states_encoding)
 
-        ts = TransitionSystem(ordering)
-        ts.edges = edges
-        ts.processed = states
-        ts.init = init.to_vector(ordering)
-        return ts
+
+def save_to_json(states, edges, init, ordering, output_file):
+    """
+    Save current TS as a JSON file.
+
+    :param output_file: given file to write to
+    """
+    unique = list(map(str, ordering))
+    edges = [edge.to_dict() for edge in edges]
+    data = {'nodes': states, 'edges': edges, 'ordering': unique, "initial": init}
+
+    with open(output_file, 'w') as json_file:
+        json.dump(data, json_file, indent=4)
