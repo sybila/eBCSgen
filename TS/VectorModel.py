@@ -7,7 +7,7 @@ import pandas as pd
 import random
 from sortedcontainers import SortedList
 
-from TS.State import State
+from TS.State import MemorylessState
 from TS.TSworker import TSworker
 from TS.TransitionSystem import TransitionSystem
 
@@ -34,7 +34,7 @@ def handle_number_of_threads(number, workers):
 
 
 class VectorModel:
-    def __init__(self, vector_reactions: set, init: State, ordering: SortedList, bound: int):
+    def __init__(self, vector_reactions: set, init: MemorylessState, ordering: SortedList, bound: int):
         self.vector_reactions = vector_reactions
         self.init = init
         self.ordering = ordering
@@ -106,7 +106,7 @@ class VectorModel:
         Gillespie algorithm implementation.
 
         Each step a random reaction is chosen by exponential distribution with density given as a sum
-        of all possible rates in particular State.
+        of all possible rates in particular MemorylessState.
         Then such reaction is applied and next time is computed using Poisson distribution (random.expovariate).
 
         :param max_time: time when simulation ends

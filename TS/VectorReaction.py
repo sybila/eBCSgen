@@ -1,9 +1,9 @@
 from Core.Rate import Rate
-from TS.State import State
+from TS.State import MemorylessState
 
 
 class VectorReaction:
-    def __init__(self, source: State, target: State, rate: Rate):
+    def __init__(self, source: MemorylessState, target: MemorylessState, rate: Rate):
         self.source = source
         self.target = target
         self.rate = rate
@@ -23,16 +23,16 @@ class VectorReaction:
     def __hash__(self):
         return hash(str(self))
 
-    def apply(self, state: State, bound: float):
+    def apply(self, state: MemorylessState, bound: float):
         """
-        Applies the reaction on a given State.
-        First, source is subtracted from the given State, then it is checked if all
-        values are greater then 0. If so, new State is create as sum with target
+        Applies the reaction on a given MemorylessState.
+        First, source is subtracted from the given MemorylessState, then it is checked if all
+        values are greater then 0. If so, new MemorylessState is create as sum with target
         and rate is evaluated. Moreover, it is possible that the resulting state is greater
-        than allowed bound, then infinite State is returned instead.
-        :param state: given State
+        than allowed bound, then infinite MemorylessState is returned instead.
+        :param state: given MemorylessState
         :param bound: allow bound on particular values
-        :return: new State and evaluated rate
+        :return: new MemorylessState and evaluated rate
         """
         if state >= self.source:
             new_state = state - self.source

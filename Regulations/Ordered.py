@@ -9,6 +9,7 @@ class Ordered(BaseRegulation):
     def __init__(self, regulation):
         super(Ordered, self).__init__(regulation)
         self.regulation = self.transitive_closure(self.regulation)
+        self.memory = 1
 
     def transitive_closure(self, closure):
         """
@@ -27,7 +28,7 @@ class Ordered(BaseRegulation):
             closure = closure_until_now
 
     def filter(self, current_state, candidates):
-        if len(current_state.used_rules_path) == 0:
+        if len(current_state.used_rules) == 0:
             return candidates
-        last_rule = current_state.used_rules_path[-1]
+        last_rule = current_state.used_rules[-1]
         return {rule: values for rule, values in candidates.items() if not (last_rule, rule.label) in self.regulation}

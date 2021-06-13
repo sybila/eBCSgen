@@ -14,7 +14,7 @@ import Core.Model
 from Core.Rate import Rate
 from Core.Rule import Rule
 from Core.Structure import StructureAgent
-from TS.State import State
+from TS.State import MemorylessState
 from TS.TransitionSystem import TransitionSystem
 from TS.Edge import edge_from_dict
 from Core.Side import Side
@@ -33,11 +33,11 @@ def load_TS_from_json(json_file: str) -> TransitionSystem:
 
         ordering = SortedList(map(lambda agent: complex_parser.parse(agent).data.children[0], data['ordering']))
         ts = TransitionSystem(ordering)
-        ts.states_encoding = {State(np.array(eval(data['nodes'][node_id]))): int(node_id) for node_id in data['nodes']}
+        ts.states_encoding = {MemorylessState(np.array(eval(data['nodes'][node_id]))): int(node_id) for node_id in data['nodes']}
         ts.edges = {edge_from_dict(edge) for edge in data['edges']}
         ts.init = data['initial']
 
-        ts.unprocessed = {State(np.array(eval(state))) for state in data.get('unprocessed', list())}
+        ts.unprocessed = {MemorylessState(np.array(eval(state))) for state in data.get('unprocessed', list())}
         ts.processed = ts.states_encoding.keys() - ts.unprocessed
         return ts
 

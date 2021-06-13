@@ -4,7 +4,7 @@ import numpy as np
 from Core.Complex import Complex
 from Core.Structure import StructureAgent
 from TS.Edge import Edge
-from TS.State import State
+from TS.State import MemorylessState
 from TS.TransitionSystem import TransitionSystem
 
 
@@ -24,16 +24,16 @@ class TestTransitionSystem(unittest.TestCase):
         ordering_wrong = (self.c1, self.c2, self.c3, self.c4),
         ordering_reordered = (self.c3, self.c1, self.c2)
 
-        self.s1 = State(np.array((1, 2, 3)))
-        self.s2 = State(np.array((1, 2, 4)))
-        self.s3 = State(np.array((1, 2, 5)))
-        self.s4 = State(np.array((4, 2, 3)))
-        self.hell = State(np.array((np.inf, np.inf, np.inf)))
+        self.s1 = MemorylessState(np.array((1, 2, 3)))
+        self.s2 = MemorylessState(np.array((1, 2, 4)))
+        self.s3 = MemorylessState(np.array((1, 2, 5)))
+        self.s4 = MemorylessState(np.array((4, 2, 3)))
+        self.hell = MemorylessState(np.array((np.inf, np.inf, np.inf)))
         self.hell.is_inf = True
 
-        self.s1_reordered = State(np.array((3, 1, 2)))
-        self.s2_reordered = State(np.array((4, 1, 2)))
-        self.s3_reordered = State(np.array((5, 1, 2)))
+        self.s1_reordered = MemorylessState(np.array((3, 1, 2)))
+        self.s2_reordered = MemorylessState(np.array((4, 1, 2)))
+        self.s3_reordered = MemorylessState(np.array((5, 1, 2)))
 
         self.ts = TransitionSystem(tuple())
         self.ts.states_encoding = {self.s1: 1, self.s2: 2}
@@ -116,6 +116,6 @@ class TestTransitionSystem(unittest.TestCase):
         ts = TransitionSystem(ordering)
         ts.states_encoding = {self.s1: 1, self.s2: 2, self.s3: 0, self.hell: 3}
         ts.change_hell(4)
-        new_hell = State(np.array([5, 5, 5]))
+        new_hell = MemorylessState(np.array([5, 5, 5]))
         new_encoding = {self.s1: 1, self.s2: 2, self.s3: 0, new_hell: 3}
         self.assertEqual(ts.states_encoding, new_encoding)

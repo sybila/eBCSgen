@@ -14,7 +14,7 @@ from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
 from Core.Side import Side
 from TS.DirectTS import DirectTS
-from TS.State import RegulatedState
+from TS.State import FullMemoryState, OneStepMemoryState, MultisetState
 from TS.TSworker import DirectTSworker
 from TS.TransitionSystem import TransitionSystem
 from TS.VectorModel import VectorModel, handle_number_of_threads
@@ -270,7 +270,7 @@ class Model:
         return state_labels, AP_lables
 
     def network_free_simulation(self, max_time: float):
-        state = RegulatedState(copy.deepcopy(self.init))
+        state = FullMemoryState(copy.deepcopy(self.init))
         for rule in self.rules:
             # precompute complexes for each rule
             rule.lhs, _ = rule.create_complexes()
@@ -280,7 +280,7 @@ class Model:
         collected_agents = set(state.multiset)
         time = 0.0
         history[time] = state.multiset
-        used_rules_path = []
+        used_rules = []
         while time < max_time:
             candidate_rules = pd.DataFrame(data=[(rule,
                                                   rule.evaluate_rate(state, self.definitions),
@@ -292,7 +292,7 @@ class Model:
 
             if self.regulation:
                 rules = {item: None for item in candidate_rules['rule']}
-                state.used_rules_path = used_rules_path
+                state.used_rules = used_rules
                 applicable_rules = self.regulation.filter(state, rules)
                 candidate_rules = candidate_rules[candidate_rules['rule'].isin(applicable_rules)]
 
@@ -312,9 +312,9 @@ class Model:
 
                 # update state based on match & replace operation
                 match = rule.reconstruct_complexes_from_match(match)
-                state = RegulatedState(update_state(state.multiset, match, produced_agents))
+                state = FullMemoryState(update_state(state.multiset, match, produced_agents))
                 if self.regulation:
-                    used_rules_path.append(rule.label)
+                    used_rules.append(rule.label)
             else:
                 rates_sum = random.uniform(0.5, 0.9)
 
@@ -338,7 +338,12 @@ class Model:
     def generate_direct_transition_system(self, ts=None, max_time: float = np.inf, max_size: float = np.inf):
         if not ts:
             ts = DirectTS()
-            init = RegulatedState(self.init)
+            if self.regulation.memory == 0:
+                init = MultisetState(self.init)
+            elif self.regulation.memory == 1:
+                init = OneStepMemoryState(self.init)
+            else:
+                init = FullMemoryState(self.init)
             ts.unprocessed = {init}
             ts.unique_complexes.update(set(init.multiset))
         else:

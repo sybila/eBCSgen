@@ -105,7 +105,6 @@ class DirectTSworker(threading.Thread):
 
                     applicable_rules = self.model.regulation.filter(state, candidate_rules)
 
-                    # TODO: problem - we can get to a state from multiple paths -> can influence a regulation
                     # TODO: bound is not included !
 
                     for rule in applicable_rules.keys():

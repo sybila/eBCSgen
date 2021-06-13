@@ -10,6 +10,7 @@ class Regular(BaseRegulation):
     def __init__(self, regulation):
         super(Regular, self).__init__(regulation)
         self.regulation = regex.compile(regulation)
+        self.memory = 2
 
     def filter(self, current_state, candidates):
         path = "".join(current_state.used_rules_path)

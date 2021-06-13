@@ -10,7 +10,7 @@ from TS.TransitionSystem import TransitionSystem
 from Core.Structure import StructureAgent
 from Core.Complex import Complex
 from Parsing.ParseBCSL import Parser
-from TS.State import State
+from TS.State import MemorylessState
 
 
 def get_storm_result(cmd: str):
@@ -41,19 +41,19 @@ class TestFormalMethods(unittest.TestCase):
 
         ordering = (self.c1, self.c2)
 
-        self.s1 = State(np.array((0, 0)))
-        self.s2 = State(np.array((1, 0)))
-        self.s3 = State(np.array((2, 0)))
-        self.s4 = State(np.array((3, 0)))
-        self.s5 = State(np.array((4, 0)))
-        self.s6 = State(np.array((5, 0)))
-        self.s7 = State(np.array((6, 0)))
-        self.s8 = State(np.array((7, 1)))
-        self.s9 = State(np.array((7, 2)))
-        self.s10 = State(np.array((7, 3)))
-        self.s11 = State(np.array((7, 4)))
-        self.s12 = State(np.array((7, 5)))
-        self.s13 = State(np.array((7, 6)))
+        self.s1 = MemorylessState(np.array((0, 0)))
+        self.s2 = MemorylessState(np.array((1, 0)))
+        self.s3 = MemorylessState(np.array((2, 0)))
+        self.s4 = MemorylessState(np.array((3, 0)))
+        self.s5 = MemorylessState(np.array((4, 0)))
+        self.s6 = MemorylessState(np.array((5, 0)))
+        self.s7 = MemorylessState(np.array((6, 0)))
+        self.s8 = MemorylessState(np.array((7, 1)))
+        self.s9 = MemorylessState(np.array((7, 2)))
+        self.s10 = MemorylessState(np.array((7, 3)))
+        self.s11 = MemorylessState(np.array((7, 4)))
+        self.s12 = MemorylessState(np.array((7, 5)))
+        self.s13 = MemorylessState(np.array((7, 6)))
 
         self.die_ts = TransitionSystem(ordering)
         self.die_ts.init = 0
