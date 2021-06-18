@@ -106,13 +106,13 @@ class DirectTSworker(threading.Thread):
                     if self.model.regulation:
                         candidate_rules = self.model.regulation.filter(state, candidate_rules)
 
-                    # TODO: bound is not included !
-
                     for rule in candidate_rules.keys():
                         for match in candidate_rules[rule][1]:
                             produced_agents = rule.replace(match)
                             match = rule.reconstruct_complexes_from_match(match)
                             new_state = state.update_state(match, produced_agents, rule.label)
+
+                            new_state = new_state.validate_bound(self.model.bound)
 
                             if new_state not in self.ts.processed:
                                 self.ts.unprocessed.add(new_state)

@@ -131,7 +131,7 @@ class MemorylessState:
 class MultisetState:
     def __init__(self, multiset):
         self.multiset = multiset
-        self.is_inf = self.is_hell()
+        self.is_inf = False
 
     def __str__(self):
         return str(self.multiset)
@@ -148,13 +148,6 @@ class MultisetState:
     def __hash__(self):
         return hash(frozenset(self.multiset.items()))
 
-    def is_hell(self):
-        """
-        Checks whether state is special "hell" infinite state.
-        :return: True if is special
-        """
-        return all([np.isinf(self.multiset[agent]) for agent in self.multiset])
-
     def update_state(self, consumed, produced, used_rule_label):
         consumed = collections.Counter(consumed)
         produced = collections.Counter(produced)
@@ -162,10 +155,20 @@ class MultisetState:
         return new_state
 
     def to_vector(self, ordering):
-        vector = np.zeros(len(ordering))
-        for agent in self.multiset:
-            vector[ordering.index(agent)] = int(self.multiset[agent])
+        if not self.is_inf:
+            vector = np.zeros(len(ordering))
+            for agent in self.multiset:
+                vector[ordering.index(agent)] = int(self.multiset[agent])
+        else:
+            vector = np.full(len(ordering), np.inf)
         return tuple(vector)
+
+    def validate_bound(self, bound):
+        if all([self.multiset[agent] <= bound for agent in self.multiset]):
+            return self
+        state = MultisetState(collections.Counter())
+        state.is_inf = True
+        return state
 
 
 class OneStepMemoryState(MultisetState):

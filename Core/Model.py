@@ -335,7 +335,10 @@ class Model:
         df.reset_index(inplace=True)
         return df
 
-    def generate_direct_transition_system(self, ts=None, max_time: float = np.inf, max_size: float = np.inf):
+    def compute_bound(self):
+        pass
+
+    def generate_direct_transition_system(self, ts=None, max_time: float = np.inf, max_size: float = np.inf, bound=None):
         if not ts:
             ts = DirectTS()
             if self.regulation:
@@ -352,6 +355,10 @@ class Model:
         else:
             pass
             # TODO: if a TS is given, extract all the data
+
+        if not bound:
+            bound = self.compute_bound()
+        self.bound = bound
 
         for rule in self.rules:
             # precompute complexes for each rule

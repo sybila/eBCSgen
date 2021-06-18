@@ -67,7 +67,6 @@ class TestRegulations(unittest.TestCase):
         self.fail()
 
     def test_regular(self):
-        # TODO not working properly
         regulation = r'(r1_Sr1_Tr2|r1_Tr1_Sr2)'
         self.model_mini.regulation = Regular(regulation)
 
