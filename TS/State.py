@@ -208,6 +208,5 @@ class FullMemoryState(MultisetState):
         consumed = collections.Counter(consumed)
         produced = collections.Counter(produced)
         new_state = FullMemoryState(deepcopy(self.multiset - consumed + produced))
-        new_state.used_rules.append(used_rule_label)
+        new_state.used_rules = self.used_rules + [used_rule_label]
         return new_state
-
