@@ -28,13 +28,18 @@ class DirectTS:
             # unique ID -> numpy vector
             states[states_encoding[state]] = str(state.to_vector(ordering))
 
+        unprocessed = dict()
+        if self.unprocessed:
+            for state in self.unprocessed:
+                unprocessed[states_encoding[state]] = str(state.to_vector(ordering))
+
         init = states_encoding[self.init]
-        save_to_json(states, self.edges, init, ordering, output_file)
+        save_to_json(states, unprocessed, self.edges, init, ordering, output_file)
 
     def create_encoding(self):
         # for now assume generating is complete i.e. ignore unprocessed states
         states_encoding = dict()
-        for state in self.processed:
+        for state in self.processed | self.unprocessed:
             states_encoding[state] = len(states_encoding) + 1
         return states_encoding
 
@@ -43,7 +48,7 @@ class DirectTS:
             edge.encode(states_encoding)
 
 
-def save_to_json(states, edges, init, ordering, output_file):
+def save_to_json(states, unprocessed, edges, init, ordering, output_file):
     """
     Save current TS as a JSON file.
 
@@ -52,6 +57,9 @@ def save_to_json(states, edges, init, ordering, output_file):
     unique = list(map(str, ordering))
     edges = [edge.to_dict() for edge in edges]
     data = {'nodes': states, 'edges': edges, 'ordering': unique, "initial": init}
+
+    if unprocessed:
+        data['unprocessed'] = unprocessed
 
     with open(output_file, 'w') as json_file:
         json.dump(data, json_file, indent=4)
