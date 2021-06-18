@@ -39,6 +39,11 @@ class Side:
     def to_counter(self):
         return collections.Counter(self.agents)
 
+    def most_frequent(self):
+        if self.agents:
+            return self.to_counter().most_common(1)[0][1]
+        return 0
+
     def to_vector(self, ordering: SortedList) -> MemorylessState:
         """
         Convert the Side to a MemorylessState accoring to given ordering.

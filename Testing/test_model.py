@@ -436,6 +436,18 @@ class TestModel(unittest.TestCase):
             k2 = 0.12
             """
 
+        self.model_for_bound = """
+            #! rules
+             => A{i}::cyt @ k
+             => C{i}::cyt @ k
+             
+            #! inits
+            2 B{i}::cyt
+
+            #! definitions
+            k = 1
+            """
+
     def test_str(self):
         model = self.model_parser.parse(self.model_str_1).data
         back_to_str = repr(model)
@@ -580,6 +592,19 @@ class TestModel(unittest.TestCase):
         ordering = model.create_ordering()
         self.assertEqual(unique_complexes, set(ordering))
 
-    def test_network_free_simulation(self):
-        model = self.model_parser.parse(self.miyoshi_non_param).data
-        result = model.network_free_simulation(5)
+    def test_compute_bound(self):
+        model = self.model_parser.parse(self.model_for_bound).data
+        for rule in model.rules:
+            rule.lhs, rule.rhs = rule.create_complexes()
+
+        self.assertEqual(model.compute_bound(), 2)
+
+    def test_direct_ts_bound(self):
+        model = self.model_parser.parse(self.model_for_bound).data
+        rules = set()
+        for i, rule in enumerate(model.rules):
+            rule.label = 'r{}'.format(i)
+            rules.add(rule)
+        model.rules = rules
+        ts = model.generate_direct_transition_system()
+        ts.export("Testing/direct_ts.json")

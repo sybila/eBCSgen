@@ -336,7 +336,10 @@ class Model:
         return df
 
     def compute_bound(self):
-        pass
+        bound = 0
+        for rule in self.rules:
+            bound = max(rule.lhs.most_frequent(), rule.rhs.most_frequent())
+        return max(bound, Side(self.init).most_frequent())
 
     def generate_direct_transition_system(self, ts=None, max_time: float = np.inf, max_size: float = np.inf, bound=None):
         if not ts:
@@ -356,14 +359,14 @@ class Model:
             pass
             # TODO: if a TS is given, extract all the data
 
+        for rule in self.rules:
+            # precompute complexes for each rule
+            rule.lhs, rule.rhs = rule.create_complexes()
+            rule.rate_agents, _ = rule.rate.get_params_and_agents()
+
         if not bound:
             bound = self.compute_bound()
         self.bound = bound
-
-        for rule in self.rules:
-            # precompute complexes for each rule
-            rule.lhs, _ = rule.create_complexes()
-            rule.rate_agents, _ = rule.rate.get_params_and_agents()
 
         workers = [DirectTSworker(ts, self) for _ in range(multiprocessing.cpu_count())]
         for worker in workers:
