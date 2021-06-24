@@ -11,6 +11,12 @@ class Ordered(BaseRegulation):
         self.regulation = self.transitive_closure(self.regulation)
         self.memory = 1
 
+    def __str__(self):
+        return "Order: " + str(self.regulation)
+
+    def __repr__(self):
+        return "type ordered\n" + ",".join(self.regulation)
+
     def transitive_closure(self, closure):
         """
         Computers transitive closure for partial order.

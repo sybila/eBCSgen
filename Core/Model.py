@@ -23,13 +23,13 @@ from Errors.StormNotAvailable import StormNotAvailable
 
 
 class Model:
-    def __init__(self, rules: set, init: collections.Counter, definitions: dict, params: set):
+    def __init__(self, rules: set, init: collections.Counter, definitions: dict, params: set, regulation=None):
         self.rules = rules  # set of Rules
         self.init = init  # Counter: Complex -> int
         self.definitions = definitions  # dict str -> float
         self.params = params  # set of str
         self.all_rates = True  # indicates whether model is quantitative
-        self.regulation = None  # used to rules filtering, can be unspecified
+        self.regulation = regulation  # used to rules filtering, can be unspecified (None)
 
         # autocomplete
         self.atomic_signature, self.structure_signature = self.extract_signatures()
@@ -39,7 +39,7 @@ class Model:
 
     def __str__(self):
         return "Model:\n" + "\n".join(map(str, self.rules)) + "\n\n" + str(self.init) + "\n\n" + str(self.definitions) \
-               + "\n\n" + str(self.atomic_signature) + "\n" + str(self.structure_signature)
+               + "\n\n" + str(self.atomic_signature) + "\n" + str(self.structure_signature) + "\n" + str(self.regulation)
 
     def __repr__(self):
         return "#! rules\n" + "\n".join(map(str, self.rules)) + \

@@ -13,7 +13,7 @@ def column(lst, index):
 
 
 class Rule:
-    def __init__(self, agents: tuple, mid: int, compartments: list, complexes: list, pairs: list, rate: Rate, label):
+    def __init__(self, agents: tuple, mid: int, compartments: list, complexes: list, pairs: list, rate: Rate, label=None):
         """
         Class to represent BCSL rule
 

@@ -10,6 +10,13 @@ class Programmed(BaseRegulation):
         super().__init__(regulation)
         self.memory = 1
 
+    def __str__(self):
+        return "Successors: " + str(self.regulation)
+
+    def __repr__(self):
+        # TODO
+        return "type programmed\n" + str(self.regulation)
+
     def filter(self, current_state, candidates):
         if len(current_state.used_rules) == 0:
             return candidates

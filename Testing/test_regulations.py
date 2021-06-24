@@ -1,13 +1,6 @@
-import collections
 import unittest
 
-from Core.Model import Model
-from Regulations.ConcurrentFree import ConcurrentFree
-from Regulations.Conditional import Conditional
-from Regulations.Ordered import Ordered
-from Regulations.Programmed import Programmed
 from Parsing.ParseBCSL import Parser
-from Regulations.Regular import Regular
 
 
 class TestRegulations(unittest.TestCase):
@@ -30,51 +23,85 @@ class TestRegulations(unittest.TestCase):
             k3 = 0.1
             """
 
-        self.model_mini = self.model_parser.parse(self.model_with_labels).data
-
     def test_programmed(self):
-        regulation = {'r1_S': {'r1_T', 'r2'}, 'r1_T': {'r1_S'}}
-        self.model_mini.regulation = Programmed(regulation)
+        regulation = """
 
-        ts = self.model_mini.generate_direct_transition_system()
+        #! regulation
+        type programmed
+        r1_S: {r1_T, r2}
+        r1_T: {r1_S}
+        """
+        model = self.model_parser.parse(self.model_with_labels + regulation).data
+
+        ts = model.generate_direct_transition_system()
         ts.export("Testing/regulations/programmed_ts.json")
 
     def test_ordered(self):
-        regulation = {('r1_S', 'r2'), ('r1_T', 'r2')}
-        self.model_mini.regulation = Ordered(regulation)
+        regulation = """
 
-        ts = self.model_mini.generate_direct_transition_system()
+        #! regulation
+        type ordered
+        (r1_S, r2), (r1_T, r2)
+        """
+
+        model = self.model_parser.parse(self.model_with_labels + regulation).data
+
+        ts = model.generate_direct_transition_system()
         ts.export("Testing/regulations/ordered_ts.json")
 
     def test_conditional(self):
-        regulation = {'r2': {self.complex_parser.parse("A(S{a},T{i})::cell").data.children[0]},
-                      'r1_S': set(), 'r1_T': set()}
-        self.model_mini.regulation = Conditional(regulation)
+        regulation = """
 
-        ts = self.model_mini.generate_direct_transition_system()
+        #! regulation
+        type conditional
+        r2: {A(S{a},T{i})::cell}
+        """
+
+        model = self.model_parser.parse(self.model_with_labels + regulation).data
+
+        ts = model.generate_direct_transition_system()
         ts.export("Testing/regulations/conditional_ts.json")
 
     def test_concurrent_free(self):
-        regulation = {('r1_S', 'r2'), ('r1_T', 'r2')}
-        self.model_mini.regulation = ConcurrentFree(regulation)
+        regulation = """
 
-        ts = self.model_mini.generate_direct_transition_system()
+        #! regulation
+        type concurrent-free
+        (r1_S, r2), (r1_T, r2)
+        """
+
+        model = self.model_parser.parse(self.model_with_labels + regulation).data
+
+        ts = model.generate_direct_transition_system()
         ts.export("Testing/regulations/concurrent_free_ts.json")
 
     def test_regular(self):
-        regulation = r'(r1_Sr1_Tr2|r1_Tr1_Sr2)'
-        self.model_mini.regulation = Regular(regulation)
+        regulation = """
 
-        ts = self.model_mini.generate_direct_transition_system()
+        #! regulation
+        type regular
+        (r1_Sr1_Tr2|r1_Tr1_Sr2)
+        """
+
+        model = self.model_parser.parse(self.model_with_labels + regulation).data
+
+        ts = model.generate_direct_transition_system()
         ts.export("Testing/regulations/regular_ts.json")
 
     def test_no_regulation(self):
-        ts = self.model_mini.generate_direct_transition_system()
+        model = self.model_parser.parse(self.model_with_labels).data
+        ts = model.generate_direct_transition_system()
         ts.export("Testing/regulations/no_regulation_ts.json")
 
     def test_network_free_simulation_regulated(self):
-        regulation = {'r1_S': {'r1_T'}, 'r1_T': {'r2'}}
-        self.model_mini.regulation = Programmed(regulation)
+        regulation = """
 
-        result = self.model_mini.network_free_simulation(5)
+        #! regulation
+        type programmed
+        r1_S: {r1_T, r2}
+        r1_T: {r1_S}
+        """
+        model = self.model_parser.parse(self.model_with_labels + regulation).data
+
+        result = model.network_free_simulation(5)
         result.to_csv('Testing/regulated_sim.csv', index=None, header=True)
