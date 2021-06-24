@@ -14,7 +14,7 @@ from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
 from Core.Side import Side
 from TS.DirectTS import DirectTS
-from TS.State import DirectState
+from TS.State import FullMemoryState, OneStepMemoryState, MultisetState
 from TS.TSworker import DirectTSworker
 from TS.TransitionSystem import TransitionSystem
 from TS.VectorModel import VectorModel, handle_number_of_threads
@@ -23,12 +23,13 @@ from Errors.StormNotAvailable import StormNotAvailable
 
 
 class Model:
-    def __init__(self, rules: set, init: collections.Counter, definitions: dict, params: set):
+    def __init__(self, rules: set, init: collections.Counter, definitions: dict, params: set, regulation=None):
         self.rules = rules  # set of Rules
         self.init = init  # Counter: Complex -> int
         self.definitions = definitions  # dict str -> float
         self.params = params  # set of str
         self.all_rates = True  # indicates whether model is quantitative
+        self.regulation = regulation  # used to rules filtering, can be unspecified (None)
 
         # autocomplete
         self.atomic_signature, self.structure_signature = self.extract_signatures()
@@ -38,7 +39,7 @@ class Model:
 
     def __str__(self):
         return "Model:\n" + "\n".join(map(str, self.rules)) + "\n\n" + str(self.init) + "\n\n" + str(self.definitions) \
-               + "\n\n" + str(self.atomic_signature) + "\n" + str(self.structure_signature)
+               + "\n\n" + str(self.atomic_signature) + "\n" + str(self.structure_signature) + "\n" + str(self.regulation)
 
     def __repr__(self):
         return "#! rules\n" + "\n".join(map(str, self.rules)) + \
@@ -269,19 +270,18 @@ class Model:
         return state_labels, AP_lables
 
     def network_free_simulation(self, max_time: float):
-        # TODO include regulations
-        state = copy.deepcopy(self.init)
+        state = FullMemoryState(copy.deepcopy(self.init))
         for rule in self.rules:
             # precompute complexes for each rule
             rule.lhs, _ = rule.create_complexes()
             rule.rate_agents, _ = rule.rate.get_params_and_agents()
 
         history = dict()
-        collected_agents = set(state)
+        collected_agents = set(state.multiset)
         time = 0.0
-        history[time] = state
+        history[time] = state.multiset
+        used_rules = []
         while time < max_time:
-            print('TIME', time)
             candidate_rules = pd.DataFrame(data=[(rule,
                                                   rule.evaluate_rate(state, self.definitions),
                                                   rule.match(state)) for rule in self.rules],
@@ -289,6 +289,12 @@ class Model:
 
             # drop rules which cannot be actually used (do not pass stoichiometry check)
             candidate_rules = candidate_rules.dropna()
+
+            if self.regulation:
+                rules = {item: None for item in candidate_rules['rule']}
+                state.used_rules = used_rules
+                applicable_rules = self.regulation.filter(state, rules)
+                candidate_rules = candidate_rules[candidate_rules['rule'].isin(applicable_rules)]
 
             if not candidate_rules.empty:
                 rates_sum = candidate_rules['rate'].sum()
@@ -301,17 +307,21 @@ class Model:
 
                 # apply chosen rule to matched agents
                 match = sorted_candidates.iloc[0]["match"]
-                produced_agents = sorted_candidates.iloc[0]["rule"].replace(match)
+                rule = sorted_candidates.iloc[0]["rule"]
+                produced_agents = rule.replace(match)
 
                 # update state based on match & replace operation
-                state = update_state(state, match, produced_agents)
+                match = rule.reconstruct_complexes_from_match(match)
+                state = FullMemoryState(update_state(state.multiset, match, produced_agents))
+                if self.regulation:
+                    used_rules.append(rule.label)
             else:
                 rates_sum = random.uniform(0.5, 0.9)
 
             # update time
             time += random.expovariate(rates_sum)
-            collected_agents = collected_agents.union(set(state))
-            history[time] = state
+            collected_agents = collected_agents.union(set(state.multiset))
+            history[time] = state.multiset
 
         # create pandas DataFrame
         ordered_agents = list(collected_agents)
@@ -325,13 +335,34 @@ class Model:
         df.reset_index(inplace=True)
         return df
 
-    def generate_direct_transition_system(self, ts=None, max_time: float = np.inf, max_size: float = np.inf):
-        if not ts:
-            ts = DirectTS()
-            ts.unprocessed = {DirectState(self.init)}
+    def compute_bound(self):
+        bound = 0
+        for rule in self.rules:
+            bound = max(rule.lhs.most_frequent(), rule.rhs.most_frequent())
+        return max(bound, Side(self.init).most_frequent())
+
+    def generate_direct_transition_system(self, max_time: float = np.inf, max_size: float = np.inf, bound=None):
+        ts = DirectTS()
+        if self.regulation:
+            if self.regulation.memory == 0:
+                ts.init = MultisetState(self.init)
+            elif self.regulation.memory == 1:
+                ts.init = OneStepMemoryState(self.init)
+            else:
+                ts.init = FullMemoryState(self.init)
         else:
-            pass
-            # TODO: if a TS is given, extract all the data
+            ts.init = MultisetState(self.init)
+        ts.unprocessed = {ts.init}
+        ts.unique_complexes.update(set(ts.init.multiset))
+
+        for rule in self.rules:
+            # precompute complexes for each rule
+            rule.lhs, rule.rhs = rule.create_complexes()
+            rule.rate_agents, _ = rule.rate.get_params_and_agents()
+
+        if not bound:
+            bound = self.compute_bound()
+        self.bound = bound
 
         workers = [DirectTSworker(ts, self) for _ in range(multiprocessing.cpu_count())]
         for worker in workers:
@@ -343,7 +374,7 @@ class Model:
         try:
             while any([worker.work.is_set() for worker in workers]) \
                     and time.time() - start_time < max_time \
-                    and len(ts.processed) + len(ts.states_encoding) < max_size:
+                    and len(ts.processed) < max_size:
                 handle_number_of_threads(len(ts.unprocessed), workers)
                 time.sleep(1)
         except (KeyboardInterrupt, EOFError) as e:
@@ -355,9 +386,7 @@ class Model:
         while any([worker.is_alive() for worker in workers]):
             time.sleep(1)
 
-        # TODO: transform to classic TS (vectors)
-        normal_ts = ts.to_TS(self.init)
-        return normal_ts
+        return ts
 
 
 def call_storm(command: str, files: list, storm_local: bool):

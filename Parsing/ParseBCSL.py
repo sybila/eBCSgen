@@ -6,6 +6,7 @@ from copy import deepcopy
 from lark import Lark, Transformer, Tree, Token
 from lark import UnexpectedCharacters, UnexpectedToken
 from lark.load_grammar import _TERMINAL_NAMES
+import regex
 from sortedcontainers import SortedList
 
 from Core.Atomic import AtomicAgent
@@ -14,7 +15,12 @@ import Core.Model
 from Core.Rate import Rate
 from Core.Rule import Rule
 from Core.Structure import StructureAgent
-from TS.State import State
+from Regulations.ConcurrentFree import ConcurrentFree
+from Regulations.Conditional import Conditional
+from Regulations.Ordered import Ordered
+from Regulations.Programmed import Programmed
+from Regulations.Regular import Regular
+from TS.State import MemorylessState
 from TS.TransitionSystem import TransitionSystem
 from TS.Edge import edge_from_dict
 from Core.Side import Side
@@ -33,11 +39,11 @@ def load_TS_from_json(json_file: str) -> TransitionSystem:
 
         ordering = SortedList(map(lambda agent: complex_parser.parse(agent).data.children[0], data['ordering']))
         ts = TransitionSystem(ordering)
-        ts.states_encoding = {State(np.array(eval(data['nodes'][node_id]))): int(node_id) for node_id in data['nodes']}
+        ts.states_encoding = {MemorylessState(np.array(eval(data['nodes'][node_id]))): int(node_id) for node_id in data['nodes']}
         ts.edges = {edge_from_dict(edge) for edge in data['edges']}
         ts.init = data['initial']
 
-        ts.unprocessed = {State(np.array(eval(state))) for state in data.get('unprocessed', list())}
+        ts.unprocessed = {MemorylessState(np.array(eval(state))) for state in data.get('unprocessed', list())}
         ts.processed = ts.states_encoding.keys() - ts.unprocessed
         return ts
 
@@ -72,16 +78,17 @@ class SideHelper:
 
 
 GRAMMAR = r"""
-    model: rules inits definitions (complexes)?
+    model: rules inits definitions (complexes)? (regulation)?
 
     rules: RULES_START (rule|COMMENT)+
     inits: INITS_START (init|COMMENT)+
     definitions: DEFNS_START (definition|COMMENT)+
     complexes: COMPLEXES_START (cmplx_dfn|COMMENT)+
+    regulation: REGULATION_START regulation_def
 
     init: const? rate_complex (COMMENT)?
     definition: def_param "=" number (COMMENT)?
-    rule: side ARROW side ("@" rate)? (";" variable)? (COMMENT)?
+    rule: (label)? side ARROW side ("@" rate)? (";" variable)? (COMMENT)?
     cmplx_dfn: cmplx_name "=" sequence (COMMENT)?
 
     side: (const? complex "+")* (const? complex)?
@@ -101,6 +108,9 @@ GRAMMAR = r"""
     INITS_START: "#! inits"
     DEFNS_START: "#! definitions"
     COMPLEXES_START: "#! complexes"
+    REGULATION_START: "#! regulation"
+    
+    !label: CNAME "~"
 
     param: CNAME
     def_param : CNAME
@@ -148,6 +158,60 @@ COMPLEX_GRAMMAR = """
     %import common.DIGIT
 """
 
+REGULATIONS_GRAMMAR = """
+    regulation_def: "type" ( regular | programmed | ordered | concurrent_free | conditional ) 
+    
+    !regular: "regular" (DIGIT|LETTER| "+" | "*" | "(" | ")" | "[" | "]" | "_" | "|" | "&")+
+    
+    programmed: "programmed" successors+
+    successors: CNAME ":" "{" CNAME ("," CNAME)* "}"
+    
+    ordered: "ordered" order ("," order)*
+    order: ("(" CNAME "," CNAME ")")
+    
+    concurrent_free: "concurrent-free" order ("," order)*
+    
+    conditional: "conditional" context+
+    context: CNAME ":" "{" rate_complex ("," rate_complex)* "}"
+"""
+
+
+class TransformRegulations(Transformer):
+    def regulation(self, matches):
+        return matches[1]
+
+    def regulation_def(self, matches):
+        return matches[0]
+
+    def regular(self, matches):
+        re = "".join(matches[1:])
+        # might raise exception
+        regex.compile(re)
+        return Regular(re)
+
+    def programmed(self, matches):
+        successors = {k: v for x in matches for k, v in x.items()}
+        return Programmed(successors)
+
+    def successors(self, matches):
+        return {str(matches[0]): {str(item) for item in matches[1:]}}
+
+    def ordered(self, matches):
+        return Ordered(set(matches))
+
+    def order(self, matches):
+        return str(matches[0]), str(matches[1])
+
+    def conditional(self, matches):
+        context_fun = {k: v for x in matches for k, v in x.items()}
+        return Conditional(context_fun)
+
+    def context(self, matches):
+        return {str(matches[0]): {item.children[0] for item in matches[1:]}}
+
+    def concurrent_free(self, matches):
+        return ConcurrentFree(set(matches))
+
 
 class ReplaceVariables(Transformer):
     """
@@ -155,7 +219,7 @@ class ReplaceVariables(Transformer):
     the given cmplx_name (so far limited only to that).
     """
     def __init__(self, to_replace):
-        super(Transformer, self).__init__()
+        super(ReplaceVariables, self).__init__()
         self.to_replace = to_replace
 
     def VAR(self, matches):
@@ -169,7 +233,7 @@ class ExtractComplexNames(Transformer):
     Also multiplies rule with variable to its instances using ReplaceVariables Transformer.
     """
     def __init__(self):
-        super(Transformer, self).__init__()
+        super(ExtractComplexNames, self).__init__()
         self.complex_defns = dict()
 
     def cmplx_dfn(self, matches):
@@ -197,7 +261,7 @@ class TransformAbstractSyntax(Transformer):
     Based on replacing subtrees in parent trees.
     """
     def __init__(self, complex_defns):
-        super(Transformer, self).__init__()
+        super(TransformAbstractSyntax, self).__init__()
         self.complex_defns = complex_defns
 
     def cmplx_name(self, matches):
@@ -295,7 +359,7 @@ class TreeToComplex(Transformer):
 
 class TreeToObjects(Transformer):
     def __init__(self):
-        super(Transformer, self).__init__()
+        super(TreeToObjects, self).__init__()
         self.params = set()
     """
     A transformer which is called on a tree in a bottom-up manner and transforms all subtrees/tokens it encounters.
@@ -307,6 +371,9 @@ class TreeToObjects(Transformer):
         return float(matches[0])
 
     def def_param(self, matches):
+        return str(matches[0])
+
+    def label(self, matches):
         return str(matches[0])
 
     def number(self, matches):
@@ -331,11 +398,17 @@ class TreeToObjects(Transformer):
         return helper
 
     def rule(self, matches):
-        if len(matches) > 3:
-            lhs, arrow, rhs, rate = matches
+        label = None
+        rate = None
+        if len(matches) == 5:
+            label, lhs, arrow, rhs, rate = matches
+        elif len(matches) == 4:
+            if type(matches[0]) == str:
+                label, lhs, arrow, rhs = matches
+            else:
+                lhs, arrow, rhs, rate = matches
         else:
             lhs, arrow, rhs = matches
-            rate = None
         agents = tuple(lhs.seq + rhs.seq)
         mid = lhs.counter
         compartments = lhs.comp + rhs.comp
@@ -347,7 +420,7 @@ class TreeToObjects(Transformer):
         elif lhs.counter < rhs.counter:
             pairs += [(None, i + lhs.counter) for i in range(lhs.counter, rhs.counter)]
 
-        return Rule(agents, mid, compartments, complexes, pairs, Rate(rate) if rate else None)
+        return Rule(agents, mid, compartments, complexes, pairs, Rate(rate) if rate else None, label)
 
     def rules(self, matches):
         return matches[1:]
@@ -377,12 +450,13 @@ class TreeToObjects(Transformer):
 
     def model(self, matches):
         params = self.params - set(matches[2].keys())
-        return Core.Model.Model(set(matches[0]), matches[1], matches[2], params)
+        regulation = matches[3] if len(matches) > 3 else None
+        return Core.Model.Model(set(matches[0]), matches[1], matches[2], params, regulation)
 
 
 class Parser:
     def __init__(self, start):
-        grammar = "start: " + start + GRAMMAR + COMPLEX_GRAMMAR + EXTENDED_GRAMMAR
+        grammar = "start: " + start + GRAMMAR + COMPLEX_GRAMMAR + EXTENDED_GRAMMAR + REGULATIONS_GRAMMAR
         self.parser = Lark(grammar, parser='lalr',
                            propagate_positions=False,
                            maybe_placeholders=False
@@ -440,6 +514,7 @@ class Parser:
             de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
             tree = de_abstracter.transform(tree)
             tree = TreeToComplex().transform(tree)
+            tree = TransformRegulations().transform(tree)
             tree = TreeToObjects().transform(tree)
 
             return Result(True, tree.children[0])

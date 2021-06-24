@@ -9,7 +9,7 @@ from Core.Structure import StructureAgent
 from Core.Complex import Complex
 from Core.Rule import Rule
 from Parsing.ParseBCSL import Parser
-from TS.State import State
+from TS.State import MemorylessState
 import TS.TransitionSystem
 from TS.VectorModel import VectorModel
 from TS.VectorReaction import VectorReaction
@@ -112,11 +112,11 @@ class TestModel(unittest.TestCase):
         rate_2 = Rate(self.rate_parser.parse(rate_expr).data)
         rate_2.vectorize(ordering, {"k1": 0.05})
 
-        init = State(np.array([2, 1, 0]))
+        init = MemorylessState(np.array([2, 1, 0]))
 
-        vector_reactions = {VectorReaction(State(np.array([0, 0, 0])), State(np.array([0, 1, 0])), rate_1),
-                            VectorReaction(State(np.array([1, 0, 0])), State(np.array([0, 0, 0])), rate_2),
-                            VectorReaction(State(np.array([0, 0, 1])), State(np.array([1, 0, 0])), None)}
+        vector_reactions = {VectorReaction(MemorylessState(np.array([0, 0, 0])), MemorylessState(np.array([0, 1, 0])), rate_1),
+                            VectorReaction(MemorylessState(np.array([1, 0, 0])), MemorylessState(np.array([0, 0, 0])), rate_2),
+                            VectorReaction(MemorylessState(np.array([0, 0, 1])), MemorylessState(np.array([1, 0, 0])), None)}
 
         self.vm_1 = VectorModel(vector_reactions, init, ordering, None)
 
@@ -436,6 +436,18 @@ class TestModel(unittest.TestCase):
             k2 = 0.12
             """
 
+        self.model_for_bound = """
+            #! rules
+             => A{i}::cyt @ k
+             => C{i}::cyt @ k
+             
+            #! inits
+            2 B{i}::cyt
+
+            #! definitions
+            k = 1
+            """
+
     def test_str(self):
         model = self.model_parser.parse(self.model_str_1).data
         back_to_str = repr(model)
@@ -467,7 +479,7 @@ class TestModel(unittest.TestCase):
 
         self.assertEqual(self.model_parser.parse(self.model_wrong_2).data,
                          {"expected": {'decimal', '#! inits', ']', '#! definitions', '=>', '@', 'int',
-                                       '+', 'name', ';'},
+                                       '+', 'name', ';', '}', ','},
                           "line": 3, "column": 26, "unexpected": "="})
 
     def test_zooming_syntax(self):
@@ -543,10 +555,10 @@ class TestModel(unittest.TestCase):
         APs = [Core.Formula.AtomicProposition(complex_abstract, " >= ", "3"),
                Core.Formula.AtomicProposition(complex_1, " < ", 2)]
 
-        s1 = State(np.array((1, 2, 2)))
-        s2 = State(np.array((5, 1, 1)))
-        s3 = State(np.array((2, 4, 3)))
-        s4 = State(np.array((1, 4, 3)))
+        s1 = MemorylessState(np.array((1, 2, 2)))
+        s2 = MemorylessState(np.array((5, 1, 1)))
+        s3 = MemorylessState(np.array((2, 4, 3)))
+        s4 = MemorylessState(np.array((1, 4, 3)))
 
         states_encoding = {s1: 1, s2: 2, s3: 3, s4: 4}
 
@@ -580,6 +592,19 @@ class TestModel(unittest.TestCase):
         ordering = model.create_ordering()
         self.assertEqual(unique_complexes, set(ordering))
 
-    def test_network_free_simulation(self):
-        model = self.model_parser.parse(self.miyoshi_non_param).data
-        result = model.network_free_simulation(5)
+    def test_compute_bound(self):
+        model = self.model_parser.parse(self.model_for_bound).data
+        for rule in model.rules:
+            rule.lhs, rule.rhs = rule.create_complexes()
+
+        self.assertEqual(model.compute_bound(), 2)
+
+    def test_direct_ts_bound(self):
+        model = self.model_parser.parse(self.model_for_bound).data
+        rules = set()
+        for i, rule in enumerate(model.rules):
+            rule.label = 'r{}'.format(i)
+            rules.add(rule)
+        model.rules = rules
+        ts = model.generate_direct_transition_system()
+        ts.save_to_json("Testing/direct_ts.json")

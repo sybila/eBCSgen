@@ -13,7 +13,7 @@ def column(lst, index):
 
 
 class Rule:
-    def __init__(self, agents: tuple, mid: int, compartments: list, complexes: list, pairs: list, rate: Rate):
+    def __init__(self, agents: tuple, mid: int, compartments: list, complexes: list, pairs: list, rate: Rate, label=None):
         """
         Class to represent BCSL rule
 
@@ -30,6 +30,7 @@ class Rule:
         self.complexes = complexes
         self.pairs = pairs
         self.rate = rate
+        self.label = label
         self.comment = (False, [])
 
     def __eq__(self, other: 'Rule'):
@@ -48,8 +49,10 @@ class Rule:
             pre_comment = comment + "// " if self.comment[0] else ""
             post_comment = " " + comment if not self.comment[0] else ""
 
-        return pre_comment + " + ".join(lhs.to_list_of_strings()) + " => " + " + ".join(rhs.to_list_of_strings()) \
-               + rate + post_comment
+        label = str(self.label) + " ~ " if self.label else ""
+
+        return label + pre_comment + " + ".join(lhs.to_list_of_strings()) + \
+               " => " + " + ".join(rhs.to_list_of_strings()) + rate + post_comment
 
     def __lt__(self, other):
         return str(self) < str(other)
@@ -179,7 +182,7 @@ class Rule:
         @return: a real number of the rate
         """
         values = dict()
-        for (state_complex, count) in state.items():
+        for (state_complex, count) in state.multiset.items():
             for agent in self.rate_agents:
                 if agent.compatible(state_complex):
                     values[agent] = values.get(agent, 0) + count
@@ -193,7 +196,7 @@ class Rule:
         @param all: bool to indicate if choose one matching randomly or return all of them
         @return: random match/all matches
         """
-        state = deepcopy(state)
+        state = deepcopy(state.multiset)
         matches = find_all_matches(self.lhs.agents, state)
         matches = [sum(match, []) for match in matches]
 
@@ -223,6 +226,18 @@ class Rule:
         for (f, t) in list(filter(lambda item: item[0] >= self.mid, self.complexes)):
             output_complexes.append(Complex(resulting_rhs[f - self.mid:t - self.mid + 1], self.compartments[f]))
 
+        return output_complexes
+
+    def reconstruct_complexes_from_match(self, match):
+        """
+        Create complexes from agents matched to the LHS
+
+        @param match: sequence of
+        @return:
+        """
+        output_complexes = []
+        for (f, t) in list(filter(lambda item: item[1] < self.mid, self.complexes)):
+            output_complexes.append(Complex(match[f:t + 1], self.compartments[f]))
         return output_complexes
 
 

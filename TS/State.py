@@ -1,26 +1,29 @@
+import collections
+from copy import deepcopy
+
 import numpy as np
 
 import Core.Formula
 
 
-class State:
+class MemorylessState:
     def __init__(self, sequence: np.array):
         self.sequence = sequence
         self.is_inf = self.is_hell()
 
-    def __eq__(self, other: 'State'):
+    def __eq__(self, other: 'MemorylessState'):
         return (self.sequence == other.sequence).all()
 
-    def __sub__(self, other: 'State'):
-        return State(self.sequence - other.sequence)
+    def __sub__(self, other: 'MemorylessState'):
+        return MemorylessState(self.sequence - other.sequence)
 
-    def __add__(self, other: 'State'):
-        return State(self.sequence + other.sequence)
+    def __add__(self, other: 'MemorylessState'):
+        return MemorylessState(self.sequence + other.sequence)
 
-    def __mul__(self, other: 'State') -> np.array:
+    def __mul__(self, other: 'MemorylessState') -> np.array:
         return self.sequence * other.sequence
 
-    def __ge__(self, other: 'State') -> bool:
+    def __ge__(self, other: 'MemorylessState') -> bool:
         return all(self.sequence >= other.sequence)
 
     def __str__(self):
@@ -37,33 +40,33 @@ class State:
 
     def check_negative(self) -> bool:
         """
-        Checks whether all values of State are are greater then 0.
+        Checks whether all values of MemorylessState are are greater then 0.
 
         :return: True if check was successful
         """
         return all(0 <= value for value in self.sequence)
 
-    def add_with_bound(self, target: 'State', bound: int) -> 'State':
+    def add_with_bound(self, target: 'MemorylessState', bound: int) -> 'MemorylessState':
         """
         Creates a new state as a sum with the target. If resulting state is smaller than given bound,
         it is returned, otherwise special infinite state is returned instead.
 
         :param target: given state to be added
         :param bound: maximal allowed bound on individual values
-        :return: resulting State
+        :return: resulting MemorylessState
         """
         new_state = self + target
         if all(value <= bound for value in new_state.sequence):
             return new_state
         else:
-            return State(np.array([np.inf] * len(new_state)))
+            return MemorylessState(np.array([np.inf] * len(new_state)))
 
-    def filter_values(self, state: 'State') -> int:
+    def filter_values(self, state: 'MemorylessState') -> int:
         """
-        Computed sum of individual values after intersection with given State.
+        Computed sum of individual values after intersection with given MemorylessState.
         (used to indicate abstract agents in reaction-based setup).
 
-        :param state: given State
+        :param state: given MemorylessState
         :return: resulting summation
         """
         return sum(self * state)
@@ -78,14 +81,14 @@ class State:
         return " + ".join(filter(None, ["y[" + str(i) + "]"
                                         if self.sequence[i] == 1 else None for i in range(len(self.sequence))]))
 
-    def reorder(self, indices: np.array) -> 'State':
+    def reorder(self, indices: np.array) -> 'MemorylessState':
         """
         Changes order of individual values according to given new indices.
 
         :param indices: array of indices
-        :return: new reordered State
+        :return: new reordered MemorylessState
         """
-        return State(self.sequence[indices])
+        return MemorylessState(self.sequence[indices])
 
     def is_hell(self):
         """
@@ -96,7 +99,7 @@ class State:
 
     def check_AP(self, ap, ordering: tuple) -> bool:
         """
-        Checks whether the State satisfies given AtomicProposition.
+        Checks whether the MemorylessState satisfies given AtomicProposition.
 
         TBA : could be abstract !!!
 
@@ -108,7 +111,7 @@ class State:
             operand = str(self.sequence[ordering.index(ap.complex)])
         else:
             indices = ap.complex.identify_compatible(ordering)
-            state = State(np.array([1 if i in indices else 0 for i in range(len(ordering))]))
+            state = MemorylessState(np.array([1 if i in indices else 0 for i in range(len(ordering))]))
             operand = str(self.filter_values(state))
         sign = "==" if ap.sign == " = " else ap.sign
         return eval(operand + sign + str(ap.number))
@@ -125,10 +128,16 @@ class State:
         return " & ".join(vars)
 
 
-class DirectState:
+class MultisetState:
     def __init__(self, multiset):
         self.multiset = multiset
-        self.is_inf = self.is_hell()
+        self.is_inf = False
+
+    def __str__(self):
+        return str(self.multiset)
+
+    def __repr__(self):
+        return str(self)
 
     def __eq__(self, other):
         return self.multiset == other.multiset
@@ -139,9 +148,68 @@ class DirectState:
     def __hash__(self):
         return hash(frozenset(self.multiset.items()))
 
-    def is_hell(self):
-        """
-        Checks whether state is special "hell" infinite state.
-        :return: True if is special
-        """
-        return all([np.isinf(self.multiset[agent]) for agent in self.multiset])
+    def update_state(self, consumed, produced, used_rule_label):
+        consumed = collections.Counter(consumed)
+        produced = collections.Counter(produced)
+        new_state = MultisetState(deepcopy(self.multiset - consumed + produced))
+        return new_state
+
+    def to_vector(self, ordering):
+        if not self.is_inf:
+            vector = np.zeros(len(ordering))
+            for agent in self.multiset:
+                vector[ordering.index(agent)] = int(self.multiset[agent])
+        else:
+            vector = np.full(len(ordering), np.inf)
+        return tuple(vector)
+
+    def validate_bound(self, bound):
+        if all([self.multiset[agent] <= bound for agent in self.multiset]):
+            return self
+        state = MultisetState(collections.Counter())
+        state.is_inf = True
+        return state
+
+
+class OneStepMemoryState(MultisetState):
+    def __init__(self, multiset):
+        super().__init__(multiset)
+        self.used_rules = []
+
+    def __eq__(self, other):
+        return self.multiset == other.multiset and self.used_rules == other.used_rules
+
+    def __ge__(self, other) -> bool:
+        return all([self.multiset[agent] >= other.multiset.get(agent, 0) for agent in self.multiset])
+
+    def __hash__(self):
+        return hash(frozenset(self.multiset.items())) + hash(tuple(self.used_rules))
+
+    def update_state(self, consumed, produced, used_rule_label):
+        consumed = collections.Counter(consumed)
+        produced = collections.Counter(produced)
+        new_state = OneStepMemoryState(deepcopy(self.multiset - consumed + produced))
+        new_state.used_rules = [used_rule_label]
+        return new_state
+
+
+class FullMemoryState(MultisetState):
+    def __init__(self, multiset):
+        super().__init__(multiset)
+        self.used_rules = []
+
+    def __eq__(self, other):
+        return self.multiset == other.multiset and self.used_rules == other.used_rules
+
+    def __ge__(self, other) -> bool:
+        return all([self.multiset[agent] >= other.multiset.get(agent, 0) for agent in self.multiset])
+
+    def __hash__(self):
+        return hash(frozenset(self.multiset.items())) + hash(tuple(self.used_rules))
+
+    def update_state(self, consumed, produced, used_rule_label):
+        consumed = collections.Counter(consumed)
+        produced = collections.Counter(produced)
+        new_state = FullMemoryState(deepcopy(self.multiset - consumed + produced))
+        new_state.used_rules = self.used_rules + [used_rule_label]
+        return new_state

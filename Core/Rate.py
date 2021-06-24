@@ -136,7 +136,7 @@ class Vectorizer(Transformer):
             if complex.compatible(self.ordering[i]):
                 result[i] = 1
 
-        result = TS.State.State(result)
+        result = TS.State.MemorylessState(result)
         self.visited.append(result)
         return Tree("agent", [result])
 

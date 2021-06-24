@@ -1,4 +1,5 @@
 import threading
+import pandas as pd
 
 from TS.Edge import Edge
 
@@ -54,6 +55,7 @@ class TSworker(threading.Thread):
                             edge.normalise(factor)
                             self.ts.edges.add(edge)
                     else:
+                        # self loop to create correct DTMC
                         self.ts.edges.add(Edge(state, state, 1))
 
             except KeyError:
@@ -93,17 +95,34 @@ class DirectTSworker(threading.Thread):
                 if state.is_inf:
                     self.ts.edges.add(Edge(state, state, 1))
                 else:
+                    candidate_rules = dict()
                     for rule in self.model.rules:
-                        new_state, rate = rule.apply(state, self.model.bound)
-                        if new_state and rate:
+                        candidate_rules[rule] = (rule.evaluate_rate(state, self.model.definitions),
+                                                 rule.match(state, all=True))
+                        # drop rules which cannot be actually used (0 rate or no matches)
+                        candidate_rules = dict(filter(lambda item: item[1][0] > 0 and item[1][1] is not None,
+                                                      candidate_rules.items()))
+
+                    if self.model.regulation:
+                        candidate_rules = self.model.regulation.filter(state, candidate_rules)
+
+                    for rule in candidate_rules.keys():
+                        for match in candidate_rules[rule][1]:
+                            produced_agents = rule.replace(match)
+                            match = rule.reconstruct_complexes_from_match(match)
+                            new_state = state.update_state(match, produced_agents, rule.label)
+
+                            new_state = new_state.validate_bound(self.model.bound)
+
                             if new_state not in self.ts.processed:
                                 self.ts.unprocessed.add(new_state)
+                                self.ts.unique_complexes.update(set(new_state.multiset))
 
                             # multiple arrows between two states are not allowed
                             if new_state in unique_states:
-                                unique_states[new_state].add_rate(rate)
+                                unique_states[new_state].add_rate(candidate_rules[rule][0])
                             else:
-                                edge = Edge(state, new_state, rate)
+                                edge = Edge(state, new_state, candidate_rules[rule][0], rule.label)
                                 unique_states[new_state] = edge
 
                     edges = set(unique_states.values())
@@ -115,7 +134,8 @@ class DirectTSworker(threading.Thread):
                             edge.normalise(factor)
                             self.ts.edges.add(edge)
                     else:
-                        self.ts.edges.add(Edge(state, state, 1))
+                        # self loop to create correct DTMC
+                        self.ts.edges.add(Edge(state, state, 1, 'ε'))
 
             except KeyError:
                 self.work.clear()

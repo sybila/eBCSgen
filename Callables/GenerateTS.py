@@ -11,7 +11,7 @@ from Errors.UnspecifiedParsingError import UnspecifiedParsingError
 from Errors.RatesNotSpecifiedError import RatesNotSpecifiedError
 
 """
-usage: GenerateTS.py [-h] --model MODEL --output OUTPUT
+usage: GenerateTS.py [-h] --model MODEL --output OUTPUT --direct DIRECT
                      [--transition_file TRANSITION_FILE] [--max_time MAX_TIME]
                      [--max_size MAX_SIZE] [--bound BOUND]
 
@@ -20,6 +20,7 @@ Transition system generating
 required arguments:
   --model MODEL
   --output OUTPUT
+  --direct DIRECT
 
 optional arguments:
   --transition_file TRANSITION_FILE
@@ -36,6 +37,7 @@ optional = args_parser.add_argument_group('optional arguments')
 
 required.add_argument('--model', type=str, required=True)
 required.add_argument('--output', type=str, required=True)
+required.add_argument('--direct', required=True)
 
 optional.add_argument('--transition_file')
 optional.add_argument('--max_time', type=float, default=np.inf)
@@ -57,8 +59,11 @@ if model.success:
     if not model.data.all_rates:
         raise RatesNotSpecifiedError
 
-    vm = model.data.to_vector_model(args.bound)
-    ts = vm.generate_transition_system(ts, args.max_time, args.max_size)
+    if eval(args.direct):
+        ts = model.data.generate_direct_transition_system(args.max_time, args.max_size, args.bound)
+    else:
+        vm = model.data.to_vector_model(args.bound)
+        ts = vm.generate_transition_system(ts, args.max_time, args.max_size)
     ts.save_to_json(args.output)
 else:
     if "error" in model.data:
