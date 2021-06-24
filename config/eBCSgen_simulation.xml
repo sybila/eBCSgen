@@ -1,6 +1,6 @@
 <tool id="Simulation" name="Simulation" version="1.0.0">
 	<description>- simulate given model</description>
-	<command>python3 /home/matho/Documents/GITs/eBCSgen/Callables/Simulation.py
+	<command>python3 /home/xtrojak/eBCSgen/Callables/Simulation.py
         --model '$model'
         --output '$output'
         --deterministic '$type.deterministic_choice'
