@@ -13,7 +13,7 @@ def column(lst, index):
 
 
 class Rule:
-    def __init__(self, agents: tuple, mid: int, compartments: list, complexes: list, pairs: list, rate: Rate):
+    def __init__(self, agents: tuple, mid: int, compartments: list, complexes: list, pairs: list, rate: Rate, label):
         """
         Class to represent BCSL rule
 
@@ -30,6 +30,7 @@ class Rule:
         self.complexes = complexes
         self.pairs = pairs
         self.rate = rate
+        self.label = label
         self.comment = (False, [])
 
     def __eq__(self, other: 'Rule'):
@@ -48,8 +49,10 @@ class Rule:
             pre_comment = comment + "// " if self.comment[0] else ""
             post_comment = " " + comment if not self.comment[0] else ""
 
-        return pre_comment + " + ".join(lhs.to_list_of_strings()) + " => " + " + ".join(rhs.to_list_of_strings()) \
-               + rate + post_comment
+        label = str(self.label) + " ~ " if self.label else ""
+
+        return label + pre_comment + " + ".join(lhs.to_list_of_strings()) + \
+               " => " + " + ".join(rhs.to_list_of_strings()) + rate + post_comment
 
     def __lt__(self, other):
         return str(self) < str(other)

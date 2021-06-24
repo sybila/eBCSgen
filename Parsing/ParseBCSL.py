@@ -81,7 +81,7 @@ GRAMMAR = r"""
 
     init: const? rate_complex (COMMENT)?
     definition: def_param "=" number (COMMENT)?
-    rule: side ARROW side ("@" rate)? (";" variable)? (COMMENT)?
+    rule: (label)? side ARROW side ("@" rate)? (";" variable)? (COMMENT)?
     cmplx_dfn: cmplx_name "=" sequence (COMMENT)?
 
     side: (const? complex "+")* (const? complex)?
@@ -101,6 +101,8 @@ GRAMMAR = r"""
     INITS_START: "#! inits"
     DEFNS_START: "#! definitions"
     COMPLEXES_START: "#! complexes"
+    
+    !label: CNAME "~"
 
     param: CNAME
     def_param : CNAME
@@ -155,7 +157,7 @@ class ReplaceVariables(Transformer):
     the given cmplx_name (so far limited only to that).
     """
     def __init__(self, to_replace):
-        super(Transformer, self).__init__()
+        super(ReplaceVariables, self).__init__()
         self.to_replace = to_replace
 
     def VAR(self, matches):
@@ -169,7 +171,7 @@ class ExtractComplexNames(Transformer):
     Also multiplies rule with variable to its instances using ReplaceVariables Transformer.
     """
     def __init__(self):
-        super(Transformer, self).__init__()
+        super(ExtractComplexNames, self).__init__()
         self.complex_defns = dict()
 
     def cmplx_dfn(self, matches):
@@ -197,7 +199,7 @@ class TransformAbstractSyntax(Transformer):
     Based on replacing subtrees in parent trees.
     """
     def __init__(self, complex_defns):
-        super(Transformer, self).__init__()
+        super(TransformAbstractSyntax, self).__init__()
         self.complex_defns = complex_defns
 
     def cmplx_name(self, matches):
@@ -295,7 +297,7 @@ class TreeToComplex(Transformer):
 
 class TreeToObjects(Transformer):
     def __init__(self):
-        super(Transformer, self).__init__()
+        super(TreeToObjects, self).__init__()
         self.params = set()
     """
     A transformer which is called on a tree in a bottom-up manner and transforms all subtrees/tokens it encounters.
@@ -307,6 +309,9 @@ class TreeToObjects(Transformer):
         return float(matches[0])
 
     def def_param(self, matches):
+        return str(matches[0])
+
+    def label(self, matches):
         return str(matches[0])
 
     def number(self, matches):
@@ -331,11 +336,17 @@ class TreeToObjects(Transformer):
         return helper
 
     def rule(self, matches):
-        if len(matches) > 3:
-            lhs, arrow, rhs, rate = matches
+        label = None
+        rate = None
+        if len(matches) == 5:
+            label, lhs, arrow, rhs, rate = matches
+        elif len(matches) == 4:
+            if type(matches[0]) == str:
+                label, lhs, arrow, rhs = matches
+            else:
+                lhs, arrow, rhs, rate = matches
         else:
             lhs, arrow, rhs = matches
-            rate = None
         agents = tuple(lhs.seq + rhs.seq)
         mid = lhs.counter
         compartments = lhs.comp + rhs.comp
@@ -347,7 +358,7 @@ class TreeToObjects(Transformer):
         elif lhs.counter < rhs.counter:
             pairs += [(None, i + lhs.counter) for i in range(lhs.counter, rhs.counter)]
 
-        return Rule(agents, mid, compartments, complexes, pairs, Rate(rate) if rate else None)
+        return Rule(agents, mid, compartments, complexes, pairs, Rate(rate) if rate else None, label)
 
     def rules(self, matches):
         return matches[1:]

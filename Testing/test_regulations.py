@@ -13,25 +13,24 @@ from Regulations.Regular import Regular
 class TestRegulations(unittest.TestCase):
     def setUp(self):
         self.model_parser = Parser("model")
-        self.rule_parser = Parser("rule")
         self.complex_parser = Parser("rate_complex")
 
-        init_complex = self.complex_parser.parse("A(S{i},T{i})::cell").data.children[0]
-        init = collections.Counter([init_complex])
+        self.model_with_labels = """
+            #! rules
+            r1_S ~ A(S{i})::cell => A(S{a})::cell @ k1*[A(S{i})::cell]
+            r1_T ~ A(T{i})::cell => A(T{a})::cell @ k2*[A(T{i})::cell]
+            r2 ~ A()::cell => A()::out @ k3*[A()::cell]
 
-        rule_exp = "A(S{i})::cell => A(S{a})::cell @ k1*[A(S{i})::cell]"
-        rule_1 = self.rule_parser.parse(rule_exp).data
-        rule_1.label = "r1_S"
+            #! inits
+            1 A(S{i},T{i})::cell
 
-        rule_exp = "A(T{i})::cell => A(T{a})::cell @ k2*[A(T{i})::cell]"
-        rule_2 = self.rule_parser.parse(rule_exp).data
-        rule_2.label = "r1_T"
+            #! definitions
+            k1 = 0.3
+            k2 = 0.5
+            k3 = 0.1
+            """
 
-        rule_exp = "A()::cell => A()::out @ k3*[A()::cell]"
-        rule_3 = self.rule_parser.parse(rule_exp).data
-        rule_3.label = "r2"
-
-        self.model_mini = Model({rule_1, rule_2, rule_3}, init, {'k1': 0.3, 'k2': 0.5, 'k3': 0.1}, set())
+        self.model_mini = self.model_parser.parse(self.model_with_labels).data
 
     def test_programmed(self):
         regulation = {'r1_S': {'r1_T', 'r2'}, 'r1_T': {'r1_S'}}
@@ -39,7 +38,6 @@ class TestRegulations(unittest.TestCase):
 
         ts = self.model_mini.generate_direct_transition_system()
         ts.export("Testing/regulations/programmed_ts.json")
-        self.fail()
 
     def test_ordered(self):
         regulation = {('r1_S', 'r2'), ('r1_T', 'r2')}
@@ -47,7 +45,6 @@ class TestRegulations(unittest.TestCase):
 
         ts = self.model_mini.generate_direct_transition_system()
         ts.export("Testing/regulations/ordered_ts.json")
-        self.fail()
 
     def test_conditional(self):
         regulation = {'r2': {self.complex_parser.parse("A(S{a},T{i})::cell").data.children[0]},
@@ -56,7 +53,6 @@ class TestRegulations(unittest.TestCase):
 
         ts = self.model_mini.generate_direct_transition_system()
         ts.export("Testing/regulations/conditional_ts.json")
-        self.fail()
 
     def test_concurrent_free(self):
         regulation = {('r1_S', 'r2'), ('r1_T', 'r2')}
@@ -64,7 +60,6 @@ class TestRegulations(unittest.TestCase):
 
         ts = self.model_mini.generate_direct_transition_system()
         ts.export("Testing/regulations/concurrent_free_ts.json")
-        self.fail()
 
     def test_regular(self):
         regulation = r'(r1_Sr1_Tr2|r1_Tr1_Sr2)'
@@ -72,12 +67,10 @@ class TestRegulations(unittest.TestCase):
 
         ts = self.model_mini.generate_direct_transition_system()
         ts.export("Testing/regulations/regular_ts.json")
-        self.fail()
 
     def test_no_regulation(self):
         ts = self.model_mini.generate_direct_transition_system()
         ts.export("Testing/regulations/no_regulation_ts.json")
-        self.fail()
 
     def test_network_free_simulation_regulated(self):
         regulation = {'r1_S': {'r1_T'}, 'r1_T': {'r2'}}
