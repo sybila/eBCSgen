@@ -341,23 +341,19 @@ class Model:
             bound = max(rule.lhs.most_frequent(), rule.rhs.most_frequent())
         return max(bound, Side(self.init).most_frequent())
 
-    def generate_direct_transition_system(self, ts=None, max_time: float = np.inf, max_size: float = np.inf, bound=None):
-        if not ts:
-            ts = DirectTS()
-            if self.regulation:
-                if self.regulation.memory == 0:
-                    ts.init = MultisetState(self.init)
-                elif self.regulation.memory == 1:
-                    ts.init = OneStepMemoryState(self.init)
-                else:
-                    ts.init = FullMemoryState(self.init)
-            else:
+    def generate_direct_transition_system(self, max_time: float = np.inf, max_size: float = np.inf, bound=None):
+        ts = DirectTS()
+        if self.regulation:
+            if self.regulation.memory == 0:
                 ts.init = MultisetState(self.init)
-            ts.unprocessed = {ts.init}
-            ts.unique_complexes.update(set(ts.init.multiset))
+            elif self.regulation.memory == 1:
+                ts.init = OneStepMemoryState(self.init)
+            else:
+                ts.init = FullMemoryState(self.init)
         else:
-            pass
-            # TODO: if a TS is given, extract all the data
+            ts.init = MultisetState(self.init)
+        ts.unprocessed = {ts.init}
+        ts.unique_complexes.update(set(ts.init.multiset))
 
         for rule in self.rules:
             # precompute complexes for each rule
