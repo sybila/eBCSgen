@@ -16,7 +16,7 @@ class DirectTS:
     def __repr__(self):
         return str(self)
 
-    def export(self, output_file):
+    def save_to_json(self, output_file):
         ordering = SortedList(sorted(self.unique_complexes))
         # state -> unique ID
         states_encoding = self.create_encoding()

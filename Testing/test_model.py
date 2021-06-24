@@ -607,4 +607,4 @@ class TestModel(unittest.TestCase):
             rules.add(rule)
         model.rules = rules
         ts = model.generate_direct_transition_system()
-        ts.export("Testing/direct_ts.json")
+        ts.save_to_json("Testing/direct_ts.json")

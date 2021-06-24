@@ -34,7 +34,7 @@ class TestRegulations(unittest.TestCase):
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
         ts = model.generate_direct_transition_system()
-        ts.export("Testing/regulations/programmed_ts.json")
+        ts.save_to_json("Testing/regulations/programmed_ts.json")
 
     def test_ordered(self):
         regulation = """
@@ -47,7 +47,7 @@ class TestRegulations(unittest.TestCase):
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
         ts = model.generate_direct_transition_system()
-        ts.export("Testing/regulations/ordered_ts.json")
+        ts.save_to_json("Testing/regulations/ordered_ts.json")
 
     def test_conditional(self):
         regulation = """
@@ -60,7 +60,7 @@ class TestRegulations(unittest.TestCase):
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
         ts = model.generate_direct_transition_system()
-        ts.export("Testing/regulations/conditional_ts.json")
+        ts.save_to_json("Testing/regulations/conditional_ts.json")
 
     def test_concurrent_free(self):
         regulation = """
@@ -73,7 +73,7 @@ class TestRegulations(unittest.TestCase):
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
         ts = model.generate_direct_transition_system()
-        ts.export("Testing/regulations/concurrent_free_ts.json")
+        ts.save_to_json("Testing/regulations/concurrent_free_ts.json")
 
     def test_regular(self):
         regulation = """
@@ -86,12 +86,12 @@ class TestRegulations(unittest.TestCase):
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
         ts = model.generate_direct_transition_system()
-        ts.export("Testing/regulations/regular_ts.json")
+        ts.save_to_json("Testing/regulations/regular_ts.json")
 
     def test_no_regulation(self):
         model = self.model_parser.parse(self.model_with_labels).data
         ts = model.generate_direct_transition_system()
-        ts.export("Testing/regulations/no_regulation_ts.json")
+        ts.save_to_json("Testing/regulations/no_regulation_ts.json")
 
     def test_network_free_simulation_regulated(self):
         regulation = """
