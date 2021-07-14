@@ -21,4 +21,6 @@ class Programmed(BaseRegulation):
         if len(current_state.used_rules) == 0:
             return candidates
         last_rule = current_state.used_rules[-1]
-        return {rule: values for rule, values in candidates.items() if rule.label in self.regulation[last_rule]}
+        if last_rule in self.regulation:
+            return {rule: values for rule, values in candidates.items() if rule.label in self.regulation[last_rule]}
+        return candidates
