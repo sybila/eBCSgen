@@ -269,34 +269,72 @@ class Model:
         test_model.docPlug.setRequired(True)
         unique_complexes, unique_params = self.create_unique_complexes_and_params()
 
-
+        #print(unique_complexes) #just testing of isomorphism grouping
         test_model.create_basic_species_types(self.atomic_signature, self.structure_signature) #1
-        test_model.create_all_species_compartments_and_complex_species_types(list(unique_complexes))#2
+        test_model.create_all_species_compartments_and_complex_species_types(unique_complexes)#2
         test_model.create_all_reactions(self.rules)#3
+        test_model.create_reaction_for_isomorphisms(unique_complexes)#3.1
         test_model.create_parameters(self.definitions, unique_params)#4
         test_model.set_initial_amounts(self.init)#5
 
         return test_model.document
-        #libsbml.writeSBMLToFile(test_model.document, "../Translating/Output/output.xml")
-        #print(libsbml.writeSBMLToString(test_model.document))
 
     def create_unique_complexes_and_params(self):
         """
         Extracts unique complexes and compartments from rules
+        splits complexes by its isomorphisms
 
-        :return: set of unique complexes
-
-         Isomorphism should be avoided by using set() on Complex Agents
-         Comparing them by its __equals__
+        :return: set of unique complexes and set of unique params
         """
-        unique_complexes = set()
+        #here all complexes will be
+        unique_complexes = dict()
+        #gets all initialization complexes
         initialization_complexes = set(map(lambda x : x[0],self.init.items()))
         unique_params_from_rate = set() # Might be usefull later
+
+        #traverses all rules
         for rule in self.rules:
+            # gets all params and agents from single rate
             agents, params = rule.rate.get_params_and_agents()
-            unique_complexes = unique_complexes.union(rule.get_unique_complexes_from_rule()).union(agents)
-            unique_params_from_rate =unique_params_from_rate.union(params)
-        return unique_complexes.union(initialization_complexes), unique_params_from_rate
+
+            # these are SBML codes in values
+            #as dict distributed by complexes keys
+            #splited by isomorphism groups
+            complexes_from_rule_in_dict = rule.get_unique_complexes_from_rule()
+            #this adds all elements in dict rule to all
+            #complexes from previous runs
+            for comp in complexes_from_rule_in_dict:
+                if comp not in unique_complexes:
+                    unique_complexes[comp] = complexes_from_rule_in_dict[comp]
+                else:
+                    unique_complexes[comp] = unique_complexes[comp].union(complexes_from_rule_in_dict[comp])
+            #this adds all agents from rates
+            #to all complexes from previous runs
+            for agent in agents:
+                double_agent = (agent, agent.to_SBML_species_code())
+                if agent not in unique_complexes:
+                    empty_set = set()
+                    empty_set.add(double_agent)
+                    unique_complexes[agent] = empty_set
+                else:
+                    unique_complexes[agent].add(double_agent)
+            #unique_complexes = unique_complexes.union(rule.get_unique_complexes_from_rule()).union(agents)
+            unique_params_from_rate = unique_params_from_rate.union(params)
+            #loops over all initialization complexes
+            #there might be agent that is isomorphic to some agent in rules
+            #but not present in rule directly... it has to be convertable to those
+            for agent in initialization_complexes:
+                double_agent = (agent, agent.to_SBML_species_code())
+                if agent not in unique_complexes:
+                    empty_set = set()
+                    empty_set.add(double_agent)
+                    unique_complexes[agent] = empty_set
+                else:
+                    unique_complexes[agent].add(double_agent)
+        #convert set to list for better handling
+        for comp in unique_complexes:
+            unique_complexes[comp] = list(unique_complexes[comp])
+        return unique_complexes, unique_params_from_rate
 
 def call_storm(command: str, files: list, storm_local: bool):
     """

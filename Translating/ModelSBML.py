@@ -19,7 +19,6 @@ class ModelSBML:
 ##THIS ARE SOME INNER DATA -COULD BE STORET BETTER
         self.finishedCompartments = []
         self.finishedComplexTypes = []
-        self.complex_names_map = {}
 
 
     def create_species_feature_type(self, new_species_type, atomic: str, atomics: dict):
@@ -56,7 +55,7 @@ class ModelSBML:
         name = comp_agent.to_SBML_speciesTypes_code()
         new_species_type.setId(name)
 
-        for num, subcomponent in enumerate(comp_agent.get_agent_names(), start=0):
+        for num, subcomponent in enumerate(sorted(comp_agent.get_agent_names()), start=0):
             new_instance = new_species_type.createSpeciesTypeInstance()
             new_instance.setId(subcomponent+"_"+str(num))
             new_instance.setSpeciesType("st_"+subcomponent)
@@ -135,22 +134,25 @@ class ModelSBML:
         new_species.setId(comp_agent.to_SBML_species_code())
         new_species.setName(str(comp_agent))
 
-
-
-    def create_all_species_compartments_and_complex_species_types(self, unique_complexes: set()):
-        '''Creates species for every unique Complex agent, creates SpeciesType
-                 for composed Complex agent if there is new one '''
+    def create_all_species_compartments_and_complex_species_types(self, unique_complexes: dict):
+        '''Creates species for every unique Complex agent in keys, creates SpeciesType
+                 for composed Complex agent if there is new one
+            No isomorphisms possible here                 '''
         for comp_agent in unique_complexes:
-            self.complex_names_map[str(comp_agent)] = comp_agent.to_SBML_species_code()
+            for agent in unique_complexes[comp_agent]:
+                if agent[0].compartment not in self.finishedCompartments:
+                    self.create_compartment(agent[0].compartment)
+                #if agent is composed - control removed. not composed agents are therefore created 2 times
+                # firstly as structs and secondly as complex
+                #this can be good choice because it enables usages of those structs if there
+                #were far more richer rules. Complexes have their compartments in naming convention
+                # this distinguishes complex in different compartment for the reaction
+                # it has to be 2 different species because reaction for changing complexes is not possible here
+                if agent[0].to_SBML_speciesTypes_code() not in self.finishedComplexTypes:
+                    self.create_species_type_from_complex(agent[0])
+                    self.finishedComplexTypes.append(agent[0].to_SBML_speciesTypes_code())
 
-            if comp_agent.compartment not in self.finishedCompartments:
-                self.create_compartment(comp_agent.compartment)
-            name = comp_agent.to_SBML_speciesTypes_code()
-            if comp_agent.is_composed() and name not in self.finishedComplexTypes:
-                self.create_species_type_from_complex(comp_agent)
-                self.finishedComplexTypes.append(name)
-
-            self.create_species(comp_agent)
+                self.create_species(agent[0])
 
     def create_reactants(self, items:list(), reaction):
         """Creates all reactants from Complexes in list of tuples"""
@@ -178,13 +180,11 @@ class ModelSBML:
         for i, r in enumerate(rules):
             reac = r.to_reaction()
             rate = reac.rate
-            #res, actors = self.parse_expression_to_ML(rate.get_formula_in_list())
             res = rate.to_mathML()
             agents, params = rate.get_params_and_agents()
             actors = []
             for agent in agents:
                 actors.append(agent.to_SBML_species_code())
-            #
             law = reaction_objects[i].createKineticLaw()
             num_of_products = reaction_objects[i].getListOfProducts().getListOfAllElements().getSize()
             num_of_reactants = reaction_objects[i].getListOfReactants().getListOfAllElements().getSize()
@@ -201,6 +201,34 @@ class ModelSBML:
             for remaining_actor in actors:
                 modifier = reaction_objects[i].createModifier()
                 modifier.setSpecies(remaining_actor)
+
+    def create_reaction_for_isomorphisms(self, unique_complexes):
+        '''Function creates all reactions between isomorphism
+        possible improvements:
+        use reversible(True) and do half of reactions
+        check if reaction was not already created as reglar reaction
+        so it is not duplicit'''
+        for compl in unique_complexes:
+            #if there are any isomorphisms
+            if len(unique_complexes[compl]) > 1:
+                for i in range(len(unique_complexes[compl])):
+                    for j in range(len(unique_complexes[compl])):
+                        if i > j:
+                            reaction = self.model.createReaction()
+                            reaction.setId("rc_" + str(unique_complexes[compl][i][1]) + "_to_" + str(unique_complexes[compl][j][1]))
+                            reaction.setName(str(unique_complexes[compl][i][0]) + "_to_" + str(unique_complexes[compl][j][0]))
+                            reaction.setReversible(True) #reactions are reversible and only one half of them bcs of i>j
+                            reaction.setFast(False)
+
+                            product = reaction.createProduct()
+                            product.setSpecies(str(unique_complexes[compl][i][1]))
+                            product.setConstant(False)
+                            product.setStoichiometry(1)
+
+                            reactant = reaction.createReactant()
+                            reactant.setSpecies(str(unique_complexes[compl][j][1]))
+                            reactant.setConstant(False)
+                            reactant.setStoichiometry(1)
 
     def create_all_reactions(self, rules: set):
         '''This function creates all reactions from rules
@@ -226,7 +254,6 @@ class ModelSBML:
             self.create_products(list(reac.rhs.to_counter().items()), reaction)
         self.create_kinetic_law_and_modifiers(rules, reaction_objects)
 
-### THIS WILL BE IMPROVED
     def create_parameters(self, definitions: dict, unique_params: set):
         """Sets up parameters from definitions"""
         for definition in definitions:

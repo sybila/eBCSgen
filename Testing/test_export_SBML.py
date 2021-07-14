@@ -40,10 +40,10 @@ class TestSBMLexport(unittest.TestCase):
         model_izo = """
         #! rules
             KaiC(S{u},T{p}).KaiC(S{u},T{u})::cyt => KaiC(S{u},T{u}).KaiC(S{u},T{p})::cyt @ (kcat1*[KaiC(S{u},T{p}).KaiC(S{u},T{u})::cyt])
-            KaiC(S{u},T{u}).KaiC(S{u},T{u})::cyt => KaiC(S{u},T{u}).KaiC(S{u},T{u})::cyt @ (kcat2*[KaiC(S{u},T{u}).KaiC(S{u},T{p})::cyt])
+            KaiC(S{u},T{u}).KaiC(S{u},T{p})::cyt => KaiC(S{u},T{u}).KaiC(S{u},T{u})::cyt @ (kcat2*[KaiC(S{u},T{u}).KaiC(S{u},T{p})::cyt])
         
         #! inits
-            2 KaiC(S{u},T{u}).KaiC(S{u},T{u})::cyt
+            2 KaiC(S{u},T{u}).KaiC(S{u},T{p})::cyt
             1 KaiB4{a}::cyt
             1 KaiA2()::cyt 
          
@@ -59,8 +59,25 @@ class TestSBMLexport(unittest.TestCase):
             kdimer = 1.77
         
         """
+        model_transition = """
+        #! rules
+            A(K{u}).B(S{u}).C(T{p})::cyt => A(K{u}).B(S{u}).B(T{p})::cyt @ (kcat1*[KaiC(S{u},T{p}).KaiC(S{u},T{u})::cyt])
+            B(S{u}).A(K{u}).C(T{p})::cyt => F(X{u})::cyt @ (kcat1*[KaiC(S{u},T{p}).KaiC(S{u},T{u})::cyt])
+            A(K{u}).C(T{p}).B(S{u})::cyt => A(K{u}).B(S{u}).B(T{u})::cyt @ (kcat1*[KaiC(S{u},T{p}).KaiC(S{u},T{u})::cyt])
+            C(T{p}).B(S{u}).A(K{u})::out => J(S{p})::cyt @ (kcat4*[KaiB4{a}.KaiA2()::cyt]*[KaiC(S{p},T{p}).KaiC(S{p},T{p})::cyt])/(Km + [KaiC(S{p},T{p}).KaiC(S{p},T{p})::cyt])
+        
+        #! inits
+            7 C(T{p}).A(K{u}).B(S{u})::cyt
+            3 KaiB4{a}.KaiA2()::cyt
+            KaiC(S{p},T{p}).KaiC(S{p},T{p})::cyt
+                   
+        #! definitions
+            kcat4 = 0.89
+            kcat1 = 0.3
+        """
         self.models_to_test["general"] = model_parser.parse(model_exp).data
         self.models_to_test["izomorphic"] = model_parser.parse(model_izo).data
+        self.models_to_test["transition"] = model_parser.parse(model_transition).data
 
     def test_by_validator(self):
         validator = libsbml.SBMLValidator()

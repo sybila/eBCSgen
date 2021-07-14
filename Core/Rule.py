@@ -55,14 +55,29 @@ class Rule:
 
     def __hash__(self):
         return hash(str(self))
-    def get_unique_complexes_from_rule(self) -> set:
-        """Creates complexes from rule and returns them in set for better handling
-            :return: set of Complexes
+    def get_unique_complexes_from_rule(self) -> dict:
+        """Creates complexes from rule and returns them in dict
+            Keys: are Complex agents
+            Values: are sets of all found isomorphisms in SBML code.
+            :return: dict of {Complexes:{SBML codes of all isomorphisms in set}}
         """
-        unique_complexes_from_rule = set()
+        unique_complexes_from_rule = dict()
         for (f, t) in self.complexes:
             c = Complex(self.agents[f:t + 1], self.compartments[f])
-            unique_complexes_from_rule.add(c)
+            # if new complex is not among complexes names
+            #(can be different isomorphism, that counts)
+            #create new key with this complex name
+            #and add its value as new set with SBML_code
+            #that represents this given complex
+            double =  (c, c.to_SBML_species_code()) # saving both complex and its name
+            #to be able to use that complex and not confuse it with other
+            if c not in unique_complexes_from_rule.keys():
+                unique_complexes_from_rule[c] = set()
+                unique_complexes_from_rule[c].add(double)
+            else:
+                #just add its sbml code to set
+                #... eg different isomorphism
+                unique_complexes_from_rule[c].add(double)
         return unique_complexes_from_rule
 
     def create_complexes(self):

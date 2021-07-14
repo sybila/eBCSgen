@@ -54,15 +54,29 @@ class Complex:
         :return: <str> id of SBML - speciesType of this complex agent
 
         """
-        return "st_"+"_".join(sorted(self.get_agent_names()))
+        #string has to be sorted that is why this line
+       # name = ".".join(list(map(str, sorted(self.agents)))) + "::" + self.compartment
+       # result = ''
+       # forbiden_symbols = ['.','(', ')', ':', '}', '{', ',']
+       # for letter in name:
+       #     if letter in forbiden_symbols:
+       #         result += '_'
+       #     else:
+       #         result += letter
+        return "st_"+"_".join(sorted(self.get_agent_names())) +"_"+ str(self.compartment)
 
     def to_SBML_species_code(self):
-        """Using hash for now. Instead of '-' symbol we use '_'
+        """
+        Using hash that is specific for different ordering of agents
+        instead of self.__hash()__ function it outputs different number for
+        isomorphic agents which sufficiently distinguishes them from one another
+        Instead of '-' symbol we use '_'
+        list of agents is casted to tuple() because list() is unhashable type
         so it is compatible with SBML - id naming later some nicer
         id could be implemented
 
         :return: <str> id of SBML - species of this complex agent"""
-        code = str(self.__hash__())
+        code = str(hash((tuple(self.agents),self.compartment)))
         return "sp_" + code[1:] if code[0] == "-" else "sp_" + code
 
     def is_composed(self):
