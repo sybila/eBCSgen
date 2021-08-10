@@ -147,6 +147,12 @@ class Model:
         return any(list(map(lambda a: a.exists_compatible_agent(agent), self.rules)))
 
     def network_free_simulation(self, max_time: float):
+        """
+        Direct simulation method using Network-free Gillespie method.
+
+        :param max_time: maximal simulation time
+        :return: generated dataframe containing simulated time series
+        """
         state = FullMemoryState(copy.deepcopy(self.init))
         for rule in self.rules:
             # precompute complexes for each rule
@@ -213,12 +219,25 @@ class Model:
         return df
 
     def compute_bound(self):
+        """
+        Estimates bound from the rules and initial state.
+
+        :return: obtained bound
+        """
         bound = 0
         for rule in self.rules:
-            bound = max(rule.lhs.most_frequent(), rule.rhs.most_frequent())
+            bound = max(bound, max(rule.lhs.most_frequent(), rule.rhs.most_frequent()))
         return max(bound, Side(self.init).most_frequent())
 
     def generate_direct_transition_system(self, max_time: float = np.inf, max_size: float = np.inf, bound=None):
+        """
+        Generates transition system using direct rule firing.
+
+        :param max_time: max time for TS generating before interrupting
+        :param max_size: max allowed size of TS before interrupting
+        :param bound: bound for individual elements
+        :return: generated transitions system
+        """
         ts = DirectTS(bound)
         if self.regulation:
             if self.regulation.memory == 0:
