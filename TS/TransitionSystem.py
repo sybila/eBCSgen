@@ -3,7 +3,6 @@ import numpy as np
 from itertools import groupby
 from sortedcontainers import SortedList
 
-from TS.Edge import Edge
 from TS.State import MemorylessState
 
 
@@ -13,6 +12,7 @@ class TransitionSystem:
         self.edges = set()  # Edge objects: (int from, int to, probability), can be used for explicit Storm format
         self.ordering = ordering  # used to decode MemorylessState to actual agents
         self.init = int
+        self.params = []
 
         # for TS generating
         self.unprocessed = set()
@@ -102,17 +102,20 @@ class TransitionSystem:
         old_encoding = self.create_decoding()
         self.edges = set(map(lambda edge: edge.recode(old_encoding, new_encoding), self.edges))
 
-    def save_to_json(self, output_file: str):
+    def save_to_json(self, output_file: str, params=None):
         """
         Save current TS as a JSON file.
 
+        :param params: given set of unknown parameters
         :param output_file: given file to write to
         """
         nodes = {value: str(key) for key, value in self.states_encoding.items()}
         unique = list(map(str, self.ordering))
         edges = [edge.to_dict() for edge in self.edges]
 
-        data = {'nodes': nodes, 'edges': edges, 'ordering': unique, "initial": self.init}
+        data = {'nodes': nodes, 'edges': edges, 'ordering': unique, 'initial': self.init}
+        if params:
+            data['parameters'] = list(params)
 
         if self.unprocessed:
             data['unprocessed'] = [str(state) for state in self.unprocessed]

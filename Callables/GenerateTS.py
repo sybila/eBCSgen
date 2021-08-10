@@ -64,7 +64,7 @@ if model.success:
     else:
         vm = model.data.to_vector_model(args.bound)
         ts = vm.generate_transition_system(ts, args.max_time, args.max_size)
-    ts.save_to_json(args.output)
+    ts.save_to_json(args.output, model.data.params)
 else:
     if "error" in model.data:
         raise UnspecifiedParsingError(model.data["error"])

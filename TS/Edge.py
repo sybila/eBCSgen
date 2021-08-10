@@ -97,4 +97,5 @@ def edge_from_dict(d: dict) -> Edge:
     :param d: dict representing the edge
     :return: Edge
     """
-    return Edge(d['s'], d['t'], d['p'], True)
+    label = d.get('label', None)
+    return Edge(d['s'], d['t'], d['p'], label, encoded=True)
