@@ -395,6 +395,7 @@ class TreeToObjects(Transformer):
                         helper.comp.append(compartment)
                         helper.counter += 1
                     helper.complexes.append((start, helper.counter - 1))
+                stochio = 1
         return helper
 
     def rule(self, matches):
@@ -450,7 +451,7 @@ class TreeToObjects(Transformer):
 
     def model(self, matches):
         params = self.params - set(matches[2].keys())
-        regulation = matches[3] if len(matches) > 3 else None
+        regulation = matches[-1] if len(matches) > 3 else None
         return Core.Model.Model(set(matches[0]), matches[1], matches[2], params, regulation)
 
 
