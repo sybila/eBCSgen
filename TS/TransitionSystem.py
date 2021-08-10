@@ -7,12 +7,13 @@ from TS.State import MemorylessState
 
 
 class TransitionSystem:
-    def __init__(self, ordering: SortedList):
+    def __init__(self, ordering: SortedList, bound):
         self.states_encoding = dict()  # MemorylessState -> int
         self.edges = set()  # Edge objects: (int from, int to, probability), can be used for explicit Storm format
         self.ordering = ordering  # used to decode MemorylessState to actual agents
         self.init = int
         self.params = []
+        self.bound = bound
 
         # for TS generating
         self.unprocessed = set()
@@ -51,7 +52,7 @@ class TransitionSystem:
         re_encoding = {key.reorder(reordering_indices): self.states_encoding[key] for key in self.states_encoding}
 
         # new TransitionSystem with ordering taken from other and reordered states in re_encoding
-        ts = TransitionSystem(other.ordering)
+        ts = TransitionSystem(other.ordering, other.bound)
         ts.states_encoding = re_encoding
         ts.edges = self.edges
 
@@ -113,7 +114,7 @@ class TransitionSystem:
         unique = list(map(str, self.ordering))
         edges = [edge.to_dict() for edge in self.edges]
 
-        data = {'nodes': nodes, 'edges': edges, 'ordering': unique, 'initial': self.init}
+        data = {'nodes': nodes, 'edges': edges, 'ordering': unique, 'initial': self.init, 'bound': int(self.bound)}
         if params:
             data['parameters'] = list(params)
 
@@ -123,24 +124,23 @@ class TransitionSystem:
         with open(output_file, 'w') as json_file:
             json.dump(data, json_file, indent=4)
 
-    def change_hell(self, bound):
+    def change_hell(self):
         """
         Changes hell from inf to bound + 1.
 
         TODO: maybe we could get rid of inf completely, but it is more clear for
             debugging purposes
 
-        :param bound: given allowed bound
         """
         for key, value in self.states_encoding.items():
             if key.is_inf:
                 del self.states_encoding[key]
-                hell = MemorylessState(np.array([bound + 1] * len(key)))
+                hell = MemorylessState(np.array([self.bound + 1] * len(key)))
                 hell.is_inf = True
                 self.states_encoding[hell] = value
                 break
 
-    def create_AP_labels(self, APs: list, bound: int):
+    def create_AP_labels(self, APs: list):
         """
         Creates label for each AtomicProposition.
         Moreover, goes through all states in ts.states_encoding and validates whether they satisfy give
@@ -155,7 +155,7 @@ class TransitionSystem:
             AP_lables[ap] = "property_" + str(len(AP_lables))
 
         state_labels = dict()
-        self.change_hell(bound)
+        self.change_hell()
         for state in self.states_encoding.keys():
             for ap in APs:
                 if state.check_AP(ap, self.ordering):
@@ -187,12 +187,11 @@ class TransitionSystem:
                                     for state in sorted(state_labels)]))
         label_file.close()
 
-    def save_to_prism(self, output_file: str, bound: int, params: set, prism_formulas: list):
+    def save_to_prism(self, output_file: str, params: set, prism_formulas: list):
         """
         Save the TransitionSystem as a PRISM file (parameters present).
 
         :param output_file: output file name
-        :param bound: given bound
         :param params: set of present parameters
         :param prism_formulas: definition of abstract Complexes
         """
@@ -205,12 +204,12 @@ class TransitionSystem:
         prism_file.write("\nmodule TS\n")
 
         # to get rid of inf
-        self.change_hell(bound)
+        self.change_hell()
         decoding = self.create_decoding()
 
         # declare state variables
         init = decoding[self.init]
-        vars = ["\tVAR_{} : [0..{}] init {}; // {}".format(i, bound + 1, init.sequence[i], self.ordering[i])
+        vars = ["\tVAR_{} : [0..{}] init {}; // {}".format(i, self.bound + 1, init.sequence[i], self.ordering[i])
                 for i in range(len(self.ordering))]
         prism_file.write("\n" + "\n".join(vars) + "\n")
 

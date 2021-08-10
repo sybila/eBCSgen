@@ -47,7 +47,6 @@ else:
 
 ts = load_TS_from_json(args.transition_file)
 # TODO for presence of rates
-# TODO bound
 
 if len(ts.params) != 0:
     raise InvalidInputError("Provided transition system is parametrised - model checking cannot be executed.")

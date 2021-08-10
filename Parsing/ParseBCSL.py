@@ -38,8 +38,9 @@ def load_TS_from_json(json_file: str) -> TransitionSystem:
         data = json.load(json_file)
 
         ordering = SortedList(map(lambda agent: complex_parser.parse(agent).data.children[0], data['ordering']))
-        ts = TransitionSystem(ordering)
-        ts.states_encoding = {MemorylessState(np.array(eval(data['nodes'][node_id]))): int(node_id) for node_id in data['nodes']}
+        ts = TransitionSystem(ordering, data['bound'])
+        ts.states_encoding = {MemorylessState(np.array(eval(data['nodes'][node_id]))): int(node_id)
+                              for node_id in data['nodes']}
         ts.edges = {edge_from_dict(edge) for edge in data['edges']}
         ts.init = data['initial']
         if 'parameters' in data:

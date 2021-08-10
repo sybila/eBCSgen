@@ -184,7 +184,7 @@ class VectorModel:
         :return: generated Transition system
         """
         if not ts:
-            ts = TransitionSystem(self.ordering)
+            ts = TransitionSystem(self.ordering, self.bound)
             ts.unprocessed = {self.init}
 
         workers = [TSworker(ts, self) for _ in range(multiprocessing.cpu_count())]

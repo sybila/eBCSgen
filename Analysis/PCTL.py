@@ -17,16 +17,13 @@ class PCTL:
 
         :param ts: given transition system
         :param PCTL_formula: given PCTL formula
-        :param bound: given bound
         :param storm_local: use local Storm installation
         :return: output of Storm model checker
         """
         path = "/tmp/"
         # generate labels and give them to save_storm
         APs = PCTL_formula.get_APs()
-
-        # TODO bound istead of None
-        state_labels, AP_labels = ts.create_AP_labels(APs, None)
+        state_labels, AP_labels = ts.create_AP_labels(APs)
         formula = PCTL_formula.replace_APs(AP_labels)
         transitions_file = path + "exp_transitions.tra"
         labels_file = path + "exp_labels.lab"
@@ -58,8 +55,7 @@ class PCTL:
 
         prism_file = path + "prism-parametric.pm"
 
-        # TODO bound istead of None
-        ts.save_to_prism(prism_file, None, ts.params, prism_formulas)
+        ts.save_to_prism(prism_file, ts.params, prism_formulas)
 
         command_region = "storm-pars --prism {0} --prop '{1}' --region '{2}' --refine 0.01 10 --printfullresult"
         command_no_region = "storm-pars --prism {0} --prop '{1}'"

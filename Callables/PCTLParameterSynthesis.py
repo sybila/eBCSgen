@@ -56,7 +56,6 @@ else:
 
 ts = load_TS_from_json(args.transition_file)
 # TODO for presence of rates
-# TODO bound
 
 if len(ts.params) == 0:
     raise InvalidInputError("Provided model is not parametrised - parameter synthesis cannot be executed.")
