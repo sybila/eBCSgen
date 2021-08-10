@@ -219,7 +219,7 @@ class Model:
         return max(bound, Side(self.init).most_frequent())
 
     def generate_direct_transition_system(self, max_time: float = np.inf, max_size: float = np.inf, bound=None):
-        ts = DirectTS()
+        ts = DirectTS(bound)
         if self.regulation:
             if self.regulation.memory == 0:
                 ts.init = MultisetState(self.init)

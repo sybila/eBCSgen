@@ -3,12 +3,13 @@ import json
 
 
 class DirectTS:
-    def __init__(self):
+    def __init__(self, bound):
         self.edges = set()
         self.unprocessed = set()
         self.processed = set()
         self.unique_complexes = set()
         self.init = None
+        self.bound = bound
 
     def __str__(self):
         return str(self.processed) + "\n" + "\n".join(list(map(str, self.edges))) + "\n"
@@ -16,7 +17,7 @@ class DirectTS:
     def __repr__(self):
         return str(self)
 
-    def save_to_json(self, output_file):
+    def save_to_json(self, output_file, params=None):
         ordering = SortedList(sorted(self.unique_complexes))
         # state -> unique ID
         states_encoding = self.create_encoding()
@@ -34,7 +35,7 @@ class DirectTS:
                 unprocessed[states_encoding[state]] = str(state.to_vector(ordering))
 
         init = states_encoding[self.init]
-        save_to_json(states, unprocessed, self.edges, init, ordering, output_file)
+        save_to_json(states, unprocessed, self.edges, init, ordering, output_file, self.bound, params)
 
     def create_encoding(self):
         # for now assume generating is complete i.e. ignore unprocessed states
@@ -48,7 +49,7 @@ class DirectTS:
             edge.encode(states_encoding)
 
 
-def save_to_json(states, unprocessed, edges, init, ordering, output_file):
+def save_to_json(states, unprocessed, edges, init, ordering, output_file, bound, params):
     """
     Save current TS as a JSON file.
 
@@ -56,7 +57,9 @@ def save_to_json(states, unprocessed, edges, init, ordering, output_file):
     """
     unique = list(map(str, ordering))
     edges = [edge.to_dict() for edge in edges]
-    data = {'nodes': states, 'edges': edges, 'ordering': unique, "initial": init}
+    data = {'nodes': states, 'edges': edges, 'ordering': unique, 'initial': init, 'bound': bound}
+    if params:
+        data['parameters'] = list(params)
 
     if unprocessed:
         data['unprocessed'] = unprocessed
