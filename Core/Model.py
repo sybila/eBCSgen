@@ -18,7 +18,6 @@ from TS.State import FullMemoryState, OneStepMemoryState, MultisetState
 from TS.TSworker import DirectTSworker
 from TS.TransitionSystem import TransitionSystem
 from TS.VectorModel import VectorModel, handle_number_of_threads
-from Errors.ComplexOutOfScope import ComplexOutOfScope
 from Errors.StormNotAvailable import StormNotAvailable
 
 
@@ -170,7 +169,7 @@ class Model:
 
         # generate labels and give them to save_storm
         APs = PCTL_formula.get_APs()
-        state_labels, AP_labeles = self.create_AP_labels(APs, ts, vm.bound)
+        state_labels, AP_labeles = ts.create_AP_labels(APs, vm.bound)
         formula = PCTL_formula.replace_APs(AP_labeles)
         transitions_file = path + "exp_transitions.tra"
         labels_file = path + "exp_labels.lab"
@@ -202,7 +201,7 @@ class Model:
         vm = self.to_vector_model(bound)
         ts = vm.generate_transition_system()
 
-        labels, prism_formulas = self.create_complex_labels(PCTL_formula.get_complexes(), ts.ordering)
+        labels, prism_formulas = PCTL_formula.create_complex_labels(ts.ordering)
         formula = PCTL_formula.replace_complexes(labels)
 
         prism_file = path + "prism-parametric.pm"
@@ -217,57 +216,6 @@ class Model:
         else:
             result = call_storm(command_no_region.format(prism_file, formula), [prism_file], storm_local)
         return result
-
-    def create_complex_labels(self, complexes: list, ordering: tuple):
-        """
-        Creates label for each unique Complex from Formula.
-        This covers two cases - ground and abstract Complexes.
-        For the abstract ones, a PRISM formula needs to be constructed as a sum
-            of all compatible complexes.
-
-        :param complexes: list of extracted complexes from Formula
-        :param ordering: given complex ordering of TS
-        :return: unique label for each Complex and list of PRISM formulas for abstract Complexes
-        """
-        labels = dict()
-        prism_formulas = list()
-        for complex in complexes:
-            if complex in ordering:
-                labels[complex] = complex.to_PRISM_code(ordering.index(complex))
-            else:
-                indices = complex.identify_compatible(ordering)
-                if not indices:
-                    raise ComplexOutOfScope(complex)
-                id = "ABSTRACT_VAR_" + "".join(list(map(str, indices)))
-                labels[complex] = id
-                prism_formulas.append(id + " = " + "+".join(["VAR_{}".format(i) for i in indices]) +
-                                      "; // " + str(complex))
-        return labels, prism_formulas
-
-    def create_AP_labels(self, APs: list, ts: TransitionSystem, bound: int):
-        """
-        Creates label for each AtomicProposition.
-        Moreover, goes through all states in ts.states_encoding and validates whether they satisfy give
-         APs - if so, the particular label is assigned to the state.
-
-        :param APs: give AtomicProposition extracted from Formula
-        :param ts: given TS
-        :param bound: given bound
-        :return: dictionary of State_code -> set of labels and AP -> label
-        """
-        AP_lables = dict()
-        for ap in APs:
-            AP_lables[ap] = "property_" + str(len(AP_lables))
-
-        state_labels = dict()
-        ts.change_hell(bound)
-        for state in ts.states_encoding.keys():
-            for ap in APs:
-                if state.check_AP(ap, ts.ordering):
-                    state_labels[ts.states_encoding[state]] = \
-                        state_labels.get(ts.states_encoding[state], set()) | {AP_lables[ap]}
-        state_labels[ts.init] = state_labels.get(ts.init, set()) | {"init"}
-        return state_labels, AP_lables
 
     def network_free_simulation(self, max_time: float):
         state = FullMemoryState(copy.deepcopy(self.init))

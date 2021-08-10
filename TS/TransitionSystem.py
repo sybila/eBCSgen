@@ -125,7 +125,7 @@ class TransitionSystem:
         Changes hell from inf to bound + 1.
 
         TODO: maybe we could get rid of inf completely, but it is more clear for
-        debugging purposes
+            debugging purposes
 
         :param bound: given allowed bound
         """
@@ -136,6 +136,30 @@ class TransitionSystem:
                 hell.is_inf = True
                 self.states_encoding[hell] = value
                 break
+
+    def create_AP_labels(self, APs: list, bound: int):
+        """
+        Creates label for each AtomicProposition.
+        Moreover, goes through all states in ts.states_encoding and validates whether they satisfy give
+         APs - if so, the particular label is assigned to the state.
+
+        :param APs: give AtomicProposition extracted from Formula
+        :param bound: given bound
+        :return: dictionary of State_code -> set of labels and AP -> label
+        """
+        AP_lables = dict()
+        for ap in APs:
+            AP_lables[ap] = "property_" + str(len(AP_lables))
+
+        state_labels = dict()
+        self.change_hell(bound)
+        for state in self.states_encoding.keys():
+            for ap in APs:
+                if state.check_AP(ap, self.ordering):
+                    state_labels[self.states_encoding[state]] = \
+                        state_labels.get(self.states_encoding[state], set()) | {AP_lables[ap]}
+        state_labels[self.init] = state_labels.get(self.init, set()) | {"init"}
+        return state_labels, AP_lables
 
     def save_to_STORM_explicit(self, transitions_file: str, labels_file: str, state_labels: dict, AP_labels):
         """
