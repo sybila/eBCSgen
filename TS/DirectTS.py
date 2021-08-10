@@ -3,13 +3,13 @@ import json
 
 
 class DirectTS:
-    def __init__(self, bound):
+    def __init__(self):
         self.edges = set()
         self.unprocessed = set()
         self.processed = set()
         self.unique_complexes = set()
         self.init = None
-        self.bound = bound
+        self.bound = None
 
     def __str__(self):
         return str(self.processed) + "\n" + "\n".join(list(map(str, self.edges))) + "\n"

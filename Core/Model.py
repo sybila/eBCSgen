@@ -238,7 +238,7 @@ class Model:
         :param bound: bound for individual elements
         :return: generated transitions system
         """
-        ts = DirectTS(bound)
+        ts = DirectTS()
         if self.regulation:
             if self.regulation.memory == 0:
                 ts.init = MultisetState(self.init)
@@ -257,8 +257,7 @@ class Model:
             rule.rate_agents, _ = rule.rate.get_params_and_agents()
 
         if not bound:
-            bound = self.compute_bound()
-        self.bound = bound
+            ts.bound = self.compute_bound()
 
         workers = [DirectTSworker(ts, self) for _ in range(multiprocessing.cpu_count())]
         for worker in workers:

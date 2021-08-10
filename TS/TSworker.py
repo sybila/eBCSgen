@@ -112,7 +112,7 @@ class DirectTSworker(threading.Thread):
                             match = rule.reconstruct_complexes_from_match(match)
                             new_state = state.update_state(match, produced_agents, rule.label)
 
-                            new_state = new_state.validate_bound(self.model.bound)
+                            new_state = new_state.validate_bound(self.ts.bound)
 
                             if new_state not in self.ts.processed:
                                 self.ts.unprocessed.add(new_state)
