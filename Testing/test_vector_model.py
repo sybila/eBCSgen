@@ -113,7 +113,7 @@ class TestVectorModel(unittest.TestCase):
         gamma = 2
         omega = 3
 
-        self.test_ts = TransitionSystem(ordering)
+        self.test_ts = TransitionSystem(ordering, 2)
 
         states = [MemorylessState(np.array((0.0, 0.0, 0.0, 0.0, 1.0))),
                   MemorylessState(np.array((0.0, 0.0, 0.0, 0.0, 0.0))),

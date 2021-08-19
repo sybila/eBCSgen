@@ -133,5 +133,6 @@
         "K(S{p},T{i})::cyt",
         "K(S{u},T{i})::cyt"
     ],
-    "initial": 12
+    "initial": 12,
+    "bound": 2
 }

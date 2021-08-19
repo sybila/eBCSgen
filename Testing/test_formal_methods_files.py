@@ -55,7 +55,7 @@ class TestFormalMethods(unittest.TestCase):
         self.s12 = MemorylessState(np.array((7, 5)))
         self.s13 = MemorylessState(np.array((7, 6)))
 
-        self.die_ts = TransitionSystem(ordering)
+        self.die_ts = TransitionSystem(ordering, 6)
         self.die_ts.init = 0
         self.die_ts.states_encoding = {self.s1: 0, self.s2: 1, self.s3: 2, self.s4: 3, self.s5: 4,
                                        self.s6: 5, self.s7: 6, self.s8: 7, self.s9: 8, self.s10: 9,
@@ -66,7 +66,7 @@ class TestFormalMethods(unittest.TestCase):
                              Edge(8, 8, 1), Edge(9, 9, 1), Edge(10, 10, 1), Edge(11, 11, 1), Edge(12, 12, 1)}
 
         # die parametric TS
-        self.die_ts_parametric = TransitionSystem(ordering)
+        self.die_ts_parametric = TransitionSystem(ordering, 6)
         self.die_ts_parametric.init = 0
         self.die_ts_parametric.states_encoding = {self.s1: 0, self.s2: 1, self.s3: 2, self.s4: 3, self.s5: 4,
                                                   self.s6: 5, self.s7: 6, self.s8: 7, self.s9: 8, self.s10: 9,
@@ -124,7 +124,7 @@ class TestFormalMethods(unittest.TestCase):
 
     # Test non-parametric prism file (die model). Checking equality with example file modified die.pm from storm web.
     def test_die_pm(self):
-        self.die_ts.save_to_prism(path + "die_prism.pm", 6, set(), [])
+        self.die_ts.save_to_prism(path + "die_prism.pm", set(), [])
         with open(path + "die.pm") as f:
             test_prism = re.sub(r"\s+", "", f.read(), flags=re.UNICODE)
         with open(path + "die_prism.pm") as f:
@@ -132,7 +132,7 @@ class TestFormalMethods(unittest.TestCase):
         self.assertEqual(test_prism, our_prism)
 
     def test_prism_parametric(self):
-        self.die_ts_parametric.save_to_prism(path + "die_prism_parametric.pm", 6, {"p"}, [])
+        self.die_ts_parametric.save_to_prism(path + "die_prism_parametric.pm", {"p"}, [])
         with open(path + "parametric_die.pm") as f:
             test_prism = re.sub(r"\s+", "", f.read(), flags=re.UNICODE)
         with open(path + "die_prism_parametric.pm") as f:
