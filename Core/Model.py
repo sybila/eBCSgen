@@ -3,6 +3,7 @@ import multiprocessing
 import random
 import time
 import numpy as np
+from lark import Tree
 
 import pandas as pd
 import copy
@@ -10,6 +11,7 @@ from sortedcontainers import SortedList
 
 from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
+from Core.Rate import Rate
 from Core.Side import Side
 from TS.DirectTS import DirectTS
 from TS.State import FullMemoryState, OneStepMemoryState, MultisetState
@@ -23,7 +25,7 @@ class Model:
         self.init = init  # Counter: Complex -> int
         self.definitions = definitions  # dict str -> float
         self.params = params  # set of str
-        self.all_rates = True  # indicates whether model is quantitative
+        self.all_rates = self.check_rates()  # indicates whether model is quantitative
         self.regulation = regulation  # used to rules filtering, can be unspecified (None)
 
         # autocomplete
@@ -41,6 +43,18 @@ class Model:
                "\n\n#! inits\n" + "\n".join([str(self.init[a]) + " " + str(a) for a in self.init]) + \
                "\n\n#! definitions\n" + "\n".join([str(p) + " = " + str(self.definitions[p]) for p in self.definitions])
 
+    def check_rates(self):
+        """
+        Checks if all rates are defined.
+        If not, attribute all_rates is set to False and default value is assigned to the rate
+        """
+        all_rates = True
+        for rule in self.rules:
+            if rule.rate is None:
+                all_rates = False
+                rule.rate = Rate(Tree('rate', [Tree('fun', [1.0])]))
+        return all_rates
+
     def extract_signatures(self):
         """
         Automatically creates signature from context of rules and initial state.
@@ -51,8 +65,6 @@ class Model:
         atomic_signature, structure_signature = dict(), dict()
         atomic_names = set()
         for rule in self.rules:
-            if rule.rate is None:
-                self.all_rates = False
             for agent in rule.agents:
                 atomic_signature, structure_signature = agent.extend_signature(atomic_signature, structure_signature)
                 if type(agent) == AtomicAgent:

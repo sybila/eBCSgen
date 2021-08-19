@@ -56,9 +56,6 @@ model_str = open(args.model, "r").read()
 
 model = model_parser.parse(model_str)
 if model.success:
-    if not model.data.all_rates:
-        raise RatesNotSpecifiedError
-
     if eval(args.direct):
         ts = model.data.generate_direct_transition_system(args.max_time, args.max_size, args.bound)
     else:
