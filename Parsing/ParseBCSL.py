@@ -81,7 +81,7 @@ class SideHelper:
 
 
 GRAMMAR = r"""
-    model: rules inits definitions (complexes)? (regulation)?
+    model: rules inits (definitions)? (complexes)? (regulation)?
 
     rules: RULES_START (rule|COMMENT)+
     inits: INITS_START (init|COMMENT)+
@@ -181,7 +181,7 @@ REGULATIONS_GRAMMAR = """
 
 class TransformRegulations(Transformer):
     def regulation(self, matches):
-        return matches[1]
+        return {'regulation': matches[1]}
 
     def regulation_def(self, matches):
         return matches[0]
@@ -427,14 +427,14 @@ class TreeToObjects(Transformer):
         return Rule(agents, mid, compartments, complexes, pairs, Rate(rate) if rate else None, label)
 
     def rules(self, matches):
-        return matches[1:]
+        return {'rules': matches[1:]}
 
     def definitions(self, matches):
         result = dict()
         for definition in matches[1:]:
             pair = definition.children
             result[pair[0]] = pair[1]
-        return result
+        return {'definitions': result}
 
     def init(self, matches):
         return matches
@@ -446,16 +446,27 @@ class TreeToObjects(Transformer):
                 result[init[1].children[0]] = int(init[0])
             else:
                 result[init[0].children[0]] = 1
-        return result
+        return {'inits': result}
 
     def param(self, matches):
         self.params.add(str(matches[0]))
         return Tree("param", matches)
 
     def model(self, matches):
-        params = self.params - set(matches[2].keys())
-        regulation = matches[-1] if len(matches) > 3 else None
-        return Core.Model.Model(set(matches[0]), matches[1], matches[2], params, regulation)
+        definitions = dict()
+        regulation = None
+        for match in matches:
+            key, value = list(match.items())[0]
+            if key == 'rules':
+                rules = set(value)
+            if key == 'inits':
+                inits = value
+            if key == 'definitions':
+                definitions = value
+            if key == 'regulation':
+                regulation = value
+        params = self.params - set(definitions)
+        return Core.Model.Model(rules, inits, definitions, params, regulation)
 
 
 class Parser:
