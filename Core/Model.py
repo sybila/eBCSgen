@@ -269,8 +269,9 @@ class Model:
             rule.lhs, rule.rhs = rule.create_complexes()
             rule.rate_agents, _ = rule.rate.get_params_and_agents()
 
-        if not bound:
-            ts.bound = self.compute_bound()
+        if bound is None:
+            bound = self.compute_bound()
+        ts.bound = bound
 
         workers = [DirectTSworker(ts, self) for _ in range(multiprocessing.cpu_count())]
         for worker in workers:
