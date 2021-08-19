@@ -456,15 +456,16 @@ class TreeToObjects(Transformer):
         definitions = dict()
         regulation = None
         for match in matches:
-            key, value = list(match.items())[0]
-            if key == 'rules':
-                rules = set(value)
-            if key == 'inits':
-                inits = value
-            if key == 'definitions':
-                definitions = value
-            if key == 'regulation':
-                regulation = value
+            if type(match) == dict:
+                key, value = list(match.items())[0]
+                if key == 'rules':
+                    rules = set(value)
+                if key == 'inits':
+                    inits = value
+                if key == 'definitions':
+                    definitions = value
+                if key == 'regulation':
+                    regulation = value
         params = self.params - set(definitions)
         return Core.Model.Model(rules, inits, definitions, params, regulation)
 
@@ -485,6 +486,8 @@ class Parser:
                                "RULES_START": "#! rules",
                                "INITS_START": "#! inits",
                                "DEFNS_START": "#! definitions",
+                               "COMPLEXES_START": "#! complexes",
+                               "REGULATION_START": "#! regulation",
                                "CNAME": "name",
                                "NAME": "agent_name",
                                "VAR": "?"

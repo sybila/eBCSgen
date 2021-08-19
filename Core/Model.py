@@ -32,7 +32,8 @@ class Model:
         self.atomic_signature, self.structure_signature = self.extract_signatures()
 
     def __eq__(self, other: 'Model') -> bool:
-        return self.rules == other.rules and self.init == other.init and self.definitions == other.definitions
+        return set(map(hash, self.rules)) == set(map(hash, other.rules)) \
+               and self.init == other.init and self.definitions == other.definitions
 
     def __str__(self):
         return "Model:\n" + "\n".join(map(str, self.rules)) + "\n\n" + str(self.init) + "\n\n" + str(self.definitions) \
