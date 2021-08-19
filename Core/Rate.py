@@ -175,7 +175,8 @@ class DirectEvaluater(Transformer):
         return self.values.get(matches[0], 0)
 
     def param(self, matches):
-        return Tree('fun', [self.params[matches[0]]])
+        par = self.params.get(str(matches[0]), str(matches[0]))
+        return Tree('fun', [par])
 
 
 class Extractor(Transformer):

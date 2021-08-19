@@ -97,11 +97,17 @@ class DirectTSworker(threading.Thread):
                 else:
                     candidate_rules = dict()
                     for rule in self.model.rules:
-                        candidate_rules[rule] = (rule.evaluate_rate(state, self.model.definitions),
-                                                 rule.match(state, all=True))
+                        rate = rule.evaluate_rate(state, self.model.definitions)
+                        match = rule.match(state, all=True)
+
+                        try:
+                            rate = rate if rate > 0 else None
+                        except TypeError:
+                            pass
+
                         # drop rules which cannot be actually used (0 rate or no matches)
-                        candidate_rules = dict(filter(lambda item: item[1][0] > 0 and item[1][1] is not None,
-                                                      candidate_rules.items()))
+                        if match is not None and rate is not None:
+                            candidate_rules[rule] = (rate, match)
 
                     if self.model.regulation:
                         candidate_rules = self.model.regulation.filter(state, candidate_rules)
