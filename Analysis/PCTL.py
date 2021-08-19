@@ -34,7 +34,8 @@ class PCTL:
                             [transitions_file, labels_file], storm_local)
         return result
 
-    def parameter_synthesis(self, ts: TransitionSystem, PCTL_formula: Formula, region: str, storm_local: bool = True):
+    @staticmethod
+    def parameter_synthesis(ts: TransitionSystem, PCTL_formula: Formula, region: str, storm_local: bool = True):
         """
         Parameter synthesis of given PCTL formula in given region.
 

@@ -124,7 +124,7 @@ class MemorylessState:
         :return: PRISM string representation
         """
         aps = "'" if apostrophe else ""
-        vars = list(map(lambda i: "(VAR_{}{}={})".format(i, aps, self.sequence[i]), range(len(self))))
+        vars = list(map(lambda i: f'(VAR_{i}{aps}={int(self.sequence[i])})', range(len(self))))
         return " & ".join(vars)
 
 
