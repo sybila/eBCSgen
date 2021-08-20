@@ -1,5 +1,6 @@
 from lark import Lark, Tree, Transformer
 from lark import UnexpectedCharacters, UnexpectedToken
+from lark.load_grammar import _TERMINAL_NAMES
 
 from Core.Formula import Formula, AtomicProposition
 import Parsing.ParseBCSL
@@ -40,17 +41,17 @@ class CTLparser:
                | ap
                | "~" formula
                | "(" formula ")"
-               | formula ("and"|"&") formula
-               | formula ("or"|"|") formula
-               | formula ("->") formula
-               | formula ("<->") formula
+               | formula ("and" | "&") formula
+               | formula ("or" | "|") formula
+               | formula "->" formula
+               | formula "<->" formula
                | "A" "(" state_formula ")"
                | "E" "(" state_formula ")"
                
         !state_formula: "X" "(" formula ")"
                      | "F" "(" formula ")"
                      | "G" "(" formula ")"
-                     | "F" "(" formula "U" formula ")"
+                     | formula "U" formula
                  
         ap: LB rate_complex sign_ap number RB
         sign: e_sign | ne_sign
@@ -89,6 +90,11 @@ class CTLparser:
                            transformer=Parsing.ParseBCSL.TreeToComplex()
                            )
 
+        self.terminals = dict((v, k) for k, v in _TERMINAL_NAMES.items())
+
+    def replace(self, expected: set) -> set:
+        return set([self.terminals.get(item, item) for item in filter(lambda item: item != 'CNAME', expected)])
+
     def parse(self, expression: str) -> Formula:
         try:
             tree = self.parser.parse(expression)
@@ -96,9 +102,9 @@ class CTLparser:
             return Formula(True, tree.children[0])
         except UnexpectedCharacters as u:
             return Formula(False, {"unexpected": expression[u.pos_in_stream],
-                                   "expected": u.allowed,
+                                   "expected": self.replace(u.allowed),
                                    "line": u.line, "column": u.column})
         except UnexpectedToken as u:
             return Formula(False, {"unexpected": str(u.token),
-                                   "expected": u.expected,
+                                   "expected": self.replace(u.expected),
                                    "line": u.line, "column": u.column})
