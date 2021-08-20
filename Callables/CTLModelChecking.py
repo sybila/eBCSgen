@@ -43,8 +43,6 @@ if len(ts.params) != 0:
 formula = Parsing.ParseCTLformula.CTLparser().parse(args.formula)
 if formula.success:
     result = CTL.model_checking(ts, formula)
-    f = open(args.output, "w")
-    f.write(result.decode("utf-8"))
-    f.close()
+    print(result)
 else:
     raise FormulaParsingError(formula.data, args.formula)

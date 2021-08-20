@@ -25,7 +25,7 @@ class TreeToStrings(Transformer):
         return matches[0]
 
     def ap(self, matches):
-        return Tree("ap", [AtomicProposition(*matches)])
+        return Tree("ap", [AtomicProposition(*matches[1:4])])
 
 
 class CTLparser:
@@ -37,23 +37,22 @@ class CTLparser:
         start: formula
         !formula: "true"
                | "false" 
-               | "[" ap "]"
+               | ap
                | "~" formula
                | "(" formula ")"
                | formula ("and"|"&") formula
                | formula ("or"|"|") formula
                | formula ("->") formula
                | formula ("<->") formula
-               | "AX" formula
-               | "EX" formula
-               | "AF" formula
-               | "EF" formula
-               | "AG" formula
-               | "EG" formula
-               | "A" "(" formula "U" formula ")"
-               |  "E" "(" formula "U" formula ")"
+               | "A" "(" state_formula ")"
+               | "E" "(" state_formula ")"
+               
+        !state_formula: "X" "(" formula ")"
+                     | "F" "(" formula ")"
+                     | "G" "(" formula ")"
+                     | "F" "(" formula "U" formula ")"
                  
-        ap: rate_complex sign_ap number 
+        ap: LB rate_complex sign_ap number RB
         sign: e_sign | ne_sign
         e_sign.1: GE | LE
         ne_sign.0: L | G

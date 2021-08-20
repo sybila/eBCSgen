@@ -141,7 +141,7 @@ class TransitionSystem:
                 self.states_encoding[hell] = value
                 break
 
-    def create_AP_labels(self, APs: list):
+    def create_AP_labels(self, APs: list, include_init=True):
         """
         Creates label for each AtomicProposition.
         Moreover, goes through all states in ts.states_encoding and validates whether they satisfy given
@@ -161,7 +161,8 @@ class TransitionSystem:
                 if state.check_AP(ap, self.ordering):
                     state_labels[self.states_encoding[state]] = \
                         state_labels.get(self.states_encoding[state], set()) | {AP_lables[ap]}
-        state_labels[self.init] = state_labels.get(self.init, set()) | {"init"}
+        if include_init:
+            state_labels[self.init] = state_labels.get(self.init, set()) | {"init"}
         return state_labels, AP_lables
 
     def save_to_STORM_explicit(self, transitions_file: str, labels_file: str, state_labels: dict, AP_labels):
