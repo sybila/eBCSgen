@@ -1,8 +1,11 @@
 import unittest
 import collections
-import sortedcontainers
+from unittest import mock
+from lark import Tree
+
 import numpy as np
 
+from Core.Formula import Formula
 from Core.Model import Model
 from Core.Rate import Rate
 from Core.Structure import StructureAgent
@@ -112,11 +115,13 @@ class TestModel(unittest.TestCase):
         rate_2 = Rate(self.rate_parser.parse(rate_expr).data)
         rate_2.vectorize(ordering, {"k1": 0.05})
 
+        rate_3 = Rate(Tree('rate', [Tree('fun', [1.0])]))
+
         init = MemorylessState(np.array([2, 1, 0]))
 
         vector_reactions = {VectorReaction(MemorylessState(np.array([0, 0, 0])), MemorylessState(np.array([0, 1, 0])), rate_1),
                             VectorReaction(MemorylessState(np.array([1, 0, 0])), MemorylessState(np.array([0, 0, 0])), rate_2),
-                            VectorReaction(MemorylessState(np.array([0, 0, 1])), MemorylessState(np.array([1, 0, 0])), None)}
+                            VectorReaction(MemorylessState(np.array([0, 0, 1])), MemorylessState(np.array([1, 0, 0])), rate_3)}
 
         self.vm_1 = VectorModel(vector_reactions, init, ordering, None)
 
@@ -479,7 +484,7 @@ class TestModel(unittest.TestCase):
 
         self.assertEqual(self.model_parser.parse(self.model_wrong_2).data,
                          {"expected": {'decimal', '#! inits', ']', '#! definitions', '=>', '@', 'int',
-                                       '+', 'name', ';', '}', ','},
+                                       '+', 'name', ';', '}', ',', '#! complexes', '#! regulation'},
                           "line": 3, "column": 26, "unexpected": "="})
 
     def test_zooming_syntax(self):
@@ -523,7 +528,6 @@ class TestModel(unittest.TestCase):
         self.assertTrue(len(model.params) == 2)
 
     def test_create_complex_labels(self):
-        model = Model(set(), collections.Counter(), dict(), set())
         complex_parser = Parser("rate_complex")
         complex_1 = complex_parser.parse("K(S{i},T{a}).B{o}::cyt").data.children[0]
         complex_2 = complex_parser.parse("K(S{a},T{a}).B{o}::cyt").data.children[0]
@@ -533,16 +537,17 @@ class TestModel(unittest.TestCase):
         ordering = (complex_1, complex_2, complex_3)
         complexes = [complex_2, complex_abstract, complex_1]
 
-        result_labels = {complex_2: "VAR_1",complex_abstract: "ABSTRACT_VAR_12", complex_1: "VAR_0"}
+        result_labels = {complex_2: "VAR_1", complex_abstract: "ABSTRACT_VAR_12", complex_1: "VAR_0"}
         result_formulas = ['ABSTRACT_VAR_12 = VAR_1+VAR_2; // K(S{a}).B{_}::cyt']
 
-        labels, prism_formulas = model.create_complex_labels(complexes, ordering)
+        formula = Formula(None, None)
+        formula.get_complexes = mock.Mock(return_value=complexes)
+
+        labels, prism_formulas = formula.create_complex_labels(ordering)
         self.assertEqual(labels, result_labels)
         self.assertEqual(prism_formulas, result_formulas)
 
     def test_create_AP_labels(self):
-        model = Model(set(), collections.Counter(), dict(), set())
-
         complex_parser = Parser("rate_complex")
         complex_1 = complex_parser.parse("K(S{i},T{a}).B{o}::cyt").data.children[0]
         complex_2 = complex_parser.parse("K(S{a},T{a}).B{o}::cyt").data.children[0]
@@ -567,11 +572,11 @@ class TestModel(unittest.TestCase):
                                3: {'property_0', 'init'},
                                4: {'property_0', 'property_1'}}
 
-        ts = TS.TransitionSystem.TransitionSystem(ordering)
+        ts = TS.TransitionSystem.TransitionSystem(ordering, 5)
         ts.states_encoding = states_encoding
         ts.init = 3
 
-        state_labels, AP_lables = model.create_AP_labels(APs, ts, 0)
+        state_labels, AP_lables = ts.create_AP_labels(APs)
         self.assertEqual(state_labels, result_state_labels)
         self.assertEqual(AP_lables, result_AP_lables)
 

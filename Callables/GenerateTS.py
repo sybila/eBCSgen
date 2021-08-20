@@ -56,15 +56,12 @@ model_str = open(args.model, "r").read()
 
 model = model_parser.parse(model_str)
 if model.success:
-    if not model.data.all_rates:
-        raise RatesNotSpecifiedError
-
     if eval(args.direct):
         ts = model.data.generate_direct_transition_system(args.max_time, args.max_size, args.bound)
     else:
         vm = model.data.to_vector_model(args.bound)
         ts = vm.generate_transition_system(ts, args.max_time, args.max_size)
-    ts.save_to_json(args.output)
+    ts.save_to_json(args.output, model.data.params)
 else:
     if "error" in model.data:
         raise UnspecifiedParsingError(model.data["error"])

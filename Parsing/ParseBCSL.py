@@ -38,10 +38,13 @@ def load_TS_from_json(json_file: str) -> TransitionSystem:
         data = json.load(json_file)
 
         ordering = SortedList(map(lambda agent: complex_parser.parse(agent).data.children[0], data['ordering']))
-        ts = TransitionSystem(ordering)
-        ts.states_encoding = {MemorylessState(np.array(eval(data['nodes'][node_id]))): int(node_id) for node_id in data['nodes']}
+        ts = TransitionSystem(ordering, data['bound'])
+        ts.states_encoding = {MemorylessState(np.array(eval(data['nodes'][node_id]))): int(node_id)
+                              for node_id in data['nodes']}
         ts.edges = {edge_from_dict(edge) for edge in data['edges']}
         ts.init = data['initial']
+        if 'parameters' in data:
+            ts.params = data['parameters']
 
         ts.unprocessed = {MemorylessState(np.array(eval(state))) for state in data.get('unprocessed', list())}
         ts.processed = ts.states_encoding.keys() - ts.unprocessed
@@ -78,7 +81,7 @@ class SideHelper:
 
 
 GRAMMAR = r"""
-    model: rules inits definitions (complexes)? (regulation)?
+    model: rules inits (definitions)? (complexes)? (regulation)?
 
     rules: RULES_START (rule|COMMENT)+
     inits: INITS_START (init|COMMENT)+
@@ -178,7 +181,7 @@ REGULATIONS_GRAMMAR = """
 
 class TransformRegulations(Transformer):
     def regulation(self, matches):
-        return matches[1]
+        return {'regulation': matches[1]}
 
     def regulation_def(self, matches):
         return matches[0]
@@ -395,6 +398,7 @@ class TreeToObjects(Transformer):
                         helper.comp.append(compartment)
                         helper.counter += 1
                     helper.complexes.append((start, helper.counter - 1))
+                stochio = 1
         return helper
 
     def rule(self, matches):
@@ -423,14 +427,14 @@ class TreeToObjects(Transformer):
         return Rule(agents, mid, compartments, complexes, pairs, Rate(rate) if rate else None, label)
 
     def rules(self, matches):
-        return matches[1:]
+        return {'rules': matches[1:]}
 
     def definitions(self, matches):
         result = dict()
         for definition in matches[1:]:
             pair = definition.children
             result[pair[0]] = pair[1]
-        return result
+        return {'definitions': result}
 
     def init(self, matches):
         return matches
@@ -442,16 +446,28 @@ class TreeToObjects(Transformer):
                 result[init[1].children[0]] = int(init[0])
             else:
                 result[init[0].children[0]] = 1
-        return result
+        return {'inits': result}
 
     def param(self, matches):
         self.params.add(str(matches[0]))
         return Tree("param", matches)
 
     def model(self, matches):
-        params = self.params - set(matches[2].keys())
-        regulation = matches[3] if len(matches) > 3 else None
-        return Core.Model.Model(set(matches[0]), matches[1], matches[2], params, regulation)
+        definitions = dict()
+        regulation = None
+        for match in matches:
+            if type(match) == dict:
+                key, value = list(match.items())[0]
+                if key == 'rules':
+                    rules = set(value)
+                if key == 'inits':
+                    inits = value
+                if key == 'definitions':
+                    definitions = value
+                if key == 'regulation':
+                    regulation = value
+        params = self.params - set(definitions)
+        return Core.Model.Model(rules, inits, definitions, params, regulation)
 
 
 class Parser:
@@ -470,6 +486,8 @@ class Parser:
                                "RULES_START": "#! rules",
                                "INITS_START": "#! inits",
                                "DEFNS_START": "#! definitions",
+                               "COMPLEXES_START": "#! complexes",
+                               "REGULATION_START": "#! regulation",
                                "CNAME": "name",
                                "NAME": "agent_name",
                                "VAR": "?"

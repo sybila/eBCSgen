@@ -97,11 +97,17 @@ class DirectTSworker(threading.Thread):
                 else:
                     candidate_rules = dict()
                     for rule in self.model.rules:
-                        candidate_rules[rule] = (rule.evaluate_rate(state, self.model.definitions),
-                                                 rule.match(state, all=True))
+                        rate = rule.evaluate_rate(state, self.model.definitions)
+                        match = rule.match(state, all=True)
+
+                        try:
+                            rate = rate if rate > 0 else None
+                        except TypeError:
+                            pass
+
                         # drop rules which cannot be actually used (0 rate or no matches)
-                        candidate_rules = dict(filter(lambda item: item[1][0] > 0 and item[1][1] is not None,
-                                                      candidate_rules.items()))
+                        if match is not None and rate is not None:
+                            candidate_rules[rule] = (rate, match)
 
                     if self.model.regulation:
                         candidate_rules = self.model.regulation.filter(state, candidate_rules)
@@ -112,7 +118,7 @@ class DirectTSworker(threading.Thread):
                             match = rule.reconstruct_complexes_from_match(match)
                             new_state = state.update_state(match, produced_agents, rule.label)
 
-                            new_state = new_state.validate_bound(self.model.bound)
+                            new_state = new_state.validate_bound(self.ts.bound)
 
                             if new_state not in self.ts.processed:
                                 self.ts.unprocessed.add(new_state)

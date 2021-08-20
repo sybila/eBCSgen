@@ -35,36 +35,36 @@ class TestTransitionSystem(unittest.TestCase):
         self.s2_reordered = MemorylessState(np.array((4, 1, 2)))
         self.s3_reordered = MemorylessState(np.array((5, 1, 2)))
 
-        self.ts = TransitionSystem(tuple())
+        self.ts = TransitionSystem(tuple(), 5)
         self.ts.states_encoding = {self.s1: 1, self.s2: 2}
 
         self.edge_1 = Edge(0, 1, 0.5)
 
         # equality of TS
 
-        self.ts_eq_1 = TransitionSystem(ordering)
+        self.ts_eq_1 = TransitionSystem(ordering, 5)
         self.ts_eq_1.states_encoding = {self.s1: 0, self.s2: 1, self.s3: 2}
         self.ts_eq_1.edges = {Edge(0, 1, 0.3), Edge(0, 2, 0.7), Edge(1, 2, 1)}
 
-        self.ts_eq_2 = TransitionSystem(ordering)
+        self.ts_eq_2 = TransitionSystem(ordering, 5)
         self.ts_eq_2.states_encoding = {self.s1: 1, self.s2: 2, self.s3: 0}
         self.ts_eq_2.edges = {Edge(1, 2, 0.3), Edge(1, 0, 0.7), Edge(2, 0, 1)}
 
-        self.ts_eq_3 = TransitionSystem(ordering_reordered)
+        self.ts_eq_3 = TransitionSystem(ordering_reordered, 5)
         self.ts_eq_3.states_encoding = {self.s1_reordered: 1, self.s2_reordered: 2, self.s3_reordered: 0}
         self.ts_eq_3.edges = {Edge(1, 2, 0.3), Edge(1, 0, 0.7), Edge(2, 0, 1)}
 
         # inequality of TS
 
-        self.ts_neq_1 = TransitionSystem(ordering)
+        self.ts_neq_1 = TransitionSystem(ordering, 5)
         self.ts_neq_1.states_encoding = {self.s1: 0, self.s2: 1, self.s3: 2}
         self.ts_neq_1.edges = {Edge(0, 1, 0.3), Edge(0, 2, 0.7), Edge(1, 2, 1)}
 
-        self.ts_neq_2 = TransitionSystem(ordering)
+        self.ts_neq_2 = TransitionSystem(ordering, 5)
         self.ts_neq_2.states_encoding = {self.s1: 1, self.s2: 2, self.s3: 0}
         self.ts_neq_2.edges = {Edge(1, 2, 0.3), Edge(1, 0, 0.7), Edge(0, 2, 1)}
 
-        self.ts_neq_3 = TransitionSystem(ordering_wrong)
+        self.ts_neq_3 = TransitionSystem(ordering_wrong, 5)
         self.ts_neq_3.states_encoding = {self.s1: 1, self.s2: 2, self.s3: 0}
         self.ts_neq_3.edges = {Edge(1, 2, 0.3), Edge(1, 0, 0.7), Edge(0, 2, 1)}
 
@@ -72,7 +72,7 @@ class TestTransitionSystem(unittest.TestCase):
 
         ordering = (self.c1, self.c2, self.c3, self.c4)
 
-        self.ts_bigger = TransitionSystem(ordering)
+        self.ts_bigger = TransitionSystem(ordering, 5)
         self.ts_bigger.states_encoding = {self.s1: 1, self.s2: 2, self.s3: 0, self.s4: 3}
         self.ts_bigger.edges = {Edge(1, 2, 0.8), Edge(0, 1, 0.5), Edge(1, 0, 0.3),
                                 Edge(3, 1, 0.9), Edge(3, 2, 0.1), Edge(1, 3, 0.2)}
@@ -113,9 +113,9 @@ class TestTransitionSystem(unittest.TestCase):
 
     def test_change_hell(self):
         ordering = (self.c1, self.c2, self.c3, self.c4)
-        ts = TransitionSystem(ordering)
+        ts = TransitionSystem(ordering, 4)
         ts.states_encoding = {self.s1: 1, self.s2: 2, self.s3: 0, self.hell: 3}
-        ts.change_hell(4)
+        ts.change_hell()
         new_hell = MemorylessState(np.array([5, 5, 5]))
         new_encoding = {self.s1: 1, self.s2: 2, self.s3: 0, new_hell: 3}
         self.assertEqual(ts.states_encoding, new_encoding)

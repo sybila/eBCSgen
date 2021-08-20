@@ -3,16 +3,17 @@ import numpy as np
 from itertools import groupby
 from sortedcontainers import SortedList
 
-from TS.Edge import Edge
 from TS.State import MemorylessState
 
 
 class TransitionSystem:
-    def __init__(self, ordering: SortedList):
+    def __init__(self, ordering: SortedList, bound):
         self.states_encoding = dict()  # MemorylessState -> int
         self.edges = set()  # Edge objects: (int from, int to, probability), can be used for explicit Storm format
         self.ordering = ordering  # used to decode MemorylessState to actual agents
         self.init = int
+        self.params = []
+        self.bound = bound
 
         # for TS generating
         self.unprocessed = set()
@@ -51,7 +52,7 @@ class TransitionSystem:
         re_encoding = {key.reorder(reordering_indices): self.states_encoding[key] for key in self.states_encoding}
 
         # new TransitionSystem with ordering taken from other and reordered states in re_encoding
-        ts = TransitionSystem(other.ordering)
+        ts = TransitionSystem(other.ordering, other.bound)
         ts.states_encoding = re_encoding
         ts.edges = self.edges
 
@@ -102,17 +103,20 @@ class TransitionSystem:
         old_encoding = self.create_decoding()
         self.edges = set(map(lambda edge: edge.recode(old_encoding, new_encoding), self.edges))
 
-    def save_to_json(self, output_file: str):
+    def save_to_json(self, output_file: str, params=None):
         """
         Save current TS as a JSON file.
 
+        :param params: given set of unknown parameters
         :param output_file: given file to write to
         """
         nodes = {value: str(key) for key, value in self.states_encoding.items()}
         unique = list(map(str, self.ordering))
         edges = [edge.to_dict() for edge in self.edges]
 
-        data = {'nodes': nodes, 'edges': edges, 'ordering': unique, "initial": self.init}
+        data = {'nodes': nodes, 'edges': edges, 'ordering': unique, 'initial': self.init, 'bound': int(self.bound)}
+        if params:
+            data['parameters'] = list(params)
 
         if self.unprocessed:
             data['unprocessed'] = [str(state) for state in self.unprocessed]
@@ -120,22 +124,45 @@ class TransitionSystem:
         with open(output_file, 'w') as json_file:
             json.dump(data, json_file, indent=4)
 
-    def change_hell(self, bound):
+    def change_hell(self):
         """
         Changes hell from inf to bound + 1.
 
         TODO: maybe we could get rid of inf completely, but it is more clear for
-        debugging purposes
+            debugging purposes
 
-        :param bound: given allowed bound
         """
         for key, value in self.states_encoding.items():
             if key.is_inf:
                 del self.states_encoding[key]
-                hell = MemorylessState(np.array([bound + 1] * len(key)))
+                hell = MemorylessState(np.array([self.bound + 1] * len(key)))
                 hell.is_inf = True
                 self.states_encoding[hell] = value
                 break
+
+    def create_AP_labels(self, APs: list):
+        """
+        Creates label for each AtomicProposition.
+        Moreover, goes through all states in ts.states_encoding and validates whether they satisfy give
+         APs - if so, the particular label is assigned to the state.
+
+        :param APs: give AtomicProposition extracted from Formula
+        :param bound: given bound
+        :return: dictionary of State_code -> set of labels and AP -> label
+        """
+        AP_lables = dict()
+        for ap in APs:
+            AP_lables[ap] = "property_" + str(len(AP_lables))
+
+        state_labels = dict()
+        self.change_hell()
+        for state in self.states_encoding.keys():
+            for ap in APs:
+                if state.check_AP(ap, self.ordering):
+                    state_labels[self.states_encoding[state]] = \
+                        state_labels.get(self.states_encoding[state], set()) | {AP_lables[ap]}
+        state_labels[self.init] = state_labels.get(self.init, set()) | {"init"}
+        return state_labels, AP_lables
 
     def save_to_STORM_explicit(self, transitions_file: str, labels_file: str, state_labels: dict, AP_labels):
         """
@@ -160,12 +187,11 @@ class TransitionSystem:
                                     for state in sorted(state_labels)]))
         label_file.close()
 
-    def save_to_prism(self, output_file: str, bound: int, params: set, prism_formulas: list):
+    def save_to_prism(self, output_file: str, params: set, prism_formulas: list):
         """
         Save the TransitionSystem as a PRISM file (parameters present).
 
         :param output_file: output file name
-        :param bound: given bound
         :param params: set of present parameters
         :param prism_formulas: definition of abstract Complexes
         """
@@ -178,12 +204,12 @@ class TransitionSystem:
         prism_file.write("\nmodule TS\n")
 
         # to get rid of inf
-        self.change_hell(bound)
+        self.change_hell()
         decoding = self.create_decoding()
 
         # declare state variables
         init = decoding[self.init]
-        vars = ["\tVAR_{} : [0..{}] init {}; // {}".format(i, bound + 1, init.sequence[i], self.ordering[i])
+        vars = [f'\tVAR_{i} : [0..{ self.bound + 1}] init {int(init.sequence[i])}; // {self.ordering[i]}'
                 for i in range(len(self.ordering))]
         prism_file.write("\n" + "\n".join(vars) + "\n")
 
@@ -208,7 +234,7 @@ class TransitionSystem:
         output = []
         for group in self:
             source = group[0].source
-            line = "\t[] " + decoding[source].to_PRISM_string() + " -> " + \
+            line = f'\t[] {decoding[source].to_PRISM_string()} -> ' + \
                    " + ".join(list(map(lambda edge: edge.to_PRISM_string(decoding), group))) + ";"
             output.append(line)
         return output
