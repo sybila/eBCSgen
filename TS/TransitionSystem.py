@@ -2,6 +2,7 @@ import json
 import numpy as np
 from itertools import groupby
 from sortedcontainers import SortedList
+from pyModelChecking import Kripke
 
 from TS.State import MemorylessState
 
@@ -143,11 +144,10 @@ class TransitionSystem:
     def create_AP_labels(self, APs: list):
         """
         Creates label for each AtomicProposition.
-        Moreover, goes through all states in ts.states_encoding and validates whether they satisfy give
+        Moreover, goes through all states in ts.states_encoding and validates whether they satisfy given
          APs - if so, the particular label is assigned to the state.
 
         :param APs: give AtomicProposition extracted from Formula
-        :param bound: given bound
         :return: dictionary of State_code -> set of labels and AP -> label
         """
         AP_lables = dict()
@@ -238,6 +238,17 @@ class TransitionSystem:
                    " + ".join(list(map(lambda edge: edge.to_PRISM_string(decoding), group))) + ";"
             output.append(line)
         return output
+
+    def to_kripke(self, state_labels):
+        """
+        Create Kripke structure in format of pyModelChecking module.
+
+        :return: Kripke structure representation of the transition system
+        """
+        states = list(self.states_encoding.values())
+        edges = [(edge.source, edge.target) for edge in self.edges]
+        inits = [self.init]
+        return Kripke(S=states, R=edges, S0=inits, L=state_labels)
 
 
 def create_indices(ordering_1: SortedList, ordering_2: SortedList):
