@@ -43,7 +43,7 @@ class CTLparser:
                | "(" formula ")"
                | formula ("and" | "&") formula
                | formula ("or" | "|") formula
-               | formula "->" formula
+               | formula "-->" formula
                | formula "<->" formula
                | "A" "(" state_formula ")"
                | "E" "(" state_formula ")"
