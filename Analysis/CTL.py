@@ -17,4 +17,4 @@ class CTL:
         parser = Parser()
         formula = parser(str(formula))
         result = modelcheck(kripke, formula)
-        return ts.init in result
+        return ts.init in result, result

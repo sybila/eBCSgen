@@ -12,12 +12,14 @@ from Errors.InvalidInputError import InvalidInputError
 
 """
 usage: CTLModelChecking.py [-h] --transition_file TRANSITION_FILE 
+                                 --output OUTPUT 
                                  --formula FORMULA 
 
 Model checking
 
 required arguments:
   --transition_file TRANSITION_FILE
+  --output OUTPUT 
   --formula FORMULA
 """
 
@@ -27,6 +29,7 @@ args_parser._action_groups.pop()
 required = args_parser.add_argument_group('required arguments')
 
 required.add_argument('--transition_file', required=True)
+required.add_argument('--output', type=str, required=True)
 required.add_argument('--formula', type=str, required=True)
 
 args = args_parser.parse_args()
@@ -39,7 +42,10 @@ if len(ts.params) != 0:
 
 formula = Parsing.ParseCTLformula.CTLparser().parse(args.formula)
 if formula.success:
-    result = CTL.model_checking(ts, formula)
-    print(result)
+    result, states = CTL.model_checking(ts, formula)
+    output = 'Result: {}\nNumber of satisfying states: {}'.format(result, len(states))
+    f = open(args.output, "w")
+    f.write(output)
+    f.close()
 else:
     raise FormulaParsingError(formula.data, args.formula)
