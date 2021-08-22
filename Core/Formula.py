@@ -43,15 +43,16 @@ class Formula:
         extractor.transform(self.data)
         return extractor.APs
 
-    def replace_APs(self, replacements: dict) -> 'Formula':
+    def replace_APs(self, replacements: dict, extra_quotes=True) -> 'Formula':
         """
         Replaces APs according to given dictionary.
         This is used for explicit file format for PRISM.
 
         :param replacements: dictionary of type AtomicProposition -> str
+        :param extra_quotes: wrap AP labels in quotes
         :return: new Formula with replaced APS
         """
-        replacetor = APreplacetor(replacements)
+        replacetor = APreplacetor(replacements, extra_quotes)
         data = replacetor.transform(self.data)
         return Formula(True, data)
 
@@ -110,12 +111,14 @@ class APextractor(Transformer):
 
 
 class APreplacetor(Transformer):
-    def __init__(self, replacements):
+    def __init__(self, replacements, extra_quotes):
         super(Transformer, self).__init__()
         self.replacements = replacements
+        self.extra_quotes = extra_quotes
 
     def ap(self, proposition):
-        return Tree("ap", ['"' + self.replacements[proposition[0]] + '"'])
+        quotes = '"' if self.extra_quotes else ''
+        return Tree("ap", [quotes + self.replacements[proposition[0]] + quotes])
 
 
 class ComplexReplacetor(Transformer):

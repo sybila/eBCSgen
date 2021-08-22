@@ -2,6 +2,7 @@ import json
 import numpy as np
 from itertools import groupby
 from sortedcontainers import SortedList
+from pyModelChecking import Kripke
 
 from TS.State import MemorylessState
 
@@ -140,14 +141,13 @@ class TransitionSystem:
                 self.states_encoding[hell] = value
                 break
 
-    def create_AP_labels(self, APs: list):
+    def create_AP_labels(self, APs: list, include_init=True):
         """
         Creates label for each AtomicProposition.
-        Moreover, goes through all states in ts.states_encoding and validates whether they satisfy give
+        Moreover, goes through all states in ts.states_encoding and validates whether they satisfy given
          APs - if so, the particular label is assigned to the state.
 
         :param APs: give AtomicProposition extracted from Formula
-        :param bound: given bound
         :return: dictionary of State_code -> set of labels and AP -> label
         """
         AP_lables = dict()
@@ -161,7 +161,8 @@ class TransitionSystem:
                 if state.check_AP(ap, self.ordering):
                     state_labels[self.states_encoding[state]] = \
                         state_labels.get(self.states_encoding[state], set()) | {AP_lables[ap]}
-        state_labels[self.init] = state_labels.get(self.init, set()) | {"init"}
+        if include_init:
+            state_labels[self.init] = state_labels.get(self.init, set()) | {"init"}
         return state_labels, AP_lables
 
     def save_to_STORM_explicit(self, transitions_file: str, labels_file: str, state_labels: dict, AP_labels):
@@ -238,6 +239,17 @@ class TransitionSystem:
                    " + ".join(list(map(lambda edge: edge.to_PRISM_string(decoding), group))) + ";"
             output.append(line)
         return output
+
+    def to_kripke(self, state_labels):
+        """
+        Create Kripke structure in format of pyModelChecking module.
+
+        :return: Kripke structure representation of the transition system
+        """
+        states = list(self.states_encoding.values())
+        edges = [(edge.source, edge.target) for edge in self.edges]
+        inits = [self.init]
+        return Kripke(S=states, R=edges, S0=inits, L=state_labels)
 
 
 def create_indices(ordering_1: SortedList, ordering_2: SortedList):
