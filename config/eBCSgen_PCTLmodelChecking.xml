@@ -1,21 +1,17 @@
-<tool id="ModelChecking" name="PCTL Model Checking" version="1.0.0">
+<tool id="ModelChecking" name="PCTL Model Checking" version="1.1.0">
   <description> - explicit PCTL model checking of given model</description>
     <options sanitize="False"/>
-    <command>python3 /home/xtrojak/eBCSgen/Callables/ModelChecking.py
-      --model '$model'
+    <command>python3 /home/xtrojak/eBCSgen/Callables/PCTLModelChecking.py
+      --transition_file '$transition_file'
       --output '$output'
       --formula '$formula'
-      #if $bound != "":
-          --bound '$bound'
-      #end if
   </command>
 
   <inputs>
-    <param format="bcs" name="model" type="data" label="Model file" help="Provide a .bcs file"/>
+    <param format="bcs.ts" name="transition_file" type="data" label="Computed Transition system"/>
     <param name="formula" type="text" label="PCTL formula">
       <validator type="empty_field"/>
     </param>
-    <param name="bound" min="0" type="integer" value="" label="Bound [optional]" optional="true"/>
   </inputs>
 
   <outputs>

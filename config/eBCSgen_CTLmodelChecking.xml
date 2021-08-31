@@ -1,0 +1,26 @@
+<tool id="CTLModelChecking" name="CTL Model Checking" version="1.1.0">
+  <description> - explicit CTL model checking of given model</description>
+    <options sanitize="False"/>
+    <command>python3 /home/xtrojak/eBCSgen/Callables/CTLModelChecking.py
+      --transition_file '$transition_file'
+      --output '$output'
+      --formula '$formula'
+  </command>
+
+  <inputs>
+    <param format="bcs.ts" name="transition_file" type="data" label="Computed Transition system"/>
+    <param name="formula" type="text" label="PCTL formula">
+      <validator type="empty_field"/>
+    </param>
+  </inputs>
+
+  <outputs>
+    <data format="storm.check" name="output" />
+  </outputs>
+
+  <tests>
+    <test>
+    </test>
+  </tests>
+
+</tool>

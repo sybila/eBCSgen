@@ -1,18 +1,14 @@
-<tool id="ParameterSynthesis" name="PCTL Parameter Synthesis" version="1.0.0">
+<tool id="ParameterSynthesis" name="PCTL Parameter Synthesis" version="1.1.0">
   <description> - PCTL parameter synthesis of given model</description>
     <options sanitize="False"/>
-    <command>python3 /home/xtrojak/eBCSgen/Callables/ParameterSynthesis.py
-      --model '$model'
+    <command>python3 /home/xtrojak/eBCSgen/Callables/PCTLParameterSynthesis.py
+      --transition_file '$transition_file'
       #if len($regions) > 0:
           --output '$output_regions'
       #else:
           --output '$output_sample'
       #end if
       --formula '$formula'
-
-      #if $bound != "":
-          --bound '$bound'
-      #end if
 
       #set parameters = ",".join([str($s.from) + "=" + str($s.param) + "=" + str($s.to) for $s in $regions])
       #if $parameters:
@@ -21,11 +17,10 @@
   </command>
 
   <inputs>
-    <param format="bcs" name="model" type="data" label="Model file" help="Provide a .bcs file"/>
+    <param format="bcs.ts" name="transition_file" type="data" label="Computed Transition system"/>
     <param name="formula" type="text" label="PCTL formula">
        <validator type="empty_field"/>
     </param>
-    <param name="bound" size="4" type="integer" value="" label="Bound [optional]" optional="true"/>
 
     <repeat name="regions" title="Intervals">
         <param name="param" value="" type="text" label="Parameter:">
