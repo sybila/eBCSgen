@@ -110,12 +110,12 @@ class Storm_check(Text):
             dataset.blurb = 'file purged from disk'
 
 class CTL_check(Text):
-    """Class describing a CTL modelchecking output"""
+    """Class describing a CTL model checking output"""
     file_ext = "ctl.check"
 
     def sniff(self, filename):
         """
-        Determines whether the file is in .storm.check format
+        Determines whether the file is in .ctl.check format
         """
         content = open(filename, 'r').read()
         keywords = ["Result:", "Number of satisfying states:"]
