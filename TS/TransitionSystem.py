@@ -210,7 +210,7 @@ class TransitionSystem:
 
         # declare state variables
         init = decoding[self.init]
-        vars = [f'\tVAR_{i} : [0..{ self.bound + 1}] init {int(init.sequence[i])}; // {self.ordering[i]}'
+        vars = ['\tVAR_{} : [0..{}] init {}; // {}'.format(i, self.bound + 1, int(init.sequence[i]), self.ordering[i])
                 for i in range(len(self.ordering))]
         prism_file.write("\n" + "\n".join(vars) + "\n")
 
@@ -235,7 +235,7 @@ class TransitionSystem:
         output = []
         for group in self:
             source = group[0].source
-            line = f'\t[] {decoding[source].to_PRISM_string()} -> ' + \
+            line = '\t[] {} -> '.format(decoding[source].to_PRISM_string()) + \
                    " + ".join(list(map(lambda edge: edge.to_PRISM_string(decoding), group))) + ";"
             output.append(line)
         return output

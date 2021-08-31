@@ -109,3 +109,27 @@ class Storm_check(Text):
             dataset.peek = 'file does not exist'
             dataset.blurb = 'file purged from disk'
 
+class CTL_check(Text):
+    """Class describing a CTL model checking output"""
+    file_ext = "ctl.check"
+
+    def sniff(self, filename):
+        """
+        Determines whether the file is in .ctl.check format
+        """
+        content = open(filename, 'r').read()
+        keywords = ["Result:", "Number of satisfying states:"]
+        return all(keyword in content for keyword in keywords)
+
+    def set_peek(self, dataset, is_multi_byte=False):
+        if not dataset.dataset.purged:
+            result = open(dataset.file_name, "r")
+            answer = ""
+            for line in result.readlines():
+                if "Result:" in line:
+                    answer = line.split()[-1]
+            dataset.peek = "Model checking result: {}".format(answer)
+            dataset.blurb = nice_size(dataset.get_size())
+        else:
+            dataset.peek = 'file does not exist'
+            dataset.blurb = 'file purged from disk'
