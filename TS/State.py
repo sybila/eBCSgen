@@ -107,6 +107,8 @@ class MemorylessState:
         :param ordering: position of corresponding Complex
         :return: True if satisfied
         """
+        if self.is_inf:
+            return False
         if ap.complex in ordering:
             operand = str(self.sequence[ordering.index(ap.complex)])
         else:
