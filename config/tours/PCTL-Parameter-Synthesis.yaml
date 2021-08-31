@@ -13,51 +13,46 @@ steps:
   - title: Step 2 - Select tool
     element: >-
       #left > div.unified-panel > div.unified-panel-body > div > div.toolMenu >
-      div:nth-child(4) > div > div > div:nth-child(2) > div:nth-child(4) > a
+      div:nth-child(4) > div > div > div:nth-child(2) > div:nth-child(5) > a
     content: "Click on PCTL Parameter Synthesis tool."
     placement: bottom
-  - title: Step 3 - Model file
-    element: 'div[tour_id="model"]'
+  - title: Step 3 - Computed Transition system
+    element: 'div[tour_id="transition_file"]'
     content:
-      "Choose BCSL model file. <br>
-      This tool supports only .bcs files stored in your history."
-    placement: auto
+      "You can choose a precomputed Transition System file. <br>
+      This tool supports only .bcs.ts files stored in your history."
   - title: Step 4 - PCTL Formula
     element: 'div[tour_id="formula"]'
     content: "Enter PCTL formula."
     placement: auto
-  - title: Step 5 - Bound
-    element: 'div[tour_id="bound"]'
-    content: "Specify agents boundary cap (optional)."
-    placement: auto
-  - title: Step 6 - Insert Interval
+  - title: Step 5 - Insert Interval
     element: '#center .center-container .center-panel .ui-portlet .portlet-content .portlet-body
     .ui-form-element .ui-form-field button .ui-button-default.btn.btn-secondary.float-none.form-repeat-add'
     content:
       "Please specify values interval for<br>
       each unknown parameter."
     placement: auto
-  - title: Step 7 - Parameter name
+  - title: Step 6 - Parameter name
     element: 'div[tour_id="regions_0|param"]'
     content: "Enter parameter name."
     placement: bottom
-  - title: Step 8 - Parameter interval start
+  - title: Step 7 - Parameter interval start
     element: 'div[tour_id="regions_0|from"]'
     content: "Enter start of the interval."
     placement: bottom
-  - title: Step 9 - Parameter interval end
+  - title: Step 8 - Parameter interval end
     element: 'div[tour_id="regions_0|to"]'
     content: "Enter end of the interval."
     placement: bottom
-  - title: Step 10 - Delete Interval
+  - title: Step 9 - Delete Interval
     element: '#button_delete'
     content: "Option to delete your interval."
     placement: left
-  - title: Step 11 - Execute
+  - title: Step 10 - Execute
     element: '#execute'
     content: "Click the button Execute <br>to start parameter synthesis."
     placement: auto
-  - title: Step 12 - Results
+  - title: Step 11 - Results
     element: .list-items
     content:
       "Wait until the parameter synthesis is <br>
