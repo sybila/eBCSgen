@@ -33,8 +33,13 @@ class TestRegulations(unittest.TestCase):
         """
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
-        ts = model.generate_direct_transition_system()
-        ts.save_to_json("Testing/regulations/programmed_ts.json")
+        direct_ts = model.generate_direct_transition_system()
+        direct_ts = direct_ts.to_vector_ts()
+
+        vm = model.to_vector_model()
+        indirect_ts = vm.generate_transition_system()
+
+        self.assertEqual(direct_ts, indirect_ts)
 
     def test_ordered(self):
         regulation = """
@@ -46,8 +51,13 @@ class TestRegulations(unittest.TestCase):
 
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
-        ts = model.generate_direct_transition_system()
-        ts.save_to_json("Testing/regulations/ordered_ts.json")
+        direct_ts = model.generate_direct_transition_system()
+        direct_ts = direct_ts.to_vector_ts()
+
+        vm = model.to_vector_model()
+        indirect_ts = vm.generate_transition_system()
+
+        self.assertEqual(direct_ts, indirect_ts)
 
     def test_conditional(self):
         regulation = """
@@ -59,8 +69,13 @@ class TestRegulations(unittest.TestCase):
 
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
-        ts = model.generate_direct_transition_system()
-        ts.save_to_json("Testing/regulations/conditional_ts.json")
+        direct_ts = model.generate_direct_transition_system()
+        direct_ts = direct_ts.to_vector_ts()
+
+        vm = model.to_vector_model()
+        indirect_ts = vm.generate_transition_system()
+
+        self.assertEqual(direct_ts, indirect_ts)
 
     def test_concurrent_free(self):
         regulation = """
@@ -72,8 +87,13 @@ class TestRegulations(unittest.TestCase):
 
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
-        ts = model.generate_direct_transition_system()
-        ts.save_to_json("Testing/regulations/concurrent_free_ts.json")
+        direct_ts = model.generate_direct_transition_system()
+        direct_ts = direct_ts.to_vector_ts()
+
+        vm = model.to_vector_model()
+        indirect_ts = vm.generate_transition_system()
+
+        self.assertEqual(direct_ts, indirect_ts)
 
     def test_regular(self):
         regulation = """
@@ -85,13 +105,24 @@ class TestRegulations(unittest.TestCase):
 
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
-        ts = model.generate_direct_transition_system()
-        ts.save_to_json("Testing/regulations/regular_ts.json")
+        direct_ts = model.generate_direct_transition_system()
+        direct_ts = direct_ts.to_vector_ts()
+
+        vm = model.to_vector_model()
+        indirect_ts = vm.generate_transition_system()
+
+        self.assertEqual(direct_ts, indirect_ts)
 
     def test_no_regulation(self):
         model = self.model_parser.parse(self.model_with_labels).data
-        ts = model.generate_direct_transition_system()
-        ts.save_to_json("Testing/regulations/no_regulation_ts.json")
+
+        direct_ts = model.generate_direct_transition_system()
+        direct_ts = direct_ts.to_vector_ts()
+
+        vm = model.to_vector_model()
+        indirect_ts = vm.generate_transition_system()
+
+        self.assertEqual(direct_ts, indirect_ts)
 
     def test_network_free_simulation_regulated(self):
         regulation = """
