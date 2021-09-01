@@ -13,11 +13,6 @@ class CTL:
         state_labels, AP_labels = ts.create_AP_labels(APs, include_init=False)
         formula = CTL_formula.replace_APs(AP_labels, extra_quotes=False)
 
-        print(AP_labels)
-
-        for key, value in state_labels.items():
-            print(key, value)
-
         kripke = ts.to_kripke(state_labels)
         parser = Parser()
         formula = parser(str(formula))
