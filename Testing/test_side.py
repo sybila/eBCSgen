@@ -6,7 +6,7 @@ from Core.Structure import StructureAgent
 from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
 from Core.Side import Side
-from TS.State import MemorylessState
+from TS.State import VectorState
 import Parsing.ParseBCSL
 
 
@@ -51,7 +51,7 @@ class TestSide(unittest.TestCase):
 
     def test_to_vector(self):
         ordering = (self.c1, self.c2, self.c3, self.c4)
-        self.assertEqual(self.side2.to_vector(ordering), MemorylessState(np.array((0, 1, 1, 1))))
+        self.assertEqual(self.side2.to_vector(ordering), VectorState(np.array((0, 1, 1, 1))))
 
     def test_compatible(self):
         self.assertTrue(self.side5.compatible(self.side4))

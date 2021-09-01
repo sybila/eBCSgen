@@ -1,15 +1,17 @@
 from Core.Rate import Rate
-from TS.State import MemorylessState
+from TS.State import VectorState
 
 
 class VectorReaction:
-    def __init__(self, source: MemorylessState, target: MemorylessState, rate: Rate):
+    def __init__(self, source: VectorState, target: VectorState, rate: Rate, label=None):
         self.source = source
         self.target = target
         self.rate = rate
+        self.label = label
 
     def __str__(self):
-        return str(self.source) + " -> " + str(self.target) + " @ " + str(self.rate)
+        label = self.label + " ~ " if self.label else ""
+        return label + str(self.source) + " -> " + str(self.target) + " @ " + str(self.rate)
 
     def __eq__(self, other: 'VectorReaction'):
         return self.source == other.source and self.target == other.target and self.rate == other.rate
@@ -23,16 +25,16 @@ class VectorReaction:
     def __hash__(self):
         return hash(str(self))
 
-    def apply(self, state: MemorylessState, bound: float):
+    def apply(self, state: VectorState, bound: float):
         """
-        Applies the reaction on a given MemorylessState.
-        First, source is subtracted from the given MemorylessState, then it is checked if all
-        values are greater then 0. If so, new MemorylessState is create as sum with target
+        Applies the reaction on a given VectorState.
+        First, source is subtracted from the given VectorState, then it is checked if all
+        values are greater then 0. If so, new VectorState is create as sum with target
         and rate is evaluated. Moreover, it is possible that the resulting state is greater
-        than allowed bound, then infinite MemorylessState is returned instead.
-        :param state: given MemorylessState
+        than allowed bound, then infinite VectorState is returned instead.
+        :param state: given VectorState
         :param bound: allow bound on particular values
-        :return: new MemorylessState and evaluated rate
+        :return: new VectorState and evaluated rate
         """
         if state >= self.source:
             new_state = state - self.source

@@ -8,7 +8,7 @@ from Core.Structure import StructureAgent
 from Core.Complex import Complex
 from Parsing.ParseBCSL import Parser, load_TS_from_json
 from TS.Edge import Edge
-from TS.State import MemorylessState
+from TS.State import VectorState
 from TS.TransitionSystem import TransitionSystem
 from TS.VectorModel import VectorModel
 from TS.VectorReaction import VectorReaction
@@ -40,17 +40,17 @@ class TestVectorModel(unittest.TestCase):
         rate_3 = Rate(self.rate_parser.parse(rate_expr).data)
         rate_3.vectorize(ordering, params)
 
-        init = MemorylessState(np.array([2.0, 1.0, 1.0]))
+        init = VectorState(np.array([2.0, 1.0, 1.0]))
 
-        vector_reactions = {VectorReaction(MemorylessState(np.array([0.0, 0.0, 0.0])), MemorylessState(np.array([0.0, 1.0, 0.0])), rate_1),
-                            VectorReaction(MemorylessState(np.array([1.0, 0.0, 0.0])), MemorylessState(np.array([0.0, 0.0, 0.0])), rate_2),
-                            VectorReaction(MemorylessState(np.array([0.0, 0.0, 1.0])), MemorylessState(np.array([1.0, 0.0, 0.0])), None)}
+        vector_reactions = {VectorReaction(VectorState(np.array([0.0, 0.0, 0.0])), VectorState(np.array([0.0, 1.0, 0.0])), rate_1),
+                            VectorReaction(VectorState(np.array([1.0, 0.0, 0.0])), VectorState(np.array([0.0, 0.0, 0.0])), rate_2),
+                            VectorReaction(VectorState(np.array([0.0, 0.0, 1.0])), VectorState(np.array([1.0, 0.0, 0.0])), None)}
 
         self.vm_1 = VectorModel(vector_reactions, init, ordering, None)
 
-        vector_reactions = {VectorReaction(MemorylessState(np.array([0.0, 0.0, 0.0])), MemorylessState(np.array([0.0, 1.0, 0.0])), rate_1),
-                            VectorReaction(MemorylessState(np.array([1.0, 0.0, 0.0])), MemorylessState(np.array([0.0, 0.0, 0.0])), rate_2),
-                            VectorReaction(MemorylessState(np.array([0.0, 0.0, 1.0])), MemorylessState(np.array([1.0, 0.0, 0.0])), rate_3)}
+        vector_reactions = {VectorReaction(VectorState(np.array([0.0, 0.0, 0.0])), VectorState(np.array([0.0, 1.0, 0.0])), rate_1),
+                            VectorReaction(VectorState(np.array([1.0, 0.0, 0.0])), VectorState(np.array([0.0, 0.0, 0.0])), rate_2),
+                            VectorReaction(VectorState(np.array([0.0, 0.0, 1.0])), VectorState(np.array([1.0, 0.0, 0.0])), rate_3)}
 
         self.vm_2 = VectorModel(vector_reactions, init, ordering, None)
 
@@ -115,19 +115,19 @@ class TestVectorModel(unittest.TestCase):
 
         self.test_ts = TransitionSystem(ordering, 2)
 
-        states = [MemorylessState(np.array((0.0, 0.0, 0.0, 0.0, 1.0))),
-                  MemorylessState(np.array((0.0, 0.0, 0.0, 0.0, 0.0))),
-                  MemorylessState(np.array((0.0, 0.0, 1.0, 0.0, 0.0))),
-                  MemorylessState(np.array((0.0, 0.0, 1.0, 0.0, 1.0))),
-                  MemorylessState(np.array((np.inf, np.inf, np.inf, np.inf, np.inf))),
-                  MemorylessState(np.array((0.0, 0.0, 0.0, 1.0, 1.0))),
-                  MemorylessState(np.array((0.0, 0.0, 1.0, 1.0, 1.0))),
-                  MemorylessState(np.array((0.0, 1.0, 0.0, 0.0, 0.0))),
-                  MemorylessState(np.array((0.0, 0.0, 0.0, 1.0, 0.0))),
-                  MemorylessState(np.array((0.0, 0.0, 1.0, 1.0, 0.0))),
-                  MemorylessState(np.array((0.0, 1.0, 1.0, 0.0, 0.0))),
-                  MemorylessState(np.array((0.0, 1.0, 0.0, 1.0, 0.0))),
-                  MemorylessState(np.array((0.0, 1.0, 1.0, 1.0, 0.0)))]
+        states = [VectorState(np.array((0.0, 0.0, 0.0, 0.0, 1.0))),
+                  VectorState(np.array((0.0, 0.0, 0.0, 0.0, 0.0))),
+                  VectorState(np.array((0.0, 0.0, 1.0, 0.0, 0.0))),
+                  VectorState(np.array((0.0, 0.0, 1.0, 0.0, 1.0))),
+                  VectorState(np.array((np.inf, np.inf, np.inf, np.inf, np.inf))),
+                  VectorState(np.array((0.0, 0.0, 0.0, 1.0, 1.0))),
+                  VectorState(np.array((0.0, 0.0, 1.0, 1.0, 1.0))),
+                  VectorState(np.array((0.0, 1.0, 0.0, 0.0, 0.0))),
+                  VectorState(np.array((0.0, 0.0, 0.0, 1.0, 0.0))),
+                  VectorState(np.array((0.0, 0.0, 1.0, 1.0, 0.0))),
+                  VectorState(np.array((0.0, 1.0, 1.0, 0.0, 0.0))),
+                  VectorState(np.array((0.0, 1.0, 0.0, 1.0, 0.0))),
+                  VectorState(np.array((0.0, 1.0, 1.0, 1.0, 0.0)))]
 
         # in edges we have probabilities, not rates, so we must normalise
         go = gamma + omega  # 5

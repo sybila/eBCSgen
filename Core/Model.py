@@ -9,12 +9,13 @@ import pandas as pd
 import copy
 from sortedcontainers import SortedList
 
+from Regulations.Conditional import Conditional, VectorConditional
 from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
 from Core.Rate import Rate
 from Core.Side import Side
 from TS.DirectTS import DirectTS
-from TS.State import FullMemoryState, OneStepMemoryState, MultisetState
+from TS.State import FullMemoryMultisetState, OneStepMemoryMultisetState, MultisetState
 from TS.TSworker import DirectTSworker
 from TS.VectorModel import VectorModel, handle_number_of_threads
 
@@ -115,7 +116,13 @@ class Model:
         for reaction in reactions:
             vector_reactions.add(reaction.to_vector(ordering, self.definitions))
 
-        return VectorModel(vector_reactions, init, ordering, bound)
+        if type(self.regulation) == Conditional:
+            regulation = {k: Side(v).to_vector(ordering) for k, v in self.regulation.regulation.items()}
+            regulation = VectorConditional(regulation)
+        else:
+            regulation = self.regulation
+
+        return VectorModel(vector_reactions, init, ordering, bound, regulation)
 
     def eliminate_redundant(self):
         """
@@ -166,7 +173,7 @@ class Model:
         :param max_time: maximal simulation time
         :return: generated dataframe containing simulated time series
         """
-        state = FullMemoryState(copy.deepcopy(self.init))
+        state = FullMemoryMultisetState(copy.deepcopy(self.init))
         for rule in self.rules:
             # precompute complexes for each rule
             rule.lhs, _ = rule.create_complexes()
@@ -208,7 +215,7 @@ class Model:
 
                 # update state based on match & replace operation
                 match = rule.reconstruct_complexes_from_match(match)
-                state = FullMemoryState(update_state(state.multiset, match, produced_agents))
+                state = FullMemoryMultisetState(update_state(state.multiset, match, produced_agents))
                 if self.regulation:
                     used_rules.append(rule.label)
             else:
@@ -256,9 +263,9 @@ class Model:
             if self.regulation.memory == 0:
                 ts.init = MultisetState(self.init)
             elif self.regulation.memory == 1:
-                ts.init = OneStepMemoryState(self.init)
+                ts.init = OneStepMemoryMultisetState(self.init)
             else:
-                ts.init = FullMemoryState(self.init)
+                ts.init = FullMemoryMultisetState(self.init)
         else:
             ts.init = MultisetState(self.init)
         ts.unprocessed = {ts.init}

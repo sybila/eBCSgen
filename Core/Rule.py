@@ -80,7 +80,7 @@ class Rule:
         :return: created Reaction
         """
         lhs, rhs = self.create_complexes()
-        return Reaction(lhs, rhs, copy(self.rate))
+        return Reaction(lhs, rhs, copy(self.rate), self.label)
 
     def rate_to_vector(self, ordering, definitions: dict):
         """
@@ -116,7 +116,7 @@ class Rule:
         reactions = set()
         for result in itertools.product(*results):
             new_agents = tuple(filter(None, column(result, 0) + column(result, 1)))
-            new_rule = Rule(new_agents, self.mid, self.compartments, self.complexes, self.pairs, self.rate)
+            new_rule = Rule(new_agents, self.mid, self.compartments, self.complexes, self.pairs, self.rate, self.label)
             reactions.add(new_rule.to_reaction())
         return reactions
 

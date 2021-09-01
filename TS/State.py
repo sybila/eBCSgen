@@ -3,27 +3,25 @@ from copy import deepcopy
 
 import numpy as np
 
-import Core.Formula
 
-
-class MemorylessState:
+class VectorState:
     def __init__(self, sequence: np.array):
         self.sequence = sequence
         self.is_inf = self.is_hell()
 
-    def __eq__(self, other: 'MemorylessState'):
+    def __eq__(self, other: 'VectorState'):
         return (self.sequence == other.sequence).all()
 
-    def __sub__(self, other: 'MemorylessState'):
-        return MemorylessState(self.sequence - other.sequence)
+    def __sub__(self, other: 'VectorState'):
+        return VectorState(self.sequence - other.sequence)
 
-    def __add__(self, other: 'MemorylessState'):
-        return MemorylessState(self.sequence + other.sequence)
+    def __add__(self, other: 'VectorState'):
+        return VectorState(self.sequence + other.sequence)
 
-    def __mul__(self, other: 'MemorylessState') -> np.array:
+    def __mul__(self, other: 'VectorState') -> np.array:
         return self.sequence * other.sequence
 
-    def __ge__(self, other: 'MemorylessState') -> bool:
+    def __ge__(self, other: 'VectorState') -> bool:
         return all(self.sequence >= other.sequence)
 
     def __str__(self):
@@ -40,33 +38,33 @@ class MemorylessState:
 
     def check_negative(self) -> bool:
         """
-        Checks whether all values of MemorylessState are are greater then 0.
+        Checks whether all values of VectorState are are greater then 0.
 
         :return: True if check was successful
         """
         return all(0 <= value for value in self.sequence)
 
-    def add_with_bound(self, target: 'MemorylessState', bound: int) -> 'MemorylessState':
+    def add_with_bound(self, target: 'VectorState', bound: int) -> 'VectorState':
         """
         Creates a new state as a sum with the target. If resulting state is smaller than given bound,
         it is returned, otherwise special infinite state is returned instead.
 
         :param target: given state to be added
         :param bound: maximal allowed bound on individual values
-        :return: resulting MemorylessState
+        :return: resulting VectorState
         """
         new_state = self + target
         if all(value <= bound for value in new_state.sequence):
             return new_state
         else:
-            return MemorylessState(np.array([np.inf] * len(new_state)))
+            return VectorState(np.array([np.inf] * len(new_state)))
 
-    def filter_values(self, state: 'MemorylessState') -> int:
+    def filter_values(self, state: 'VectorState') -> int:
         """
-        Computed sum of individual values after intersection with given MemorylessState.
+        Computed sum of individual values after intersection with given VectorState.
         (used to indicate abstract agents in reaction-based setup).
 
-        :param state: given MemorylessState
+        :param state: given VectorState
         :return: resulting summation
         """
         return sum(self * state)
@@ -81,14 +79,14 @@ class MemorylessState:
         return " + ".join(filter(None, ["y[" + str(i) + "]"
                                         if self.sequence[i] == 1 else None for i in range(len(self.sequence))]))
 
-    def reorder(self, indices: np.array) -> 'MemorylessState':
+    def reorder(self, indices: np.array) -> 'VectorState':
         """
         Changes order of individual values according to given new indices.
 
         :param indices: array of indices
-        :return: new reordered MemorylessState
+        :return: new reordered VectorState
         """
-        return MemorylessState(self.sequence[indices])
+        return VectorState(self.sequence[indices])
 
     def is_hell(self):
         """
@@ -99,7 +97,7 @@ class MemorylessState:
 
     def check_AP(self, ap, ordering: tuple) -> bool:
         """
-        Checks whether the MemorylessState satisfies given AtomicProposition.
+        Checks whether the VectorState satisfies given AtomicProposition.
 
         TBA : could be abstract !!!
 
@@ -113,7 +111,7 @@ class MemorylessState:
             operand = str(self.sequence[ordering.index(ap.complex)])
         else:
             indices = ap.complex.identify_compatible(ordering)
-            state = MemorylessState(np.array([1 if i in indices else 0 for i in range(len(ordering))]))
+            state = VectorState(np.array([1 if i in indices else 0 for i in range(len(ordering))]))
             operand = str(self.filter_values(state))
         sign = "==" if ap.sign == " = " else ap.sign
         return eval(operand + sign + str(ap.number))
@@ -128,6 +126,41 @@ class MemorylessState:
         aps = "'" if apostrophe else ""
         vars = list(map(lambda i: '(VAR_{}{}={})'.format(i, aps, int(self.sequence[i])), range(len(self))))
         return " & ".join(vars)
+
+    def update_state(self, new_state, used_reaction_label):
+        return new_state
+
+    def check_intersection(self, other):
+        for i in range(len(self.sequence)):
+            if self.sequence[i] > 0 and other.sequence[i] > 0:
+                return True
+        return False
+
+
+class OneStepMemoryVectorState(VectorState):
+    def __init__(self, sequence):
+        super().__init__(sequence)
+        self.used_rules = []
+
+    def __eq__(self, other):
+        return (self.sequence == other.sequence).all() and self.used_rules == other.used_rules
+
+    def __hash__(self):
+        return hash(tuple(self.sequence)) + hash(tuple(self.used_rules))
+
+    def update_state(self, new_state, used_reaction_label):
+        new_state = OneStepMemoryVectorState(deepcopy(new_state.sequence))
+        new_state.used_rules = [used_reaction_label]
+        return new_state
+
+
+class FullMemoryVectorState(OneStepMemoryVectorState):
+    def update_state(self, new_state, used_reaction_label):
+        new_state = FullMemoryVectorState(deepcopy(new_state.sequence))
+        new_state.used_rules = self.used_rules + [used_reaction_label]
+        return new_state
+
+#######################################################
 
 
 class MultisetState:
@@ -173,7 +206,7 @@ class MultisetState:
         return state
 
 
-class OneStepMemoryState(MultisetState):
+class OneStepMemoryMultisetState(MultisetState):
     def __init__(self, multiset):
         super().__init__(multiset)
         self.used_rules = []
@@ -190,12 +223,12 @@ class OneStepMemoryState(MultisetState):
     def update_state(self, consumed, produced, used_rule_label):
         consumed = collections.Counter(consumed)
         produced = collections.Counter(produced)
-        new_state = OneStepMemoryState(deepcopy(self.multiset - consumed + produced))
+        new_state = OneStepMemoryMultisetState(deepcopy(self.multiset - consumed + produced))
         new_state.used_rules = [used_rule_label]
         return new_state
 
 
-class FullMemoryState(MultisetState):
+class FullMemoryMultisetState(MultisetState):
     def __init__(self, multiset):
         super().__init__(multiset)
         self.used_rules = []
@@ -212,6 +245,6 @@ class FullMemoryState(MultisetState):
     def update_state(self, consumed, produced, used_rule_label):
         consumed = collections.Counter(consumed)
         produced = collections.Counter(produced)
-        new_state = FullMemoryState(deepcopy(self.multiset - consumed + produced))
+        new_state = FullMemoryMultisetState(deepcopy(self.multiset - consumed + produced))
         new_state.used_rules = self.used_rules + [used_rule_label]
         return new_state

@@ -4,14 +4,14 @@ from itertools import groupby
 from sortedcontainers import SortedList
 from pyModelChecking import Kripke
 
-from TS.State import MemorylessState
+from TS.State import VectorState
 
 
 class TransitionSystem:
     def __init__(self, ordering: SortedList, bound):
-        self.states_encoding = dict()  # MemorylessState -> int
+        self.states_encoding = dict()  # VectorState -> int
         self.edges = set()  # Edge objects: (int from, int to, probability), can be used for explicit Storm format
-        self.ordering = ordering  # used to decode MemorylessState to actual agents
+        self.ordering = ordering  # used to decode VectorState to actual agents
         self.init = int
         self.params = []
         self.bound = bound
@@ -66,9 +66,9 @@ class TransitionSystem:
         return set(map(hash, ts.edges)) == set(map(hash, other.edges))
         # return ts.edges == other.edges
 
-    def encode(self, init: MemorylessState):
+    def encode(self, init: VectorState):
         """
-        Assigns a unique code to each MemorylessState for storing purposes
+        Assigns a unique code to each VectorState for storing purposes
         """
         for state in self.processed | self.unprocessed:
             if state not in self.states_encoding:
@@ -80,7 +80,7 @@ class TransitionSystem:
 
     def encode_edges(self):
         """
-        Encodes every MemorylessState in Edge according to the unique encoding.
+        Encodes every VectorState in Edge according to the unique encoding.
         """
         for edge in self.edges:
             edge.encode(self.states_encoding)
@@ -136,7 +136,7 @@ class TransitionSystem:
         for key, value in self.states_encoding.items():
             if key.is_inf:
                 del self.states_encoding[key]
-                hell = MemorylessState(np.array([self.bound + 1] * len(key)))
+                hell = VectorState(np.array([self.bound + 1] * len(key)))
                 hell.is_inf = True
                 self.states_encoding[hell] = value
                 break

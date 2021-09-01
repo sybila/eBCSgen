@@ -24,3 +24,18 @@ class Conditional(BaseRegulation):
         if label not in self.regulation:
             return False
         return self.regulation[label] & agents
+
+
+class VectorConditional(Conditional):
+    def __init__(self, regulation):
+        super().__init__(regulation)
+        self.memory = 0
+
+    def filter(self, current_state, candidates):
+        seq = current_state
+        return {rule: values for rule, values in candidates.items() if not self.check_intersection(rule.label, seq)}
+
+    def check_intersection(self, label, agents):
+        if label not in self.regulation:
+            return False
+        return self.regulation[label].check_intersection(agents)
