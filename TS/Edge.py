@@ -7,7 +7,8 @@ class Edge:
         self._is_encoded = encoded
 
     def __hash__(self):
-        return hash((self.source, self.target, truncate(self.probability, 5)))
+        prob = truncate(self.probability, 5) if type(self.probability) == float else self.probability
+        return hash((self.source, self.target, prob))
 
     def __eq__(self, other: 'Edge'):
         return self.source == other.source and self.target == other.target and self.probability == other.probability
@@ -47,7 +48,7 @@ class Edge:
             if state == encoding_old[self.target]:
                 target_code = code
 
-        if source_code and target_code:
+        if source_code is not None and target_code is not None:
             return Edge(source_code, target_code, self.probability)
         else:
             raise KeyError

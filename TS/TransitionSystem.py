@@ -80,7 +80,8 @@ class TransitionSystem:
             if state not in self.states_encoding:
                 self.states_encoding[state] = len(self.states_encoding) + 1
 
-        self.init = self.states_encoding[self.init]
+        if type(self.init) != int:
+            self.init = self.states_encoding[self.init]
         self.processed = set()
         self.encode_edges()
 
@@ -270,13 +271,17 @@ class TransitionSystem:
 
         ordering = copy(self.ordering)
 
+        to_remove = []
         for i in range(len(check)):
             if check[i] == 0:
-                for state, code in self.states_encoding.items():
-                    new_sequence = np.delete(state.sequence, i)
-                    state.sequence = new_sequence
+                to_remove.append(i)
 
-                del ordering[i]
+        for state, code in self.states_encoding.items():
+            new_sequence = np.delete(state.sequence, to_remove)
+            state.sequence = new_sequence
+
+        for i in reversed(to_remove):
+            del ordering[i]
 
         new_ts = TransitionSystem(ordering, self.bound)
         new_ts.init = self.init
