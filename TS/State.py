@@ -142,16 +142,30 @@ class OneStepMemoryVectorState(VectorState):
         super().__init__(sequence)
         self.used_rules = []
 
-    def __eq__(self, other):
+    def __eq__(self, other: 'OneStepMemoryVectorState'):
         return (self.sequence == other.sequence).all() and self.used_rules == other.used_rules
 
+    def __ge__(self, other: 'OneStepMemoryVectorState') -> bool:
+        return all(self.sequence >= other.sequence) and self.used_rules >= self.used_rules
+
     def __hash__(self):
-        return hash(tuple(self.sequence)) + hash(tuple(self.used_rules))
+        return hash((tuple(self.sequence), tuple(self.used_rules)))
 
     def update_state(self, new_state, used_reaction_label):
         new_state = OneStepMemoryVectorState(deepcopy(new_state.sequence))
         new_state.used_rules = [used_reaction_label]
         return new_state
+
+    def reorder(self, indices: np.array) -> 'OneStepMemoryVectorState':
+        """
+        Changes order of individual values according to given new indices.
+
+        :param indices: array of indices
+        :return: new reordered OneStepMemoryVectorState
+        """
+        new_vec = OneStepMemoryVectorState(self.sequence[indices])
+        new_vec.used_rules = self.used_rules
+        return new_vec
 
 
 class FullMemoryVectorState(OneStepMemoryVectorState):
@@ -159,6 +173,17 @@ class FullMemoryVectorState(OneStepMemoryVectorState):
         new_state = FullMemoryVectorState(deepcopy(new_state.sequence))
         new_state.used_rules = self.used_rules + [used_reaction_label]
         return new_state
+
+    def reorder(self, indices: np.array) -> 'FullMemoryVectorState':
+        """
+        Changes order of individual values according to given new indices.
+
+        :param indices: array of indices
+        :return: new reordered FullMemoryVectorState
+        """
+        new_vec = FullMemoryVectorState(self.sequence[indices])
+        new_vec.used_rules = self.used_rules
+        return new_vec
 
 #######################################################
 
@@ -196,7 +221,7 @@ class MultisetState:
                 vector[ordering.index(agent)] = int(self.multiset[agent])
         else:
             vector = np.full(len(ordering), np.inf)
-        return tuple(vector)
+        return VectorState(vector)
 
     def validate_bound(self, bound):
         if all([self.multiset[agent] <= bound for agent in self.multiset]):
@@ -227,6 +252,12 @@ class OneStepMemoryMultisetState(MultisetState):
         new_state.used_rules = [used_rule_label]
         return new_state
 
+    def to_vector(self, ordering):
+        state = super().to_vector(ordering)
+        vector_state = OneStepMemoryVectorState(state.sequence)
+        vector_state.used_rules = self.used_rules
+        return vector_state
+
 
 class FullMemoryMultisetState(MultisetState):
     def __init__(self, multiset):
@@ -248,3 +279,9 @@ class FullMemoryMultisetState(MultisetState):
         new_state = FullMemoryMultisetState(deepcopy(self.multiset - consumed + produced))
         new_state.used_rules = self.used_rules + [used_rule_label]
         return new_state
+
+    def to_vector(self, ordering):
+        state = super().to_vector(ordering)
+        vector_state = FullMemoryVectorState(state.sequence)
+        vector_state.used_rules = self.used_rules
+        return vector_state

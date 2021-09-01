@@ -1,4 +1,6 @@
 import json
+from copy import copy
+
 import numpy as np
 from itertools import groupby
 from sortedcontainers import SortedList
@@ -46,6 +48,10 @@ class TransitionSystem:
         :param other: given TransitionSystem
         :return: True if equal
         """
+
+        # remove possibly unused agents
+        other = other.filter_unused_agents()
+
         success, reordering_indices = create_indices(other.ordering, self.ordering)
         if not success:  # the agents in orderings are different => also whole TSs are different
             return False
@@ -66,7 +72,7 @@ class TransitionSystem:
         return set(map(hash, ts.edges)) == set(map(hash, other.edges))
         # return ts.edges == other.edges
 
-    def encode(self, init: VectorState):
+    def encode(self):
         """
         Assigns a unique code to each VectorState for storing purposes
         """
@@ -74,7 +80,7 @@ class TransitionSystem:
             if state not in self.states_encoding:
                 self.states_encoding[state] = len(self.states_encoding) + 1
 
-        self.init = self.states_encoding[init]
+        self.init = self.states_encoding[self.init]
         self.processed = set()
         self.encode_edges()
 
@@ -250,6 +256,33 @@ class TransitionSystem:
         edges = [(edge.source, edge.target) for edge in self.edges]
         inits = [self.init]
         return Kripke(S=states, R=edges, S0=inits, L=state_labels)
+
+    def filter_unused_agents(self):
+        """
+        There are cases when agents which are always 0 are used.
+        This methods removed such agents and fixes encoding.
+
+        :return: minimalised TS
+        """
+        check = np.zeros(len(list(self.states_encoding.keys())[0]))
+        for state in self.states_encoding:
+            check += state.sequence
+
+        ordering = copy(self.ordering)
+
+        for i in range(len(check)):
+            if check[i] == 0:
+                for state, code in self.states_encoding.items():
+                    new_sequence = np.delete(state.sequence, i)
+                    state.sequence = new_sequence
+
+                del ordering[i]
+
+        new_ts = TransitionSystem(ordering, self.bound)
+        new_ts.init = self.init
+        new_ts.edges = self.edges
+        new_ts.states_encoding = self.states_encoding
+        return new_ts
 
 
 def create_indices(ordering_1: SortedList, ordering_2: SortedList):
