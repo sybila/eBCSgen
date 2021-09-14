@@ -423,9 +423,10 @@ class TreeToObjects(Transformer):
             pairs += [(i, None) for i in range(rhs.counter, lhs.counter)]
         elif lhs.counter < rhs.counter:
             for i in range(lhs.counter, rhs.counter):
-                if lhs.seq[pairs[-1][0]] == rhs.seq[pairs[-1][1]]:
-                    if rhs.seq[pairs[-1][1]] == rhs.seq[i + lhs.counter - 1]:
-                        pairs += [(pairs[-1][0], i + lhs.counter)]
+                if lhs.counter != 0:  # make sure lhs is not empty
+                    if lhs.seq[pairs[-1][0]] == rhs.seq[pairs[-1][1]]:
+                        if rhs.seq[pairs[-1][1]] == rhs.seq[i + lhs.counter - 1]:
+                            pairs += [(pairs[-1][0], i + lhs.counter)]
                 else:
                     pairs += [(None, i + lhs.counter)]
 
