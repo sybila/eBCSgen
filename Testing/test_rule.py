@@ -241,6 +241,36 @@ class TestRule(unittest.TestCase):
 
         self.assertEqual(rule1.reduce_context(), rule2)
 
+        # next case
+
+        rule_expr_1 = "K(S{u})::cyt => K(S{p})::cyt + D(B{_})::cell @ 3*[K(S{u})::cyt]/2*v_1"
+        rule1 = self.parser.parse(rule_expr_1).data
+
+        rule_expr_2 = "K()::cyt => K()::cyt + D()::cell @ 3*[K()::cyt]/2*v_1"
+        rule2 = self.parser.parse(rule_expr_2).data
+
+        self.assertEqual(rule1.reduce_context(), rule2)
+
+        # next case - covering replication
+
+        rule_expr_1 = "K(S{u})::cyt => 2 K(S{u})::cyt @ 3*[K(S{u})::cyt]/2*v_1"
+        rule1 = self.parser.parse(rule_expr_1).data
+
+        rule_expr_2 = "K()::cyt => 2 K()::cyt @ 3*[K()::cyt]/2*v_1"
+        rule2 = self.parser.parse(rule_expr_2).data
+
+        self.assertEqual(rule1.reduce_context(), rule2)
+
+        # next case - covering replication
+
+        rule_expr_1 = "K(S{u})::cyt => 3 K(S{u})::cyt @ 3*[K(S{u})::cyt]/2*v_1"
+        rule1 = self.parser.parse(rule_expr_1).data
+
+        rule_expr_2 = "K()::cyt => 3 K()::cyt @ 3*[K()::cyt]/2*v_1"
+        rule2 = self.parser.parse(rule_expr_2).data
+
+        self.assertEqual(rule1.reduce_context(), rule2)
+
     def test_exists_compatible_agent(self):
         complex_parser = Parser("rate_complex")
         agent = "K(S{a}).A{a}::cyt"

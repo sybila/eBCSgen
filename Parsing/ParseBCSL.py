@@ -423,11 +423,13 @@ class TreeToObjects(Transformer):
             pairs += [(i, None) for i in range(rhs.counter, lhs.counter)]
         elif lhs.counter < rhs.counter:
             for i in range(lhs.counter, rhs.counter):
-                if lhs.counter != 0:  # make sure lhs is not empty
-                    if lhs.seq[pairs[-1][0]] == rhs.seq[pairs[-1][1]]:
-                        if rhs.seq[pairs[-1][1]] == rhs.seq[i + lhs.counter - 1]:
+                replication = False
+                if lhs.counter == 1 and rhs.counter > 1:
+                    if lhs.seq[pairs[-1][0]] == rhs.seq[pairs[-1][1] - lhs.counter]:
+                        if rhs.seq[pairs[-1][1] - lhs.counter] == rhs.seq[i]:
                             pairs += [(pairs[-1][0], i + lhs.counter)]
-                else:
+                            replication = True
+                if not replication:
                     pairs += [(None, i + lhs.counter)]
 
         return Rule(agents, mid, compartments, complexes, pairs, Rate(rate) if rate else None, label)
@@ -532,18 +534,18 @@ class Parser:
         :param tree: given parsed Tree
         :return: Result containing constructed BCSL object
         """
-        try:
-            complexer = ExtractComplexNames()
-            tree = complexer.transform(tree)
-            de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
-            tree = de_abstracter.transform(tree)
-            tree = TreeToComplex().transform(tree)
-            tree = TransformRegulations().transform(tree)
-            tree = TreeToObjects().transform(tree)
+        # try:
+        complexer = ExtractComplexNames()
+        tree = complexer.transform(tree)
+        de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
+        tree = de_abstracter.transform(tree)
+        tree = TreeToComplex().transform(tree)
+        tree = TransformRegulations().transform(tree)
+        tree = TreeToObjects().transform(tree)
 
-            return Result(True, tree.children[0])
-        except Exception as u:
-            return Result(False, {"error": str(u)})
+        return Result(True, tree.children[0])
+        # except Exception as u:
+        #     return Result(False, {"error": str(u)})
 
     def syntax_check(self, expression: str) -> Result:
         """
