@@ -1,287 +1,231 @@
 import collections
-from copy import deepcopy
+from copy import copy
 
 import numpy as np
 
 
-class VectorState:
-    def __init__(self, sequence: np.array):
-        self.sequence = sequence
-        self.is_inf = self.is_hell()
+class Memory:
+    def __init__(self, level: int):
+        self.level = level
+        self.history = []
 
-    def __eq__(self, other: 'VectorState'):
-        return (self.sequence == other.sequence).all()
+    def __eq__(self, other: 'Memory') -> bool:
+        return self.level == other.level and self.history == other.history
 
-    def __sub__(self, other: 'VectorState'):
-        return VectorState(self.sequence - other.sequence)
+    def __copy__(self):
+        mem = Memory(self.level)
+        mem.history = copy(self.history)
+        return mem
 
-    def __add__(self, other: 'VectorState'):
-        return VectorState(self.sequence + other.sequence)
+    def __hash__(self):
+        return hash(tuple(self.history))
 
-    def __mul__(self, other: 'VectorState') -> np.array:
-        return self.sequence * other.sequence
+    def update_memory(self, label):
+        if self.level == 1:
+            self.history = [label]
+        elif self.level == 2:
+            self.history.append(label)
 
-    def __ge__(self, other: 'VectorState') -> bool:
-        return all(self.sequence >= other.sequence)
+
+class Vector:
+    def __init__(self, value: np.array):
+        self.value = value
 
     def __str__(self):
-        return str(tuple(self.sequence))
+        return str(tuple(self.value))
 
     def __repr__(self):
         return str(self)
 
     def __len__(self):
-        return len(self.sequence)
+        return len(self.value)
 
     def __hash__(self):
-        return hash(tuple(self.sequence))
+        return hash(tuple(self.value))
 
-    def check_negative(self) -> bool:
-        """
-        Checks whether all values of VectorState are are greater then 0.
+    def __eq__(self, other: 'Vector') -> bool:
+        return (self.value == other.value).all()
 
-        :return: True if check was successful
-        """
-        return all(0 <= value for value in self.sequence)
+    def __sub__(self, other: 'Vector'):
+        return Vector(self.value - other.value)
 
-    def add_with_bound(self, target: 'VectorState', bound: int) -> 'VectorState':
-        """
-        Creates a new state as a sum with the target. If resulting state is smaller than given bound,
-        it is returned, otherwise special infinite state is returned instead.
+    def __add__(self, other: 'Vector'):
+        return Vector(self.value + other.value)
 
-        :param target: given state to be added
-        :param bound: maximal allowed bound on individual values
-        :return: resulting VectorState
-        """
-        new_state = self + target
-        if all(value <= bound for value in new_state.sequence):
-            return new_state
-        else:
-            return VectorState(np.array([np.inf] * len(new_state)))
+    def __mul__(self, other: 'Vector') -> np.array:
+        return self.value * other.value
 
-    def filter_values(self, state: 'VectorState') -> int:
+    def __ge__(self, other: 'Vector') -> bool:
+        return all(self.value >= other.value)
+
+    def validate_bound(self, bound):
+        return all(value <= bound for value in self.value)
+
+    def set_hell(self):
+        self.value = np.array([np.inf] * len(self.value))
+
+    def reorder(self, indices: np.array) -> 'Vector':
+        return copy(self.value[indices])
+
+    def check_intersection(self, other: 'Vector'):
+        for i in range(len(self.value)):
+            if self.value[i] > 0 and other.value[i] > 0:
+                return True
+        return False
+
+    def filter_values(self, state: 'Vector') -> int:
         """
-        Computed sum of individual values after intersection with given VectorState.
+        Computed sum of individual values after intersection with given Vector.
         (used to indicate abstract agents in reaction-based setup).
 
-        :param state: given VectorState
+        :param state: given Vector
         :return: resulting summation
         """
         return sum(self * state)
 
-    def to_ODE_string(self) -> str:
-        """
-        Each non-zero value transforms to form y[i] where i is its particular position.
-        Finally, groups these strings to a sum of them (in string manner).
 
-        :return: string symbolic representation of state
-        """
-        return " + ".join(filter(None, ["y[" + str(i) + "]"
-                                        if self.sequence[i] == 1 else None for i in range(len(self.sequence))]))
+class Multiset:
+    def __init__(self, value: collections.Counter):
+        self.value = value
 
-    def reorder(self, indices: np.array) -> 'VectorState':
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    def __eq__(self, other: 'Multiset') -> bool:
+        return self.value == other.value
+
+    def __sub__(self, other: 'Multiset'):
+        return Multiset(self.value - other.value)
+
+    def __add__(self, other: 'Multiset'):
+        return Multiset(self.value + other.value)
+
+    def __ge__(self, other: 'Multiset') -> bool:
+        return all([self.value[agent] >= other.value.get(agent, 0) for agent in self.value])
+
+    def __hash__(self):
+        return hash(frozenset(self.value.items()))
+
+    def validate_bound(self, bound):
+        return all([self.value[agent] <= bound for agent in self.value])
+
+    def set_hell(self):
+        self.value = collections.Counter()
+
+    def reorder(self, indices: np.array) -> 'Multiset':
+        raise NotImplementedError('Method not supported for multiset.')
+
+    def check_intersection(self, other: 'Multiset'):
+        return self.value & other.value
+
+
+class State:
+    def __init__(self, content, memory: Memory, is_hell=False):
+        self.content = content
+        self.memory = memory
+        self.is_hell = is_hell
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+    def __hash__(self):
+        return hash(self.content()) + hash(self.memory)
+
+    def update_state(self, consumed, produced, label, bound) -> 'State':
         """
-        Changes order of individual values according to given new indices.
+        Creates a new state by subtracting consumed object and adding produced objects.
+        If given bound is exceeded, special state labeled as hell is returned.
+
+        :param consumed: consumed objects
+        :param produced: produced objects
+        :param label: label of rule/reaction used
+        :param bound: maximal allowed bound on individual values
+        :return: resulting State
+        """
+        updated_content = self.content - consumed + produced
+        if not updated_content.validate_bound(bound):
+            updated_content.set_hell()
+            return State(updated_content, Memory(0), is_hell=True)
+
+        updated_memory = copy(self.memory)
+        updated_memory.update_memory(label)
+        return State(updated_content, updated_memory)
+
+    def reorder(self, indices: np.array):
+        """
+        Changes order of individual values according to given indices.
+        Works only for vector variant.
 
         :param indices: array of indices
-        :return: new reordered VectorState
         """
-        return VectorState(self.sequence[indices])
+        self.content.reorder(indices)
 
-    def is_hell(self):
+    def to_vector(self, ordering):
         """
-        Checks whether state is special "hell" infinite state.
-        :return: True if is special
+        Convert content from multiset to vector based on given ordering
+
+        :param ordering: given ordering of agents
         """
-        return all([np.isinf(i) for i in self.sequence])
+        if not self.is_hell:
+            vector = np.zeros(len(ordering))
+            for agent in self.content:
+                vector[ordering.index(agent)] = int(self.content[agent])
+        else:
+            vector = np.full(len(ordering), np.inf)
+
+        self.content = vector
+
+    def check_intersection(self, other: 'State'):
+        """
+        Check if the states have common intersection.
+
+        :param other: given other State
+        :return: True if intersection is nonempty
+        """
+        return self.content.check_intersection(other.content)
 
     def check_AP(self, ap, ordering: tuple) -> bool:
         """
-        Checks whether the VectorState satisfies given AtomicProposition.
-
-        TBA : could be abstract !!!
+        Checks whether the State satisfies given AtomicProposition.
+        Works only for vector variant.
 
         :param ap: given AtomicProposition
         :param ordering: position of corresponding Complex
         :return: True if satisfied
         """
-        if self.is_inf:
+        if self.is_hell:
             return False
         if ap.complex in ordering:
-            operand = str(self.sequence[ordering.index(ap.complex)])
+            operand = str(self.content[ordering.index(ap.complex)])
         else:
             indices = ap.complex.identify_compatible(ordering)
-            state = VectorState(np.array([1 if i in indices else 0 for i in range(len(ordering))]))
-            operand = str(self.filter_values(state))
+            vector = Vector(np.array([1 if i in indices else 0 for i in range(len(ordering))]))
+            operand = str(self.content.filter_values(vector))
         sign = "==" if ap.sign == " = " else ap.sign
         return eval(operand + sign + str(ap.number))
 
     def to_PRISM_string(self, apostrophe=False) -> str:
         """
         Creates string representation for PRISM file.
+        Works only for vector variant.
 
         :param apostrophe: indicates whether variables should be with the apostrophe
         :return: PRISM string representation
         """
         aps = "'" if apostrophe else ""
-        vars = list(map(lambda i: '(VAR_{}{}={})'.format(i, aps, int(self.sequence[i])), range(len(self))))
+        vars = list(map(lambda i: '(VAR_{}{}={})'.format(i, aps, int(self.content[i])), range(len(self.content))))
         return " & ".join(vars)
 
-    def update_state(self, new_state, used_reaction_label):
-        return new_state
-
-    def check_intersection(self, other):
-        for i in range(len(self.sequence)):
-            if self.sequence[i] > 0 and other.sequence[i] > 0:
-                return True
-        return False
-
-
-class OneStepMemoryVectorState(VectorState):
-    def __init__(self, sequence):
-        super().__init__(sequence)
-        self.used_rules = []
-
-    def __eq__(self, other: 'OneStepMemoryVectorState'):
-        return (self.sequence == other.sequence).all() and self.used_rules == other.used_rules
-
-    def __ge__(self, other: 'OneStepMemoryVectorState') -> bool:
-        return all(self.sequence >= other.sequence) and self.used_rules >= self.used_rules
-
-    def __hash__(self):
-        return hash((tuple(self.sequence), tuple(self.used_rules)))
-
-    def update_state(self, new_state, used_reaction_label):
-        new_state = OneStepMemoryVectorState(deepcopy(new_state.sequence))
-        new_state.used_rules = [used_reaction_label]
-        return new_state
-
-    def reorder(self, indices: np.array) -> 'OneStepMemoryVectorState':
+    def to_ODE_string(self) -> str:
         """
-        Changes order of individual values according to given new indices.
+        Each non-zero value transforms to form y[i] where i is its particular position.
+        Finally, groups these strings to a sum of them (in string manner).
+        Works only for vector variant.
 
-        :param indices: array of indices
-        :return: new reordered OneStepMemoryVectorState
+        :return: string symbolic representation of state
         """
-        new_vec = OneStepMemoryVectorState(self.sequence[indices])
-        new_vec.used_rules = self.used_rules
-        return new_vec
-
-
-class FullMemoryVectorState(OneStepMemoryVectorState):
-    def update_state(self, new_state, used_reaction_label):
-        new_state = FullMemoryVectorState(deepcopy(new_state.sequence))
-        new_state.used_rules = self.used_rules + [used_reaction_label]
-        return new_state
-
-    def reorder(self, indices: np.array) -> 'FullMemoryVectorState':
-        """
-        Changes order of individual values according to given new indices.
-
-        :param indices: array of indices
-        :return: new reordered FullMemoryVectorState
-        """
-        new_vec = FullMemoryVectorState(self.sequence[indices])
-        new_vec.used_rules = self.used_rules
-        return new_vec
-
-#######################################################
-
-
-class MultisetState:
-    def __init__(self, multiset):
-        self.multiset = multiset
-        self.is_inf = False
-
-    def __str__(self):
-        return str(self.multiset)
-
-    def __repr__(self):
-        return str(self)
-
-    def __eq__(self, other):
-        return self.multiset == other.multiset
-
-    def __ge__(self, other) -> bool:
-        return all([self.multiset[agent] >= other.multiset.get(agent, 0) for agent in self.multiset])
-
-    def __hash__(self):
-        return hash(frozenset(self.multiset.items()))
-
-    def update_state(self, consumed, produced, used_rule_label):
-        consumed = collections.Counter(consumed)
-        produced = collections.Counter(produced)
-        new_state = MultisetState(deepcopy(self.multiset - consumed + produced))
-        return new_state
-
-    def to_vector(self, ordering):
-        if not self.is_inf:
-            vector = np.zeros(len(ordering))
-            for agent in self.multiset:
-                vector[ordering.index(agent)] = int(self.multiset[agent])
-        else:
-            vector = np.full(len(ordering), np.inf)
-        return VectorState(vector)
-
-    def validate_bound(self, bound):
-        if all([self.multiset[agent] <= bound for agent in self.multiset]):
-            return self
-        state = MultisetState(collections.Counter())
-        state.is_inf = True
-        return state
-
-
-class OneStepMemoryMultisetState(MultisetState):
-    def __init__(self, multiset):
-        super().__init__(multiset)
-        self.used_rules = []
-
-    def __eq__(self, other):
-        return self.multiset == other.multiset and self.used_rules == other.used_rules
-
-    def __ge__(self, other) -> bool:
-        return all([self.multiset[agent] >= other.multiset.get(agent, 0) for agent in self.multiset])
-
-    def __hash__(self):
-        return hash(frozenset(self.multiset.items())) + hash(tuple(self.used_rules))
-
-    def update_state(self, consumed, produced, used_rule_label):
-        consumed = collections.Counter(consumed)
-        produced = collections.Counter(produced)
-        new_state = OneStepMemoryMultisetState(deepcopy(self.multiset - consumed + produced))
-        new_state.used_rules = [used_rule_label]
-        return new_state
-
-    def to_vector(self, ordering):
-        state = super().to_vector(ordering)
-        vector_state = OneStepMemoryVectorState(state.sequence)
-        vector_state.used_rules = self.used_rules
-        return vector_state
-
-
-class FullMemoryMultisetState(MultisetState):
-    def __init__(self, multiset):
-        super().__init__(multiset)
-        self.used_rules = []
-
-    def __eq__(self, other):
-        return self.multiset == other.multiset and self.used_rules == other.used_rules
-
-    def __ge__(self, other) -> bool:
-        return all([self.multiset[agent] >= other.multiset.get(agent, 0) for agent in self.multiset])
-
-    def __hash__(self):
-        return hash(frozenset(self.multiset.items())) + hash(tuple(self.used_rules))
-
-    def update_state(self, consumed, produced, used_rule_label):
-        consumed = collections.Counter(consumed)
-        produced = collections.Counter(produced)
-        new_state = FullMemoryMultisetState(deepcopy(self.multiset - consumed + produced))
-        new_state.used_rules = self.used_rules + [used_rule_label]
-        return new_state
-
-    def to_vector(self, ordering):
-        state = super().to_vector(ordering)
-        vector_state = FullMemoryVectorState(state.sequence)
-        vector_state.used_rules = self.used_rules
-        return vector_state
+        return " + ".join(filter(None, ["y[" + str(i) + "]"
+                                        if self.content[i] == 1 else None for i in range(len(self.content))]))
