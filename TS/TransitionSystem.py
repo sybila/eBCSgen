@@ -1,17 +1,19 @@
 import json
+from copy import copy
+
 import numpy as np
 from itertools import groupby
 from sortedcontainers import SortedList
 from pyModelChecking import Kripke
 
-from TS.State import MemorylessState
+from TS.State import VectorState
 
 
 class TransitionSystem:
     def __init__(self, ordering: SortedList, bound):
-        self.states_encoding = dict()  # MemorylessState -> int
+        self.states_encoding = dict()  # VectorState -> int
         self.edges = set()  # Edge objects: (int from, int to, probability), can be used for explicit Storm format
-        self.ordering = ordering  # used to decode MemorylessState to actual agents
+        self.ordering = ordering  # used to decode VectorState to actual agents
         self.init = int
         self.params = []
         self.bound = bound
@@ -46,6 +48,10 @@ class TransitionSystem:
         :param other: given TransitionSystem
         :return: True if equal
         """
+
+        # remove possibly unused agents
+        other = other.filter_unused_agents()
+
         success, reordering_indices = create_indices(other.ordering, self.ordering)
         if not success:  # the agents in orderings are different => also whole TSs are different
             return False
@@ -66,21 +72,22 @@ class TransitionSystem:
         return set(map(hash, ts.edges)) == set(map(hash, other.edges))
         # return ts.edges == other.edges
 
-    def encode(self, init: MemorylessState):
+    def encode(self):
         """
-        Assigns a unique code to each MemorylessState for storing purposes
+        Assigns a unique code to each VectorState for storing purposes
         """
         for state in self.processed | self.unprocessed:
             if state not in self.states_encoding:
                 self.states_encoding[state] = len(self.states_encoding) + 1
 
-        self.init = self.states_encoding[init]
+        if type(self.init) != int:
+            self.init = self.states_encoding[self.init]
         self.processed = set()
         self.encode_edges()
 
     def encode_edges(self):
         """
-        Encodes every MemorylessState in Edge according to the unique encoding.
+        Encodes every VectorState in Edge according to the unique encoding.
         """
         for edge in self.edges:
             edge.encode(self.states_encoding)
@@ -136,7 +143,7 @@ class TransitionSystem:
         for key, value in self.states_encoding.items():
             if key.is_inf:
                 del self.states_encoding[key]
-                hell = MemorylessState(np.array([self.bound + 1] * len(key)))
+                hell = VectorState(np.array([self.bound + 1] * len(key)))
                 hell.is_inf = True
                 self.states_encoding[hell] = value
                 break
@@ -250,6 +257,37 @@ class TransitionSystem:
         edges = [(edge.source, edge.target) for edge in self.edges]
         inits = [self.init]
         return Kripke(S=states, R=edges, S0=inits, L=state_labels)
+
+    def filter_unused_agents(self):
+        """
+        There are cases when agents which are always 0 are used.
+        This methods removed such agents and fixes encoding.
+
+        :return: minimalised TS
+        """
+        check = np.zeros(len(list(self.states_encoding.keys())[0]))
+        for state in self.states_encoding:
+            check += state.sequence
+
+        ordering = copy(self.ordering)
+
+        to_remove = []
+        for i in range(len(check)):
+            if check[i] == 0:
+                to_remove.append(i)
+
+        for state, code in self.states_encoding.items():
+            new_sequence = np.delete(state.sequence, to_remove)
+            state.sequence = new_sequence
+
+        for i in reversed(to_remove):
+            del ordering[i]
+
+        new_ts = TransitionSystem(ordering, self.bound)
+        new_ts.init = self.init
+        new_ts.edges = self.edges
+        new_ts.states_encoding = self.states_encoding
+        return new_ts
 
 
 def create_indices(ordering_1: SortedList, ordering_2: SortedList):

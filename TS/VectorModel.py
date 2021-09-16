@@ -7,7 +7,7 @@ import pandas as pd
 import random
 from sortedcontainers import SortedList
 
-from TS.State import MemorylessState
+from TS.State import VectorState, FullMemoryVectorState, OneStepMemoryVectorState
 from TS.TSworker import TSworker
 from TS.TransitionSystem import TransitionSystem
 
@@ -34,11 +34,12 @@ def handle_number_of_threads(number, workers):
 
 
 class VectorModel:
-    def __init__(self, vector_reactions: set, init: MemorylessState, ordering: SortedList, bound: int):
+    def __init__(self, vector_reactions: set, init: VectorState, ordering: SortedList, bound: int, regulation=None):
         self.vector_reactions = vector_reactions
         self.init = init
         self.ordering = ordering
         self.bound = bound if bound else self.compute_bound()
+        self.regulation = regulation
 
     def __eq__(self, other: 'VectorModel') -> bool:
         return self.vector_reactions == other.vector_reactions and \
@@ -106,7 +107,7 @@ class VectorModel:
         Gillespie algorithm implementation.
 
         Each step a random reaction is chosen by exponential distribution with density given as a sum
-        of all possible rates in particular MemorylessState.
+        of all possible rates in particular VectorState.
         Then such reaction is applied and next time is computed using Poisson distribution (random.expovariate).
 
         :param max_time: time when simulation ends
@@ -185,7 +186,17 @@ class VectorModel:
         """
         if not ts:
             ts = TransitionSystem(self.ordering, self.bound)
-            ts.unprocessed = {self.init}
+            if self.regulation:
+                if self.regulation.memory == 0:
+                    ts.init = VectorState(self.init.sequence)
+                elif self.regulation.memory == 1:
+                    ts.init = OneStepMemoryVectorState(self.init.sequence)
+                else:
+                    ts.init = FullMemoryVectorState(self.init.sequence)
+            else:
+                ts.init = VectorState(self.init.sequence)
+
+            ts.unprocessed = {ts.init}
 
         workers = [TSworker(ts, self) for _ in range(multiprocessing.cpu_count())]
         for worker in workers:
@@ -211,6 +222,6 @@ class VectorModel:
         while any([worker.is_alive() for worker in workers]):
             time.sleep(1)
 
-        ts.encode(self.init)
+        ts.encode()
 
         return ts

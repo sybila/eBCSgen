@@ -6,7 +6,7 @@ from TS.VectorReaction import VectorReaction
 
 
 class Reaction:
-    def __init__(self, lhs: Side, rhs: Side, rate: Rate):
+    def __init__(self, lhs: Side, rhs: Side, rate: Rate, label=None):
         """
         Class to represent BCSL reaction
 
@@ -17,6 +17,7 @@ class Reaction:
         self.lhs = lhs
         self.rhs = rhs
         self.rate = rate
+        self.label = label
 
     def __eq__(self, other: 'Reaction'):
         return self.lhs == other.lhs and self.rhs == other.rhs and self.rate == other.rate
@@ -25,7 +26,8 @@ class Reaction:
         return str(self)
 
     def __str__(self):
-        return str(self.lhs) + " => " + str(self.rhs) + " @ " + str(self.rate)
+        label = self.label + " ~ " if self.label else ""
+        return label + str(self.lhs) + " => " + str(self.rhs) + " @ " + str(self.rate)
 
     def __lt__(self, other):
         return str(self) < str(other)
@@ -43,7 +45,8 @@ class Reaction:
         """
         return VectorReaction(self.lhs.to_vector(ordering),
                               self.rhs.to_vector(ordering),
-                              self.rate)
+                              self.rate,
+                              self.label)
 
     def compatible(self, other: 'Reaction') -> bool:
         """

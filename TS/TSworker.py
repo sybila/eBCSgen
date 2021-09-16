@@ -33,18 +33,28 @@ class TSworker(threading.Thread):
                 if state.is_inf:
                     self.ts.edges.add(Edge(state, state, 1))
                 else:
+                    candidate_reactions = dict()
                     for reaction in self.model.vector_reactions:
                         new_state, rate = reaction.apply(state, self.model.bound)
                         if new_state and rate:
-                            if new_state not in self.ts.processed:
-                                self.ts.unprocessed.add(new_state)
+                            candidate_reactions[reaction] = (rate, new_state)
 
-                            # multiple arrows between two states are not allowed
-                            if new_state in unique_states:
-                                unique_states[new_state].add_rate(rate)
-                            else:
-                                edge = Edge(state, new_state, rate)
-                                unique_states[new_state] = edge
+                    if self.model.regulation:
+                        candidate_reactions = self.model.regulation.filter(state, candidate_reactions)
+
+                    for reaction in candidate_reactions:
+                        rate, new_state = candidate_reactions[reaction]
+                        new_state = state.update_state(new_state, reaction.label)
+
+                        if new_state not in self.ts.processed:
+                            self.ts.unprocessed.add(new_state)
+
+                        # multiple arrows between two states are not allowed
+                        if new_state in unique_states:
+                            unique_states[new_state].add_rate(rate)
+                        else:
+                            edge = Edge(state, new_state, rate, reaction.label)
+                            unique_states[new_state] = edge
 
                     edges = set(unique_states.values())
 
@@ -56,7 +66,7 @@ class TSworker(threading.Thread):
                             self.ts.edges.add(edge)
                     else:
                         # self loop to create correct DTMC
-                        self.ts.edges.add(Edge(state, state, 1))
+                        self.ts.edges.add(Edge(state, state, 1, 'ε'))
 
             except KeyError:
                 self.work.clear()

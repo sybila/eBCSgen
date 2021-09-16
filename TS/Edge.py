@@ -7,7 +7,8 @@ class Edge:
         self._is_encoded = encoded
 
     def __hash__(self):
-        return hash((self.source, self.target, self.probability))
+        prob = truncate(self.probability, 5) if type(self.probability) == float else self.probability
+        return hash((self.source, self.target, prob))
 
     def __eq__(self, other: 'Edge'):
         return self.source == other.source and self.target == other.target and self.probability == other.probability
@@ -38,9 +39,24 @@ class Edge:
         :param encoding_new: the new encoding
         :return: new Edge in new encoding
         """
-        return Edge(encoding_new[encoding_old[self.source]],
-                    encoding_new[encoding_old[self.target]],
-                    self.probability)
+        source_code = None
+        target_code = None
+
+        for state, code in encoding_new.items():
+            if state == encoding_old[self.source]:
+                source_code = code
+            if state == encoding_old[self.target]:
+                target_code = code
+
+        if source_code is not None and target_code is not None:
+            return Edge(source_code, target_code, self.probability)
+        else:
+            raise KeyError
+
+        # dicts with OneStepMemoryVectorState are not working
+        # return Edge(encoding_new[encoding_old[self.source]],
+        #             encoding_new[encoding_old[self.target]],
+        #             self.probability)
 
     def add_rate(self, rate):
         """
@@ -99,3 +115,7 @@ def edge_from_dict(d: dict) -> Edge:
     """
     label = d.get('label', None)
     return Edge(d['s'], d['t'], d['p'], label, encoded=True)
+
+
+def truncate(f, n):
+    return float(int(f * 10 ** n)) / (10 ** n)

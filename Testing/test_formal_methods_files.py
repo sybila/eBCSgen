@@ -10,7 +10,7 @@ from TS.TransitionSystem import TransitionSystem
 from Core.Structure import StructureAgent
 from Core.Complex import Complex
 from Parsing.ParseBCSL import Parser
-from TS.State import MemorylessState
+from TS.State import VectorState
 
 
 def get_storm_result(cmd: str):
@@ -41,19 +41,19 @@ class TestFormalMethods(unittest.TestCase):
 
         ordering = (self.c1, self.c2)
 
-        self.s1 = MemorylessState(np.array((0, 0)))
-        self.s2 = MemorylessState(np.array((1, 0)))
-        self.s3 = MemorylessState(np.array((2, 0)))
-        self.s4 = MemorylessState(np.array((3, 0)))
-        self.s5 = MemorylessState(np.array((4, 0)))
-        self.s6 = MemorylessState(np.array((5, 0)))
-        self.s7 = MemorylessState(np.array((6, 0)))
-        self.s8 = MemorylessState(np.array((7, 1)))
-        self.s9 = MemorylessState(np.array((7, 2)))
-        self.s10 = MemorylessState(np.array((7, 3)))
-        self.s11 = MemorylessState(np.array((7, 4)))
-        self.s12 = MemorylessState(np.array((7, 5)))
-        self.s13 = MemorylessState(np.array((7, 6)))
+        self.s1 = VectorState(np.array((0, 0)))
+        self.s2 = VectorState(np.array((1, 0)))
+        self.s3 = VectorState(np.array((2, 0)))
+        self.s4 = VectorState(np.array((3, 0)))
+        self.s5 = VectorState(np.array((4, 0)))
+        self.s6 = VectorState(np.array((5, 0)))
+        self.s7 = VectorState(np.array((6, 0)))
+        self.s8 = VectorState(np.array((7, 1)))
+        self.s9 = VectorState(np.array((7, 2)))
+        self.s10 = VectorState(np.array((7, 3)))
+        self.s11 = VectorState(np.array((7, 4)))
+        self.s12 = VectorState(np.array((7, 5)))
+        self.s13 = VectorState(np.array((7, 6)))
 
         self.die_ts = TransitionSystem(ordering, 6)
         self.die_ts.init = 0

@@ -7,7 +7,7 @@ from Core.Complex import Complex
 import Core.Rate
 from Core.Structure import StructureAgent
 from Parsing.ParseBCSL import Parser
-from TS.State import MemorylessState
+from TS.State import VectorState
 
 
 class TestRate(unittest.TestCase):
@@ -51,8 +51,8 @@ class TestRate(unittest.TestCase):
 
         # states
 
-        self.state_1 = MemorylessState(np.array([2, 3]))
-        self.state_2 = MemorylessState(np.array([2, 0, 3, 1, 6, 2]))
+        self.state_1 = VectorState(np.array([2, 3]))
+        self.state_2 = VectorState(np.array([2, 0, 3, 1, 6, 2]))
 
     def test_to_str(self):
         self.assertEqual(str(self.rate_1), "3.0*[K()::cyt]/2.0*v_1")
@@ -63,10 +63,10 @@ class TestRate(unittest.TestCase):
 
     def test_vectorize(self):
         ordering = (self.c2, self.c3)
-        self.assertEqual(self.rate_1.vectorize(ordering, dict()), [MemorylessState(np.array([1, 1]))])
+        self.assertEqual(self.rate_1.vectorize(ordering, dict()), [VectorState(np.array([1, 1]))])
         ordering = (self.c2, self.c3, self.c4, self.c5, self.c6, self.c7)
-        self.assertEqual(self.rate_2.vectorize(ordering, dict()), [MemorylessState(np.array([0, 0, 1, 1, 0, 0])),
-                                                                   MemorylessState(np.array([1, 1, 0, 0, 0, 0]))])
+        self.assertEqual(self.rate_2.vectorize(ordering, dict()), [VectorState(np.array([0, 0, 1, 1, 0, 0])),
+                                                                   VectorState(np.array([1, 1, 0, 0, 0, 0]))])
 
     def test_evaluate(self):
         ordering = (self.c2, self.c3)

@@ -8,7 +8,7 @@ from Core.Structure import StructureAgent
 from Core.Complex import Complex
 from Parsing.ParseBCSL import Parser, load_TS_from_json
 from TS.Edge import Edge
-from TS.State import MemorylessState
+from TS.State import VectorState
 from TS.TransitionSystem import TransitionSystem
 from TS.VectorModel import VectorModel
 from TS.VectorReaction import VectorReaction
@@ -40,17 +40,17 @@ class TestVectorModel(unittest.TestCase):
         rate_3 = Rate(self.rate_parser.parse(rate_expr).data)
         rate_3.vectorize(ordering, params)
 
-        init = MemorylessState(np.array([2.0, 1.0, 1.0]))
+        init = VectorState(np.array([2.0, 1.0, 1.0]))
 
-        vector_reactions = {VectorReaction(MemorylessState(np.array([0.0, 0.0, 0.0])), MemorylessState(np.array([0.0, 1.0, 0.0])), rate_1),
-                            VectorReaction(MemorylessState(np.array([1.0, 0.0, 0.0])), MemorylessState(np.array([0.0, 0.0, 0.0])), rate_2),
-                            VectorReaction(MemorylessState(np.array([0.0, 0.0, 1.0])), MemorylessState(np.array([1.0, 0.0, 0.0])), None)}
+        vector_reactions = {VectorReaction(VectorState(np.array([0.0, 0.0, 0.0])), VectorState(np.array([0.0, 1.0, 0.0])), rate_1),
+                            VectorReaction(VectorState(np.array([1.0, 0.0, 0.0])), VectorState(np.array([0.0, 0.0, 0.0])), rate_2),
+                            VectorReaction(VectorState(np.array([0.0, 0.0, 1.0])), VectorState(np.array([1.0, 0.0, 0.0])), None)}
 
         self.vm_1 = VectorModel(vector_reactions, init, ordering, None)
 
-        vector_reactions = {VectorReaction(MemorylessState(np.array([0.0, 0.0, 0.0])), MemorylessState(np.array([0.0, 1.0, 0.0])), rate_1),
-                            VectorReaction(MemorylessState(np.array([1.0, 0.0, 0.0])), MemorylessState(np.array([0.0, 0.0, 0.0])), rate_2),
-                            VectorReaction(MemorylessState(np.array([0.0, 0.0, 1.0])), MemorylessState(np.array([1.0, 0.0, 0.0])), rate_3)}
+        vector_reactions = {VectorReaction(VectorState(np.array([0.0, 0.0, 0.0])), VectorState(np.array([0.0, 1.0, 0.0])), rate_1),
+                            VectorReaction(VectorState(np.array([1.0, 0.0, 0.0])), VectorState(np.array([0.0, 0.0, 0.0])), rate_2),
+                            VectorReaction(VectorState(np.array([0.0, 0.0, 1.0])), VectorState(np.array([1.0, 0.0, 0.0])), rate_3)}
 
         self.vm_2 = VectorModel(vector_reactions, init, ordering, None)
 
@@ -115,19 +115,19 @@ class TestVectorModel(unittest.TestCase):
 
         self.test_ts = TransitionSystem(ordering, 2)
 
-        states = [MemorylessState(np.array((0.0, 0.0, 0.0, 0.0, 1.0))),
-                  MemorylessState(np.array((0.0, 0.0, 0.0, 0.0, 0.0))),
-                  MemorylessState(np.array((0.0, 0.0, 1.0, 0.0, 0.0))),
-                  MemorylessState(np.array((0.0, 0.0, 1.0, 0.0, 1.0))),
-                  MemorylessState(np.array((np.inf, np.inf, np.inf, np.inf, np.inf))),
-                  MemorylessState(np.array((0.0, 0.0, 0.0, 1.0, 1.0))),
-                  MemorylessState(np.array((0.0, 0.0, 1.0, 1.0, 1.0))),
-                  MemorylessState(np.array((0.0, 1.0, 0.0, 0.0, 0.0))),
-                  MemorylessState(np.array((0.0, 0.0, 0.0, 1.0, 0.0))),
-                  MemorylessState(np.array((0.0, 0.0, 1.0, 1.0, 0.0))),
-                  MemorylessState(np.array((0.0, 1.0, 1.0, 0.0, 0.0))),
-                  MemorylessState(np.array((0.0, 1.0, 0.0, 1.0, 0.0))),
-                  MemorylessState(np.array((0.0, 1.0, 1.0, 1.0, 0.0)))]
+        states = [VectorState(np.array((0.0, 0.0, 0.0, 0.0, 1.0))),
+                  VectorState(np.array((0.0, 0.0, 0.0, 0.0, 0.0))),
+                  VectorState(np.array((0.0, 0.0, 1.0, 0.0, 0.0))),
+                  VectorState(np.array((0.0, 0.0, 1.0, 0.0, 1.0))),
+                  VectorState(np.array((np.inf, np.inf, np.inf, np.inf, np.inf))),
+                  VectorState(np.array((0.0, 0.0, 0.0, 1.0, 1.0))),
+                  VectorState(np.array((0.0, 0.0, 1.0, 1.0, 1.0))),
+                  VectorState(np.array((0.0, 1.0, 0.0, 0.0, 0.0))),
+                  VectorState(np.array((0.0, 0.0, 0.0, 1.0, 0.0))),
+                  VectorState(np.array((0.0, 0.0, 1.0, 1.0, 0.0))),
+                  VectorState(np.array((0.0, 1.0, 1.0, 0.0, 0.0))),
+                  VectorState(np.array((0.0, 1.0, 0.0, 1.0, 0.0))),
+                  VectorState(np.array((0.0, 1.0, 1.0, 1.0, 0.0)))]
 
         # in edges we have probabilities, not rates, so we must normalise
         go = gamma + omega  # 5
@@ -156,7 +156,8 @@ class TestVectorModel(unittest.TestCase):
                               Edge(states[12], states[4], 1)
                               }
 
-        self.test_ts.encode(states[0])
+        self.test_ts.init = states[0]
+        self.test_ts.encode()
 
         # bigger TS
 
@@ -291,28 +292,28 @@ class TestVectorModel(unittest.TestCase):
         loaded_ts = load_TS_from_json("Testing/ts_pMC.json")
         self.assertEqual(generated_ts, loaded_ts)
 
-    def test_generate_transition_system_interrupt(self):
-        model = self.model_parser.parse(self.model_even_bigger_TS).data
-        vector_model = model.to_vector_model()
-
-        # partially generate TS with max ~1000 states
-        generated_ts = vector_model.generate_transition_system(max_size=1000)
-        # was interrupted
-        generated_ts.save_to_json("Testing/TS_in_progress.json")
-        loaded_unfinished_ts = load_TS_from_json("Testing/TS_in_progress.json")
-
-        # continue in generating with max ~5000 states
-        generated_ts = vector_model.generate_transition_system(loaded_unfinished_ts, max_size=5000)
-        generated_ts.save_to_json("Testing/TS_in_progress.json")
-        loaded_unfinished_ts = load_TS_from_json("Testing/TS_in_progress.json")
-
-        # finish the TS
-        generated_ts = vector_model.generate_transition_system(loaded_unfinished_ts)
-
-        generated_ts.save_to_json("Testing/TS_finished.json")
-        loaded_ts = load_TS_from_json("Testing/interrupt_even_bigger_ts.json")
-
-        self.assertEqual(generated_ts, loaded_ts)
+    # def test_generate_transition_system_interrupt(self):
+    #     model = self.model_parser.parse(self.model_even_bigger_TS).data
+    #     vector_model = model.to_vector_model()
+    #
+    #     # partially generate TS with max ~1000 states
+    #     generated_ts = vector_model.generate_transition_system(max_size=1000)
+    #     # was interrupted
+    #     generated_ts.save_to_json("Testing/TS_in_progress.json")
+    #     loaded_unfinished_ts = load_TS_from_json("Testing/TS_in_progress.json")
+    #
+    #     # continue in generating with max ~5000 states
+    #     generated_ts = vector_model.generate_transition_system(loaded_unfinished_ts, max_size=5000)
+    #     generated_ts.save_to_json("Testing/TS_in_progress.json")
+    #     loaded_unfinished_ts = load_TS_from_json("Testing/TS_in_progress.json")
+    #
+    #     # finish the TS
+    #     generated_ts = vector_model.generate_transition_system(loaded_unfinished_ts)
+    #
+    #     generated_ts.save_to_json("Testing/TS_finished.json")
+    #     loaded_ts = load_TS_from_json("Testing/interrupt_even_bigger_ts.json")
+    #
+    #     self.assertEqual(generated_ts, loaded_ts)
 
     def test_handle_sinks(self):
         model = self.model_parser.parse(self.model_with_sinks).data

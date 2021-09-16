@@ -12,7 +12,7 @@ from Core.Structure import StructureAgent
 from Core.Complex import Complex
 from Core.Rule import Rule
 from Parsing.ParseBCSL import Parser
-from TS.State import MemorylessState
+from TS.State import VectorState
 import TS.TransitionSystem
 from TS.VectorModel import VectorModel
 from TS.VectorReaction import VectorReaction
@@ -117,11 +117,11 @@ class TestModel(unittest.TestCase):
 
         rate_3 = Rate(Tree('rate', [Tree('fun', [1.0])]))
 
-        init = MemorylessState(np.array([2, 1, 0]))
+        init = VectorState(np.array([2, 1, 0]))
 
-        vector_reactions = {VectorReaction(MemorylessState(np.array([0, 0, 0])), MemorylessState(np.array([0, 1, 0])), rate_1),
-                            VectorReaction(MemorylessState(np.array([1, 0, 0])), MemorylessState(np.array([0, 0, 0])), rate_2),
-                            VectorReaction(MemorylessState(np.array([0, 0, 1])), MemorylessState(np.array([1, 0, 0])), rate_3)}
+        vector_reactions = {VectorReaction(VectorState(np.array([0, 0, 0])), VectorState(np.array([0, 1, 0])), rate_1),
+                            VectorReaction(VectorState(np.array([1, 0, 0])), VectorState(np.array([0, 0, 0])), rate_2),
+                            VectorReaction(VectorState(np.array([0, 0, 1])), VectorState(np.array([1, 0, 0])), rate_3)}
 
         self.vm_1 = VectorModel(vector_reactions, init, ordering, None)
 
@@ -560,10 +560,10 @@ class TestModel(unittest.TestCase):
         APs = [Core.Formula.AtomicProposition(complex_abstract, " >= ", "3"),
                Core.Formula.AtomicProposition(complex_1, " < ", 2)]
 
-        s1 = MemorylessState(np.array((1, 2, 2)))
-        s2 = MemorylessState(np.array((5, 1, 1)))
-        s3 = MemorylessState(np.array((2, 4, 3)))
-        s4 = MemorylessState(np.array((1, 4, 3)))
+        s1 = VectorState(np.array((1, 2, 2)))
+        s2 = VectorState(np.array((5, 1, 1)))
+        s3 = VectorState(np.array((2, 4, 3)))
+        s4 = VectorState(np.array((1, 4, 3)))
 
         states_encoding = {s1: 1, s2: 2, s3: 3, s4: 4}
 
