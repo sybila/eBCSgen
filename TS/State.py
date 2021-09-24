@@ -65,7 +65,7 @@ class Vector:
         self.value = np.array([np.inf] * len(self.value))
 
     def reorder(self, indices: np.array) -> 'Vector':
-        return copy(self.value[indices])
+        return Vector(copy(self.value[indices]))
 
     def check_intersection(self, other: 'Vector'):
         for i in range(len(self.value)):
@@ -82,6 +82,10 @@ class Vector:
         :return: resulting summation
         """
         return sum(self * state)
+
+    def to_multiset(self, ordering):
+        multiset = collections.Counter(zip(ordering, self.value))
+        return Multiset(multiset)
 
 
 class Multiset:
@@ -121,6 +125,15 @@ class Multiset:
     def check_intersection(self, other: 'Multiset'):
         return self.value & other.value
 
+    def to_vector(self, ordering, is_hell):
+        if not is_hell:
+            vector = np.zeros(len(ordering))
+            for agent in self.value:
+                vector[ordering.index(agent)] = int(self.value[agent])
+        else:
+            vector = np.full(len(ordering), np.inf)
+        return Vector(vector)
+
 
 class State:
     def __init__(self, content, memory: Memory, is_hell=False):
@@ -128,11 +141,23 @@ class State:
         self.memory = memory
         self.is_hell = is_hell
 
+    def __str__(self):
+        return str(self.content) + str(self.memory.history)
+
+    def __repr__(self):
+        return str(self)
+
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
     def __hash__(self):
         return hash(self.content()) + hash(self.memory)
+
+    def __sub__(self, other: 'State'):
+        return State(self.content - other.content, copy(self.memory))
+
+    def __add__(self, other: 'State'):
+        return State(self.content + other.content, copy(self.memory))
 
     def update_state(self, consumed, produced, label, bound) -> 'State':
         """
@@ -161,22 +186,15 @@ class State:
 
         :param indices: array of indices
         """
-        self.content.reorder(indices)
+        return State(self.content.reorder(indices), copy(self.memory))
 
     def to_vector(self, ordering):
         """
-        Convert content from multiset to vector based on given ordering
+        Convert content from Multiset to Vector based on given ordering
 
         :param ordering: given ordering of agents
         """
-        if not self.is_hell:
-            vector = np.zeros(len(ordering))
-            for agent in self.content:
-                vector[ordering.index(agent)] = int(self.content[agent])
-        else:
-            vector = np.full(len(ordering), np.inf)
-
-        self.content = vector
+        self.content = self.content.to_vector(ordering, self.is_hell)
 
     def check_intersection(self, other: 'State'):
         """
@@ -199,7 +217,7 @@ class State:
         if self.is_hell:
             return False
         if ap.complex in ordering:
-            operand = str(self.content[ordering.index(ap.complex)])
+            operand = str(self.content.value[ordering.index(ap.complex)])
         else:
             indices = ap.complex.identify_compatible(ordering)
             vector = Vector(np.array([1 if i in indices else 0 for i in range(len(ordering))]))
@@ -216,7 +234,8 @@ class State:
         :return: PRISM string representation
         """
         aps = "'" if apostrophe else ""
-        vars = list(map(lambda i: '(VAR_{}{}={})'.format(i, aps, int(self.content[i])), range(len(self.content))))
+        vars = list(map(lambda i: '(VAR_{}{}={})'.format(i, aps, int(self.content.value[i])),
+                        range(len(self.content.value))))
         return " & ".join(vars)
 
     def to_ODE_string(self) -> str:
@@ -227,5 +246,5 @@ class State:
 
         :return: string symbolic representation of state
         """
-        return " + ".join(filter(None, ["y[" + str(i) + "]"
-                                        if self.content[i] == 1 else None for i in range(len(self.content))]))
+        return " + ".join(filter(None, ["y[" + str(i) + "]" if self.content.value[i] == 1
+                                        else None for i in range(len(self.content.value))]))
