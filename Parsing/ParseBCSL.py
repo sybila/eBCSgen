@@ -20,7 +20,7 @@ from Regulations.Conditional import Conditional
 from Regulations.Ordered import Ordered
 from Regulations.Programmed import Programmed
 from Regulations.Regular import Regular
-from TS.State import VectorState
+from TS.State import State
 from TS.TransitionSystem import TransitionSystem
 from TS.Edge import edge_from_dict
 from Core.Side import Side
@@ -47,7 +47,7 @@ def load_TS_from_json(json_file: str) -> TransitionSystem:
             ts.params = data['parameters']
 
         ts.unprocessed = {VectorState(np.array(eval(state))) for state in data.get('unprocessed', list())}
-        ts.processed = ts.states_encoding.keys() - ts.unprocessed
+        ts.states = ts.states_encoding.keys() - ts.unprocessed
         return ts
 
 
@@ -92,10 +92,10 @@ GRAMMAR = r"""
     init: const? rate_complex (COMMENT)?
     definition: def_param "=" number (COMMENT)?
     rule: (label)? side ARROW side ("@" rate)? (";" variable)? (COMMENT)?
-    cmplx_dfn: cmplx_name "=" sequence (COMMENT)?
+    cmplx_dfn: cmplx_name "=" value (COMMENT)?
 
     side: (const? complex "+")* (const? complex)?
-    complex: (abstract_sequence|sequence|cmplx_name) DOUBLE_COLON compartment
+    complex: (abstract_sequence|value|cmplx_name) DOUBLE_COLON compartment
 
     !rate : fun "/" fun | fun
     !fun: const | param | rate_agent | fun "+" fun | fun "-" fun | fun "*" fun | fun POW const | "(" fun ")"
@@ -141,8 +141,8 @@ EXTENDED_GRAMMAR = """
 """
 
 COMPLEX_GRAMMAR = """
-    rate_complex: (sequence|cmplx_name) DOUBLE_COLON compartment
-    sequence: (agent ".")* agent
+    rate_complex: (value|cmplx_name) DOUBLE_COLON compartment
+    value: (agent ".")* agent
     agent: atomic | structure
     structure: s_name "(" composition ")"
     composition: (atomic ",")* atomic?

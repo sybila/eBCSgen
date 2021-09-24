@@ -15,9 +15,9 @@ class TSworker(threading.Thread):
 
     def run(self):
         """
-        Method takes a state from pool of states to be processed and:
+        Method takes a state from pool of states to be states and:
         1. iteratively applies all reactions on it
-        2. checks whether newly created state (if any) was already processed (present in self.ts.states_encoding)
+        2. checks whether newly created state (if any) was already states (present in self.ts.states_encoding)
            2.1 if not, it is added to self.states_to_process
         3. creates Edge from the source state to created one (since ts.edges is a set, we don't care about its presence)
         4. all outgoing Edges from the state are normalised to probability
@@ -26,7 +26,7 @@ class TSworker(threading.Thread):
             self.work.wait()
             try:
                 state = self.ts.unprocessed.pop()
-                self.ts.processed.add(state)
+                self.ts.states.add(state)
                 unique_states = dict()
 
                 # special "hell" state
@@ -46,7 +46,7 @@ class TSworker(threading.Thread):
                         rate, new_state = candidate_reactions[reaction]
                         new_state = state.update_state(new_state, reaction.label)
 
-                        if new_state not in self.ts.processed:
+                        if new_state not in self.ts.states:
                             self.ts.unprocessed.add(new_state)
 
                         # multiple arrows between two states are not allowed
@@ -87,9 +87,9 @@ class DirectTSworker(threading.Thread):
 
     def run(self):
         """
-        Method takes a state from pool of states to be processed and:
+        Method takes a state from pool of states to be states and:
         1. iteratively applies all rules on it
-        2. checks whether newly created states (if any) were already processed (present in self.ts.states_encoding)
+        2. checks whether newly created states (if any) were already states (present in self.ts.states_encoding)
            2.1 if not, it is added to self.states_to_process
         3. creates Edge from the source state to created ones (since ts.edges is a set, we don't care about its presence)
         4. all outgoing Edges from the state are normalised to probability
@@ -98,7 +98,7 @@ class DirectTSworker(threading.Thread):
             self.work.wait()
             try:
                 state = self.ts.unprocessed.pop()
-                self.ts.processed.add(state)
+                self.ts.states.add(state)
                 unique_states = dict()
 
                 # special "hell" state
@@ -130,7 +130,7 @@ class DirectTSworker(threading.Thread):
 
                             new_state = new_state.validate_bound(self.ts.bound)
 
-                            if new_state not in self.ts.processed:
+                            if new_state not in self.ts.states:
                                 self.ts.unprocessed.add(new_state)
                                 self.ts.unique_complexes.update(set(new_state.multiset))
 

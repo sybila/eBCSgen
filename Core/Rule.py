@@ -232,7 +232,7 @@ class Rule:
         """
         Create complexes from agents matched to the LHS
 
-        @param match: sequence of
+        @param match: value of
         @return:
         """
         output_complexes = []

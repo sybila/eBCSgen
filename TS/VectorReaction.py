@@ -1,9 +1,9 @@
 from Core.Rate import Rate
-from TS.State import VectorState
+from TS.State import State
 
 
 class VectorReaction:
-    def __init__(self, source: VectorState, target: VectorState, rate: Rate, label=None):
+    def __init__(self, source: State, target: State, rate: Rate, label=None):
         self.source = source
         self.target = target
         self.rate = rate
@@ -25,7 +25,7 @@ class VectorReaction:
     def __hash__(self):
         return hash(str(self))
 
-    def apply(self, state: VectorState, bound: float):
+    def apply(self, state: State, bound: float):
         """
         Applies the reaction on a given VectorState.
         First, source is subtracted from the given VectorState, then it is checked if all

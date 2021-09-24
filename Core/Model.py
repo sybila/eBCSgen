@@ -15,7 +15,7 @@ from Core.Complex import Complex
 from Core.Rate import Rate
 from Core.Side import Side
 from TS.DirectTS import DirectTS
-from TS.State import FullMemoryMultisetState, OneStepMemoryMultisetState, MultisetState
+from TS.State import State
 from TS.TSworker import DirectTSworker
 from TS.VectorModel import VectorModel, handle_number_of_threads
 

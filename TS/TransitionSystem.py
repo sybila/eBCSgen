@@ -2,44 +2,32 @@ import json
 from copy import copy
 
 import numpy as np
-from itertools import groupby
 from sortedcontainers import SortedList
 from pyModelChecking import Kripke
 
-from TS.State import VectorState
+from TS.State import State, Memory, Vector
 
 
 class TransitionSystem:
     def __init__(self, ordering: SortedList, bound):
-        self.states_encoding = dict()  # VectorState -> int
-        self.edges = set()  # Edge objects: (int from, int to, probability), can be used for explicit Storm format
-        self.ordering = ordering  # used to decode VectorState to actual agents
-        self.init = int
-        self.params = []
+        self.ordering = ordering  # used to decode State to actual agents
         self.bound = bound
 
         # for TS generating
         self.unprocessed = set()
-        self.processed = set()
+        self.states = set()
+        self.edges = set()
+
+        self.states_encoding = dict()  # int -> State
+
+        self.init = None
+        self.params = []
 
     def __str__(self):
         return str(self.states_encoding) + "\n" + "\n".join(list(map(str, self.edges))) + "\n" + str(self.ordering)
 
     def __repr__(self):
         return str(self)
-
-    def __iter__(self):
-        """
-        Used to iterate over equivalence classes (given by source) of sorted edges.
-        """
-        self.index = 0
-        edges = sorted(self.edges)
-        self.data = groupby(edges, key=lambda edge: edge.source)
-        return self
-
-    def __next__(self):
-        new = next(self.data)
-        return list(new[-1])
 
     def __eq__(self, other: 'TransitionSystem'):
         """
@@ -68,22 +56,22 @@ class TransitionSystem:
         except KeyError:
             return False
 
-        # this is weird, but well...
-        return set(map(hash, ts.edges)) == set(map(hash, other.edges))
-        # return ts.edges == other.edges
+        return ts.edges == other.edges
 
     def encode(self):
         """
-        Assigns a unique code to each VectorState for storing purposes
+        Assigns a unique code to each State for storing purposes
         """
-        for state in self.processed | self.unprocessed:
+        for state in self.states:
             if state not in self.states_encoding:
                 self.states_encoding[state] = len(self.states_encoding) + 1
 
         if type(self.init) != int:
             self.init = self.states_encoding[self.init]
-        self.processed = set()
+
         self.encode_edges()
+        # to achieve int -> State format
+        self.states_encoding = self.revert_encoding()
 
     def encode_edges(self):
         """
@@ -92,7 +80,7 @@ class TransitionSystem:
         for edge in self.edges:
             edge.encode(self.states_encoding)
 
-    def create_decoding(self) -> dict:
+    def revert_encoding(self) -> dict:
         """
         Swaps encoding dictionary for decoding purposes.
 
@@ -108,7 +96,7 @@ class TransitionSystem:
         :return: new TransitionSystem
         """
         # swap dictionary
-        old_encoding = self.create_decoding()
+        old_encoding = self.revert_encoding()
         self.edges = set(map(lambda edge: edge.recode(old_encoding, new_encoding), self.edges))
 
     def save_to_json(self, output_file: str, params=None):
@@ -118,11 +106,11 @@ class TransitionSystem:
         :param params: given set of unknown parameters
         :param output_file: given file to write to
         """
-        nodes = {value: str(key) for key, value in self.states_encoding.items()}
         unique = list(map(str, self.ordering))
         edges = [edge.to_dict() for edge in self.edges]
 
-        data = {'nodes': nodes, 'edges': edges, 'ordering': unique, 'initial': self.init, 'bound': int(self.bound)}
+        data = {'nodes': self.states_encoding, 'edges': edges, 'ordering': unique,
+                'initial': self.init, 'bound': int(self.bound)}
         if params:
             data['parameters'] = list(params)
 
@@ -135,16 +123,11 @@ class TransitionSystem:
     def change_hell(self):
         """
         Changes hell from inf to bound + 1.
-
-        TODO: maybe we could get rid of inf completely, but it is more clear for
-            debugging purposes
-
         """
         for key, value in self.states_encoding.items():
-            if key.is_inf:
-                del self.states_encoding[key]
-                hell = VectorState(np.array([self.bound + 1] * len(key)))
-                hell.is_inf = True
+            if value.is_inf:
+                del self.states_encoding[value]
+                hell = State(Vector(np.array([self.bound + 1] * len(key))), Memory(0), True)
                 self.states_encoding[hell] = value
                 break
 
@@ -162,7 +145,6 @@ class TransitionSystem:
             AP_lables[ap] = "property_" + str(len(AP_lables))
 
         state_labels = dict()
-        self.change_hell()
         for state in self.states_encoding.keys():
             for ap in APs:
                 if state.check_AP(ap, self.ordering):
@@ -213,11 +195,11 @@ class TransitionSystem:
 
         # to get rid of inf
         self.change_hell()
-        decoding = self.create_decoding()
+        decoding = self.revert_encoding()
 
         # declare state variables
         init = decoding[self.init]
-        vars = ['\tVAR_{} : [0..{}] init {}; // {}'.format(i, self.bound + 1, int(init.sequence[i]), self.ordering[i])
+        vars = ['\tVAR_{} : [0..{}] init {}; // {}'.format(i, self.bound + 1, int(init.value[i]), self.ordering[i])
                 for i in range(len(self.ordering))]
         prism_file.write("\n" + "\n".join(vars) + "\n")
 
@@ -239,8 +221,12 @@ class TransitionSystem:
 
         :return: list of strings for each group (source)
         """
+        from itertools import groupby
+        data = groupby(sorted(self.edges), key=lambda edge: edge.source)
+
         output = []
-        for group in self:
+        for group in data:
+            group = group[-1]
             source = group[0].source
             line = '\t[] {} -> '.format(decoding[source].to_PRISM_string()) + \
                    " + ".join(list(map(lambda edge: edge.to_PRISM_string(decoding), group))) + ";"
@@ -253,7 +239,7 @@ class TransitionSystem:
 
         :return: Kripke structure representation of the transition system
         """
-        states = list(self.states_encoding.values())
+        states = list(self.states_encoding.keys())
         edges = [(edge.source, edge.target) for edge in self.edges]
         inits = [self.init]
         return Kripke(S=states, R=edges, S0=inits, L=state_labels)
@@ -267,7 +253,7 @@ class TransitionSystem:
         """
         check = np.zeros(len(list(self.states_encoding.keys())[0]))
         for state in self.states_encoding:
-            check += state.sequence
+            check += state.value
 
         ordering = copy(self.ordering)
 
@@ -277,8 +263,8 @@ class TransitionSystem:
                 to_remove.append(i)
 
         for state, code in self.states_encoding.items():
-            new_sequence = np.delete(state.sequence, to_remove)
-            state.sequence = new_sequence
+            new_sequence = np.delete(state.value, to_remove)
+            state.value = new_sequence
 
         for i in reversed(to_remove):
             del ordering[i]

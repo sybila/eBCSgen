@@ -136,7 +136,7 @@ class TestVectorModel(unittest.TestCase):
         gob = gamma + omega + beta  # 10
         oa = omega + alpha  # 13
 
-        self.test_ts.processed = set(states)
+        self.test_ts.states = set(states)
 
         self.test_ts.edges = {Edge(states[0], states[1], gamma / go), Edge(states[0], states[3], omega / go),
                               Edge(states[1], states[2], omega / omega),

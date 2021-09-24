@@ -7,7 +7,7 @@ import pandas as pd
 import random
 from sortedcontainers import SortedList
 
-from TS.State import VectorState, FullMemoryVectorState, OneStepMemoryVectorState
+from TS.State import State
 from TS.TSworker import TSworker
 from TS.TransitionSystem import TransitionSystem
 
@@ -34,14 +34,14 @@ def handle_number_of_threads(number, workers):
 
 
 class VectorModel:
-    def __init__(self, vector_reactions: set, init: VectorState, ordering: SortedList, bound: int, regulation=None):
+    def __init__(self, vector_reactions: set, init: State, ordering: SortedList, bound: int, regulation=None):
         self.vector_reactions = vector_reactions
         self.init = init
         self.ordering = ordering
         self.bound = bound if bound else self.compute_bound()
         self.regulation = regulation
 
-    def __eq__(self, other: 'VectorModel') -> bool:
+    def __eq__(self, other: 'State') -> bool:
         return self.vector_reactions == other.vector_reactions and \
                self.init == other.init and self.ordering == other.ordering
 
@@ -61,7 +61,7 @@ class VectorModel:
 
         :return: maximal bound
         """
-        reation_max = max(map(lambda r: max(max(r.source.sequence), max(r.target.sequence)), self.vector_reactions))
+        reation_max = max(map(lambda r: max(max(r.source.value), max(r.target.value)), self.vector_reactions))
         return max(reation_max, max(self.init.sequence))
 
     def deterministic_simulation(self, max_time: float, volume: float, step: float = 0.01) -> pd.DataFrame:
@@ -89,11 +89,11 @@ class VectorModel:
             reaction.to_symbolic()
             for i in range(len(self.init)):
                 # negative effect
-                if reaction.source.sequence[i] > 0:
-                    ODEs[i] += " - {}*({})".format(reaction.source.sequence[i], reaction.rate)
+                if reaction.source.value[i] > 0:
+                    ODEs[i] += " - {}*({})".format(reaction.source.value[i], reaction.rate)
                     # positive effect
-                if reaction.target.sequence[i] > 0:
-                    ODEs[i] += " + {}*({})".format(reaction.target.sequence[i], reaction.rate)
+                if reaction.target.value[i] > 0:
+                    ODEs[i] += " + {}*({})".format(reaction.target.value[i], reaction.rate)
         
         t = np.arange(0, max_time + step, step)
         y_0 = list(map(lambda x: x / (AVOGADRO * volume), self.init.sequence))
@@ -208,7 +208,7 @@ class VectorModel:
         try:
             while any([worker.work.is_set() for worker in workers]) \
                     and time.time() - start_time < max_time \
-                    and len(ts.processed) + len(ts.states_encoding) < max_size:
+                    and len(ts.states) + len(ts.states_encoding) < max_size:
                 handle_number_of_threads(len(ts.unprocessed), workers)
                 time.sleep(1)
         # probably should be changed to a different exceptions for the case when the execution is stopped on Galaxy

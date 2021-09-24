@@ -60,7 +60,7 @@ class TestModel(unittest.TestCase):
             # correct one
             result_local = self.model_parser.syntax_check(self.model_with_complexes)
 
-            headers = {'content-type': 'application/json'}
+            headers = {'value-type': 'application/json'}
 
             response = requests.post(self.url + 'parse',
                                      data=json.dumps({'start': 'model', 'expression': self.model_with_complexes}),
