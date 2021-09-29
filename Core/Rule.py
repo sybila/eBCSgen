@@ -235,7 +235,6 @@ class Rule:
         Create complexes from agents matched to the LHS
 
         @param match: value of
-        @return:
         """
         output_complexes = []
         for (f, t) in list(filter(lambda item: item[1] < self.mid, self.complexes)):

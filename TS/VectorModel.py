@@ -7,8 +7,8 @@ import pandas as pd
 import random
 from sortedcontainers import SortedList
 
-from TS.State import State
-from TS.TSworker import TSworker
+from TS.State import State, Memory, Vector
+from TS.TSworker import TSworker, TSworker
 from TS.TransitionSystem import TransitionSystem
 
 AVOGADRO = 6.022 * 10 ** 23
@@ -41,7 +41,7 @@ class VectorModel:
         self.bound = bound if bound else self.compute_bound()
         self.regulation = regulation
 
-    def __eq__(self, other: 'State') -> bool:
+    def __eq__(self, other: 'VectorModel') -> bool:
         return self.vector_reactions == other.vector_reactions and \
                self.init == other.init and self.ordering == other.ordering
 
@@ -61,8 +61,8 @@ class VectorModel:
 
         :return: maximal bound
         """
-        reation_max = max(map(lambda r: max(max(r.source.value), max(r.target.value)), self.vector_reactions))
-        return max(reation_max, max(self.init.sequence))
+        reation_max = max(map(lambda r: max(max(r.source.content.value), max(r.target.content.value)), self.vector_reactions))
+        return max(reation_max, max(self.init.content.value))
 
     def deterministic_simulation(self, max_time: float, volume: float, step: float = 0.01) -> pd.DataFrame:
         """
@@ -186,19 +186,12 @@ class VectorModel:
         """
         if not ts:
             ts = TransitionSystem(self.ordering, self.bound)
-            if self.regulation:
-                if self.regulation.memory == 0:
-                    ts.init = VectorState(self.init.sequence)
-                elif self.regulation.memory == 1:
-                    ts.init = OneStepMemoryVectorState(self.init.sequence)
-                else:
-                    ts.init = FullMemoryVectorState(self.init.sequence)
-            else:
-                ts.init = VectorState(self.init.sequence)
-
+            memory = 0 if not self.regulation else self.regulation.memory
+            ts.init = State(self.init.content, Memory(memory))
             ts.unprocessed = {ts.init}
 
-        workers = [TSworker(ts, self) for _ in range(multiprocessing.cpu_count())]
+        workers = [TSworker(ts, self.vector_reactions, None, self.regulation)
+                   for _ in range(multiprocessing.cpu_count())]
         for worker in workers:
             worker.start()
 

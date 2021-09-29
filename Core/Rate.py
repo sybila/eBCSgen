@@ -3,7 +3,7 @@ import sympy
 from lark import Transformer, Tree
 from sortedcontainers import SortedList
 
-import TS.State
+from TS.State import Vector
 
 
 class Rate:
@@ -136,7 +136,7 @@ class Vectorizer(Transformer):
             if complex.compatible(self.ordering[i]):
                 result[i] = 1
 
-        result = TS.State.VectorState(result)
+        result = Vector(result)
         self.visited.append(result)
         return Tree("agent", [result])
 
@@ -154,7 +154,7 @@ class Evaluater(Transformer):
         self.locals = dict()
 
     def agent(self, state):
-        return sum(self.state * state[0])
+        return sum(self.state.content * state[0])
 
     def param(self, matches):
         name = matches[0]

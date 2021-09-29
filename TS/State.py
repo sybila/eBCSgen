@@ -159,6 +159,9 @@ class State:
     def __add__(self, other: 'State'):
         return State(self.content + other.content, copy(self.memory))
 
+    def __ge__(self, other: 'State') -> bool:
+        return self.content >= other.content
+
     def update_state(self, consumed, produced, label, bound) -> 'State':
         """
         Creates a new state by subtracting consumed object and adding produced objects.

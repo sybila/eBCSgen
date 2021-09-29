@@ -111,8 +111,9 @@ class TransitionSystem:
         """
         unique = list(map(str, self.ordering))
         edges = [edge.to_dict() for edge in self.edges]
+        states = {key: str(state.content) for key, state in self.states_encoding.items()}
 
-        data = {'nodes': self.states_encoding, 'edges': edges, 'ordering': unique,
+        data = {'nodes': states, 'edges': edges, 'ordering': unique,
                 'initial': self.init, 'bound': int(self.bound)}
         if params:
             data['parameters'] = list(params)

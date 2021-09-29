@@ -16,7 +16,7 @@ from Core.Rate import Rate
 from Core.Side import Side
 from TS.TransitionSystem import TransitionSystem
 from TS.State import State, Memory, Multiset
-from TS.TSworker import DirectTSworker
+from TS.TSworker import TSworker
 from TS.VectorModel import VectorModel, handle_number_of_threads
 
 
@@ -273,7 +273,8 @@ class Model:
         ts.unprocessed = {ts.init}
         ts.unique_complexes.update(set(ts.init.content.value))
 
-        workers = [DirectTSworker(ts, self) for _ in range(multiprocessing.cpu_count())]
+        workers = [TSworker(ts, self.rules, self.definitions, self.regulation)
+                   for _ in range(multiprocessing.cpu_count())]
         for worker in workers:
             worker.start()
 
