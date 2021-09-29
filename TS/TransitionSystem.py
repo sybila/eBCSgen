@@ -133,11 +133,11 @@ class TransitionSystem:
         """
         Changes hell from inf to bound + 1.
         """
-        for key, value in self.states_encoding.items():
-            if value.is_inf:
-                del self.states_encoding[value]
-                hell = State(Vector(np.array([self.bound + 1] * len(key))), Memory(0), True)
-                self.states_encoding[hell] = value
+        for key, state in self.states_encoding.items():
+            if state.is_hell:
+                del self.states_encoding[key]
+                hell = State(Vector(np.array([self.bound + 1] * len(state.content.value))), Memory(0), True)
+                self.states_encoding[key] = hell
                 break
 
     def create_AP_labels(self, APs: list, include_init=True):
@@ -154,11 +154,10 @@ class TransitionSystem:
             AP_lables[ap] = "property_" + str(len(AP_lables))
 
         state_labels = dict()
-        for state in self.states_encoding.keys():
+        for key, state in self.states_encoding.items():
             for ap in APs:
                 if state.check_AP(ap, self.ordering):
-                    state_labels[self.states_encoding[state]] = \
-                        state_labels.get(self.states_encoding[state], set()) | {AP_lables[ap]}
+                    state_labels[key] = state_labels.get(key, set()) | {AP_lables[ap]}
         if include_init:
             state_labels[self.init] = state_labels.get(self.init, set()) | {"init"}
         return state_labels, AP_lables
@@ -217,16 +216,15 @@ class TransitionSystem:
 
         # to get rid of inf
         self.change_hell()
-        decoding = self.revert_encoding()
 
         # declare state variables
-        init = decoding[self.init]
-        vars = ['\tVAR_{} : [0..{}] init {}; // {}'.format(i, self.bound + 1, int(init.value[i]), self.ordering[i])
+        init = self.states_encoding[self.init]
+        vars = ['\tVAR_{} : [0..{}] init {}; // {}'.format(i, self.bound + 1, int(init.content.value[i]), self.ordering[i])
                 for i in range(len(self.ordering))]
         prism_file.write("\n" + "\n".join(vars) + "\n")
 
         # write transitions
-        transitions = self.edges_to_PRISM(decoding)
+        transitions = self.edges_to_PRISM(self.states_encoding)
         prism_file.write("\n" + "\n".join(transitions))
 
         prism_file.write("\nendmodule\n\n")
