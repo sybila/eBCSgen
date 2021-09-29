@@ -173,17 +173,19 @@ class Model:
         :param max_time: maximal simulation time
         :return: generated dataframe containing simulated time series
         """
-        state = FullMemoryMultisetState(copy.deepcopy(self.init))
+        memory = 0 if not self.regulation else self.regulation.memory
+        state = State(Multiset(self.init), Memory(memory))
+        
         for rule in self.rules:
             # precompute complexes for each rule
-            rule.lhs, _ = rule.create_complexes()
+            rule.lhs, rule.rhs = rule.create_complexes()
             rule.rate_agents, _ = rule.rate.get_params_and_agents()
 
-        history = dict()
-        collected_agents = set(state.multiset)
+        time_series = dict()
+        collected_agents = set(state.content.value)
         time = 0.0
-        history[time] = state.multiset
-        used_rules = []
+        time_series[time] = state
+        bound = self.compute_bound()
         while time < max_time:
             candidate_rules = pd.DataFrame(data=[(rule,
                                                   rule.evaluate_rate(state, self.definitions),
@@ -195,7 +197,6 @@ class Model:
 
             if self.regulation:
                 rules = {item: None for item in candidate_rules['rule']}
-                state.used_rules = used_rules
                 applicable_rules = self.regulation.filter(state, rules)
                 candidate_rules = candidate_rules[candidate_rules['rule'].isin(applicable_rules)]
 
@@ -215,23 +216,21 @@ class Model:
 
                 # update state based on match & replace operation
                 match = rule.reconstruct_complexes_from_match(match)
-                state = FullMemoryMultisetState(update_state(state.multiset, match, produced_agents))
-                if self.regulation:
-                    used_rules.append(rule.label)
+                state = state.update_state(match, produced_agents, rule.label, bound)
             else:
                 rates_sum = random.uniform(0.5, 0.9)
 
             # update time
             time += random.expovariate(rates_sum)
-            collected_agents = collected_agents.union(set(state.multiset))
-            history[time] = state.multiset
+            collected_agents = collected_agents.union(set(state.content.value))
+            time_series[time] = state
 
         # create pandas DataFrame
         ordered_agents = list(collected_agents)
         header = list(map(str, ordered_agents))
         df = pd.DataFrame(columns=header)
-        for time in history:
-            vector = [history[time][agent] for agent in ordered_agents]
+        for time in time_series:
+            vector = [time_series[time].content.value[agent] for agent in ordered_agents]
             df.loc[time] = vector
 
         df.index.name = 'times'
@@ -297,9 +296,3 @@ class Model:
             time.sleep(1)
 
         return ts
-
-
-def update_state(state, consumed, produced):
-    consumed = collections.Counter(consumed)
-    produced = collections.Counter(produced)
-    return state - consumed + produced
