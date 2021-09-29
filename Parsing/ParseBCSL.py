@@ -20,7 +20,7 @@ from Regulations.Conditional import Conditional
 from Regulations.Ordered import Ordered
 from Regulations.Programmed import Programmed
 from Regulations.Regular import Regular
-from TS.State import State
+from TS.State import State, Memory, Vector
 from TS.TransitionSystem import TransitionSystem
 from TS.Edge import edge_from_dict
 from Core.Side import Side
@@ -39,15 +39,18 @@ def load_TS_from_json(json_file: str) -> TransitionSystem:
 
         ordering = SortedList(map(lambda agent: complex_parser.parse(agent).data.children[0], data['ordering']))
         ts = TransitionSystem(ordering, data['bound'])
-        ts.states_encoding = {VectorState(np.array(eval(data['nodes'][node_id]))): int(node_id)
-                              for node_id in data['nodes']}
+        ts.states_encoding = dict()
+        for node_id in data['nodes']:
+            vector = np.array(eval(data['nodes'][node_id]))
+            is_hell = True if vector[0] == np.math.inf else False
+            ts.states_encoding[int(node_id)] = State(Vector(vector), Memory(0), is_hell)
         ts.edges = {edge_from_dict(edge) for edge in data['edges']}
         ts.init = data['initial']
         if 'parameters' in data:
             ts.params = data['parameters']
 
-        ts.unprocessed = {VectorState(np.array(eval(state))) for state in data.get('unprocessed', list())}
-        ts.states = ts.states_encoding.keys() - ts.unprocessed
+        ts.unprocessed = {State(Vector(np.array(eval(state))), Memory(0)) for state in data.get('unprocessed', list())}
+        ts.states = set(ts.states_encoding.values()) - ts.unprocessed
         return ts
 
 

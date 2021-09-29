@@ -153,7 +153,7 @@ class State:
         self.is_hell = is_hell
 
     def __str__(self):
-        return str(self.content) + str(self.memory.history)
+        return str(self.content) + str(self.memory.history) + str(self.is_hell)
 
     def __repr__(self):
         return str(self)
@@ -200,7 +200,7 @@ class State:
 
         :param indices: array of indices
         """
-        return State(self.content.reorder(indices), copy(self.memory))
+        return State(self.content.reorder(indices), copy(self.memory), copy(self.is_hell))
 
     def to_vector(self, ordering):
         """

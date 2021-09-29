@@ -65,7 +65,7 @@ class TransitionSystem:
         """
         Assigns a unique code to each State for storing purposes
         """
-        for state in self.states:
+        for state in self.states | self.unprocessed:
             if state not in self.states_encoding:
                 self.states_encoding[state] = len(self.states_encoding) + 1
 
@@ -78,10 +78,17 @@ class TransitionSystem:
 
     def encode_edges(self):
         """
-        Encodes every VectorState in Edge according to the unique encoding.
+        Encodes every Vector in Edge according to the unique encoding.
         """
         for edge in self.edges:
             edge.encode(self.states_encoding)
+
+    def decode(self):
+        """
+        Flips encoding to continue in generating.
+        """
+        self.init = self.states_encoding[self.init]
+        self.states_encoding = self.revert_encoding()
 
     def revert_encoding(self) -> dict:
         """
@@ -117,7 +124,7 @@ class TransitionSystem:
             data['parameters'] = list(params)
 
         if self.unprocessed:
-            data['unprocessed'] = [str(state) for state in self.unprocessed]
+            data['unprocessed'] = [str(state.content) for state in self.unprocessed]
 
         with open(output_file, 'w') as json_file:
             json.dump(data, json_file, indent=4)

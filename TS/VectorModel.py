@@ -7,8 +7,8 @@ import pandas as pd
 import random
 from sortedcontainers import SortedList
 
-from TS.State import State, Memory, Vector
-from TS.TSworker import TSworker, TSworker
+from TS.State import State, Memory
+from TS.TSworker import TSworker
 from TS.TransitionSystem import TransitionSystem
 
 AVOGADRO = 6.022 * 10 ** 23
@@ -195,6 +195,8 @@ class VectorModel:
             memory = 0 if not self.regulation else self.regulation.memory
             ts.init = State(self.init.content, Memory(memory))
             ts.unprocessed = {ts.init}
+        else:
+            ts.decode()
 
         workers = [TSworker(ts, self.vector_reactions, None, self.regulation)
                    for _ in range(multiprocessing.cpu_count())]
