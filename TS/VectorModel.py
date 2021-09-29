@@ -84,19 +84,19 @@ class VectorModel:
             """
             return list(map(eval, ODEs))
 
-        ODEs = [""] * len(self.init)
+        ODEs = [""] * len(self.init.content)
         for reaction in self.vector_reactions:
             reaction.to_symbolic()
-            for i in range(len(self.init)):
+            for i in range(len(self.init.content)):
                 # negative effect
-                if reaction.source.value[i] > 0:
-                    ODEs[i] += " - {}*({})".format(reaction.source.value[i], reaction.rate)
+                if reaction.source.content.value[i] > 0:
+                    ODEs[i] += " - {}*({})".format(reaction.source.content.value[i], reaction.rate)
                     # positive effect
-                if reaction.target.value[i] > 0:
-                    ODEs[i] += " + {}*({})".format(reaction.target.value[i], reaction.rate)
+                if reaction.target.content.value[i] > 0:
+                    ODEs[i] += " + {}*({})".format(reaction.target.content.value[i], reaction.rate)
         
         t = np.arange(0, max_time + step, step)
-        y_0 = list(map(lambda x: x / (AVOGADRO * volume), self.init.sequence))
+        y_0 = list(map(lambda x: x / (AVOGADRO * volume), self.init.content.value))
         y = odeint(fun, y_0, t)
         df = pd.DataFrame(data=y, columns=list(map(str, self.ordering)))
         df.insert(0, "times", t)
@@ -129,11 +129,17 @@ class VectorModel:
             time = 0.0
             while time < max_time:
                 # add to data
-                df.loc[time] = list(solution.sequence)
+                df.loc[time] = list(solution.content.value)
 
-                applied_reactions = pd.DataFrame(data=[reaction.apply(solution, np.math.inf)
+                applied_reactions = pd.DataFrame(data=[(solution.update_state(reaction.source.content,
+                                                                              reaction.target.content,
+                                                                              None,
+                                                                              np.math.inf),
+                                                        reaction.match(solution),
+                                                        reaction.evaluate_rate(solution, None)
+                                                        )
                                                        for reaction in self.vector_reactions],
-                                                 columns=["state", "rate"])
+                                                 columns=["state", "match", "rate"])
                 applied_reactions = applied_reactions.dropna()
                 if not applied_reactions.empty:
                     rates_sum = applied_reactions.sum()["rate"]

@@ -87,6 +87,17 @@ class Vector:
         multiset = collections.Counter(zip(ordering, self.value))
         return Multiset(multiset)
 
+    def to_ODE_string(self) -> str:
+        """
+        Each non-zero value transforms to form y[i] where i is its particular position.
+        Finally, groups these strings to a sum of them (in string manner).
+        Works only for vector variant.
+
+        :return: string symbolic representation of state
+        """
+        return " + ".join(filter(None, ["y[" + str(i) + "]" if self.value[i] == 1
+                                        else None for i in range(len(self.value))]))
+
 
 class Multiset:
     def __init__(self, value: collections.Counter):
@@ -240,14 +251,3 @@ class State:
         vars = list(map(lambda i: '(VAR_{}{}={})'.format(i, aps, int(self.content.value[i])),
                         range(len(self.content.value))))
         return " & ".join(vars)
-
-    def to_ODE_string(self) -> str:
-        """
-        Each non-zero value transforms to form y[i] where i is its particular position.
-        Finally, groups these strings to a sum of them (in string manner).
-        Works only for vector variant.
-
-        :return: string symbolic representation of state
-        """
-        return " + ".join(filter(None, ["y[" + str(i) + "]" if self.content.value[i] == 1
-                                        else None for i in range(len(self.content.value))]))
