@@ -1,3 +1,4 @@
+import collections
 import itertools
 import random
 from copy import copy, deepcopy
@@ -6,6 +7,7 @@ from Core import Rate
 from Core.Complex import Complex
 from Core.Side import Side
 from Core.Reaction import Reaction
+from TS.State import Multiset
 
 
 def column(lst, index):
@@ -182,7 +184,7 @@ class Rule:
         @return: a real number of the rate
         """
         values = dict()
-        for (state_complex, count) in state.multiset.items():
+        for (state_complex, count) in state.content.value.items():
             for agent in self.rate_agents:
                 if agent.compatible(state_complex):
                     values[agent] = values.get(agent, 0) + count
@@ -196,7 +198,7 @@ class Rule:
         @param all: bool to indicate if choose one matching randomly or return all of them
         @return: random match/all matches
         """
-        state = deepcopy(state.multiset)
+        state = deepcopy(state.content.value)
         matches = find_all_matches(self.lhs.agents, state)
         matches = [sum(match, []) for match in matches]
 
@@ -226,7 +228,7 @@ class Rule:
         for (f, t) in list(filter(lambda item: item[0] >= self.mid, self.complexes)):
             output_complexes.append(Complex(resulting_rhs[f - self.mid:t - self.mid + 1], self.compartments[f]))
 
-        return output_complexes
+        return Multiset(collections.Counter(output_complexes))
 
     def reconstruct_complexes_from_match(self, match):
         """
@@ -238,7 +240,7 @@ class Rule:
         output_complexes = []
         for (f, t) in list(filter(lambda item: item[1] < self.mid, self.complexes)):
             output_complexes.append(Complex(match[f:t + 1], self.compartments[f]))
-        return output_complexes
+        return Multiset(collections.Counter(output_complexes))
 
 
 def find_all_matches(lhs_agents, state):

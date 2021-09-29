@@ -151,7 +151,7 @@ class State:
         return self.__dict__ == other.__dict__
 
     def __hash__(self):
-        return hash(self.content()) + hash(self.memory)
+        return hash(self.content) + hash(self.memory)
 
     def __sub__(self, other: 'State'):
         return State(self.content - other.content, copy(self.memory))

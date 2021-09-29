@@ -102,13 +102,13 @@ class DirectTSworker(threading.Thread):
                 unique_states = dict()
 
                 # special "hell" state
-                if state.is_inf:
+                if state.is_hell:
                     self.ts.edges.add(Edge(state, state, 1))
                 else:
                     candidate_rules = dict()
                     for rule in self.model.rules:
                         rate = rule.evaluate_rate(state, self.model.definitions)
-                        match = rule.match(state, all=True)
+                        matches = rule.match(state, all=True)
 
                         try:
                             rate = rate if rate > 0 else None
@@ -116,8 +116,8 @@ class DirectTSworker(threading.Thread):
                             pass
 
                         # drop rules which cannot be actually used (0 rate or no matches)
-                        if match is not None and rate is not None:
-                            candidate_rules[rule] = (rate, match)
+                        if matches is not None and rate is not None:
+                            candidate_rules[rule] = (rate, matches)
 
                     if self.model.regulation:
                         candidate_rules = self.model.regulation.filter(state, candidate_rules)
@@ -126,13 +126,11 @@ class DirectTSworker(threading.Thread):
                         for match in candidate_rules[rule][1]:
                             produced_agents = rule.replace(match)
                             match = rule.reconstruct_complexes_from_match(match)
-                            new_state = state.update_state(match, produced_agents, rule.label)
-
-                            new_state = new_state.validate_bound(self.ts.bound)
+                            new_state = state.update_state(match, produced_agents, rule.label, self.ts.bound)
 
                             if new_state not in self.ts.states:
                                 self.ts.unprocessed.add(new_state)
-                                self.ts.unique_complexes.update(set(new_state.multiset))
+                                self.ts.unique_complexes.update(set(new_state.content.value))
 
                             # multiple arrows between two states are not allowed
                             if new_state in unique_states:

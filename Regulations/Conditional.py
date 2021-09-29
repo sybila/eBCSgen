@@ -17,7 +17,7 @@ class Conditional(BaseRegulation):
         return "type conditional\n" + ",".join(self.regulation)
 
     def filter(self, current_state, candidates):
-        agents = set(current_state.multiset)
+        agents = set(current_state.content.value)
         return {rule: values for rule, values in candidates.items() if not self.check_intersection(rule.label, agents)}
 
     def check_intersection(self, label, agents):

@@ -14,8 +14,8 @@ from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
 from Core.Rate import Rate
 from Core.Side import Side
-from TS.DirectTS import DirectTS
-from TS.State import State
+from TS.TransitionSystem import TransitionSystem
+from TS.State import State, Memory, Multiset
 from TS.TSworker import DirectTSworker
 from TS.VectorModel import VectorModel, handle_number_of_threads
 
@@ -258,18 +258,6 @@ class Model:
         :param bound: bound for individual elements
         :return: generated transitions system
         """
-        ts = DirectTS()
-        if self.regulation:
-            if self.regulation.memory == 0:
-                ts.init = MultisetState(self.init)
-            elif self.regulation.memory == 1:
-                ts.init = OneStepMemoryMultisetState(self.init)
-            else:
-                ts.init = FullMemoryMultisetState(self.init)
-        else:
-            ts.init = MultisetState(self.init)
-        ts.unprocessed = {ts.init}
-        ts.unique_complexes.update(set(ts.init.multiset))
 
         for rule in self.rules:
             # precompute complexes for each rule
@@ -278,7 +266,12 @@ class Model:
 
         if bound is None:
             bound = self.compute_bound()
-        ts.bound = bound
+
+        ts = TransitionSystem(bound=bound)
+        memory = 0 if not self.regulation else self.regulation.memory
+        ts.init = State(Multiset(self.init), Memory(memory))
+        ts.unprocessed = {ts.init}
+        ts.unique_complexes.update(set(ts.init.content.value))
 
         workers = [DirectTSworker(ts, self) for _ in range(multiprocessing.cpu_count())]
         for worker in workers:
@@ -290,7 +283,7 @@ class Model:
         try:
             while any([worker.work.is_set() for worker in workers]) \
                     and time.time() - start_time < max_time \
-                    and len(ts.processed) < max_size:
+                    and len(ts.states) < max_size:
                 handle_number_of_threads(len(ts.unprocessed), workers)
                 time.sleep(1)
         except (KeyboardInterrupt, EOFError) as e:

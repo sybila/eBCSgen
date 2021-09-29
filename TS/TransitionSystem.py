@@ -9,7 +9,7 @@ from TS.State import State, Memory, Vector
 
 
 class TransitionSystem:
-    def __init__(self, ordering: SortedList, bound):
+    def __init__(self, ordering: SortedList = None, bound=None):
         self.ordering = ordering  # used to decode State to actual agents
         self.bound = bound
 
@@ -19,6 +19,9 @@ class TransitionSystem:
         self.edges = set()
 
         self.states_encoding = dict()  # int -> State
+
+        # for multiset approach
+        self.unique_complexes = set()
 
         self.init = None
         self.params = []
@@ -153,6 +156,19 @@ class TransitionSystem:
         if include_init:
             state_labels[self.init] = state_labels.get(self.init, set()) | {"init"}
         return state_labels, AP_lables
+
+    def change_to_vector_backend(self):
+        """
+        Changes backend from Multisets to Vectors by encoding them.
+        """
+        self.ordering = SortedList(sorted(self.unique_complexes))
+        self.encode()
+
+        vector_encoding = dict()
+        for key, state in self.states_encoding.items():
+            state.to_vector(self.ordering)
+            vector_encoding[key] = state
+        self.states_encoding = vector_encoding
 
     def save_to_STORM_explicit(self, transitions_file: str, labels_file: str, state_labels: dict, AP_labels):
         """
