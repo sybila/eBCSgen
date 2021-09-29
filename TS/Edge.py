@@ -39,24 +39,9 @@ class Edge:
         :param encoding_new: the new encoding
         :return: new Edge in new encoding
         """
-        source_code = None
-        target_code = None
-
-        for state, code in encoding_new.items():
-            if state == encoding_old[self.source]:
-                source_code = code
-            if state == encoding_old[self.target]:
-                target_code = code
-
-        if source_code is not None and target_code is not None:
-            return Edge(source_code, target_code, self.probability)
-        else:
-            raise KeyError
-
-        # dicts with OneStepMemoryVectorState are not working
-        # return Edge(encoding_new[encoding_old[self.source]],
-        #             encoding_new[encoding_old[self.target]],
-        #             self.probability)
+        return Edge(encoding_new[encoding_old[self.source]],
+                    encoding_new[encoding_old[self.target]],
+                    self.probability)
 
     def add_rate(self, rate):
         """

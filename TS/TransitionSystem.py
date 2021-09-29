@@ -47,7 +47,7 @@ class TransitionSystem:
         if not success:  # the agents in orderings are different => also whole TSs are different
             return False
 
-        re_encoding = {key.reorder(reordering_indices): self.states_encoding[key] for key in self.states_encoding}
+        re_encoding = {key: self.states_encoding[key].reorder(reordering_indices) for key in self.states_encoding}
 
         # new TransitionSystem with ordering taken from other and reordered states in re_encoding
         ts = TransitionSystem(other.ordering, other.bound)
@@ -55,11 +55,11 @@ class TransitionSystem:
         ts.edges = self.edges
 
         try:
-            ts.recode(other.states_encoding)
+            ts.recode(other.revert_encoding())
         except KeyError:
             return False
 
-        return ts.edges == other.edges
+        return set(map(hash, ts.edges)) == set(map(hash, other.edges))
 
     def encode(self):
         """
@@ -98,9 +98,7 @@ class TransitionSystem:
         :param new_encoding: given new encoding
         :return: new TransitionSystem
         """
-        # swap dictionary
-        old_encoding = self.revert_encoding()
-        self.edges = set(map(lambda edge: edge.recode(old_encoding, new_encoding), self.edges))
+        self.edges = set(map(lambda edge: edge.recode(self.states_encoding, new_encoding), self.edges))
 
     def save_to_json(self, output_file: str, params=None):
         """
@@ -268,20 +266,20 @@ class TransitionSystem:
 
         :return: minimalised TS
         """
-        check = np.zeros(len(list(self.states_encoding.keys())[0]))
-        for state in self.states_encoding:
-            check += state.value
+        check = Vector(np.zeros(len(list(self.states_encoding.values())[0].content)))
+        for state in self.states_encoding.values():
+            check += state.content
 
         ordering = copy(self.ordering)
 
         to_remove = []
         for i in range(len(check)):
-            if check[i] == 0:
+            if check.value[i] == 0:
                 to_remove.append(i)
 
-        for state, code in self.states_encoding.items():
-            new_sequence = np.delete(state.value, to_remove)
-            state.value = new_sequence
+        for code, state in self.states_encoding.items():
+            new_sequence = np.delete(state.content.value, to_remove)
+            state.content.value = new_sequence
 
         for i in reversed(to_remove):
             del ordering[i]
