@@ -63,7 +63,7 @@ class TestModel(unittest.TestCase):
             headers = {'value-type': 'application/json'}
 
             response = requests.post(self.url + 'parse',
-                                     data=json.dumps({'start': 'model', 'expression': self.model_with_complexes}),
+                                     json={'start': 'model', 'expression': self.model_with_complexes},
                                      headers=headers)
             result_remote = eval(response.text.replace("true", "True"))
 
@@ -73,7 +73,7 @@ class TestModel(unittest.TestCase):
             result_local = self.model_parser.syntax_check(self.model_wrong_1)
 
             response = requests.post(self.url + 'parse',
-                                     data=json.dumps({'start': 'model', 'expression': self.model_wrong_1}),
+                                     json={'start': 'model', 'expression': self.model_wrong_1},
                                      headers=headers)
             result_remote = eval(response.text.replace("false", "False"))
 

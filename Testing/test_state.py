@@ -69,7 +69,7 @@ class TestState(unittest.TestCase):
         self.assertEqual(self.s3.update_state(self.consumed_2, self.produced_2, 'label', bound), self.s5)
 
     def test_to_ODE_string(self):
-        self.assertEqual(self.s6.to_ODE_string(), "y[0] + y[3]")
+        self.assertEqual(self.s6.content.to_ODE_string(), "y[0] + y[3]")
 
     def test_reorder(self):
         order = np.array([2, 0, 1])

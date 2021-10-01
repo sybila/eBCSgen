@@ -246,7 +246,7 @@ class TransitionSystem:
 
         output = []
         for group in data:
-            group = group[-1]
+            group = list(group[-1])
             source = group[0].source
             line = '\t[] {} -> '.format(decoding[source].to_PRISM_string()) + \
                    " + ".join(list(map(lambda edge: edge.to_PRISM_string(decoding), group))) + ";"

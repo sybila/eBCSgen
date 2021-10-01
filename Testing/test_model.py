@@ -12,7 +12,7 @@ from Core.Structure import StructureAgent
 from Core.Complex import Complex
 from Core.Rule import Rule
 from Parsing.ParseBCSL import Parser
-from TS.State import VectorState
+from TS.State import Vector, State, Memory
 import TS.TransitionSystem
 from TS.VectorModel import VectorModel
 from TS.VectorReaction import VectorReaction
@@ -117,11 +117,17 @@ class TestModel(unittest.TestCase):
 
         rate_3 = Rate(Tree('rate', [Tree('fun', [1.0])]))
 
-        init = VectorState(np.array([2, 1, 0]))
+        init = State(Vector(np.array([2, 1, 0])), Memory(0))
 
-        vector_reactions = {VectorReaction(VectorState(np.array([0, 0, 0])), VectorState(np.array([0, 1, 0])), rate_1),
-                            VectorReaction(VectorState(np.array([1, 0, 0])), VectorState(np.array([0, 0, 0])), rate_2),
-                            VectorReaction(VectorState(np.array([0, 0, 1])), VectorState(np.array([1, 0, 0])), rate_3)}
+        vector_reactions = {VectorReaction(State(Vector(np.array([0, 0, 0])), Memory(0)),
+                                           State(Vector(np.array([0, 1, 0])), Memory(0)),
+                                           rate_1),
+                            VectorReaction(State(Vector(np.array([1, 0, 0])), Memory(0)),
+                                           State(Vector(np.array([0, 0, 0])), Memory(0)),
+                                           rate_2),
+                            VectorReaction(State(Vector(np.array([0, 0, 1])), Memory(0)),
+                                           State(Vector(np.array([1, 0, 0])), Memory(0)),
+                                           rate_3)}
 
         self.vm_1 = VectorModel(vector_reactions, init, ordering, None)
 
@@ -560,12 +566,12 @@ class TestModel(unittest.TestCase):
         APs = [Core.Formula.AtomicProposition(complex_abstract, " >= ", "3"),
                Core.Formula.AtomicProposition(complex_1, " < ", 2)]
 
-        s1 = VectorState(np.array((1, 2, 2)))
-        s2 = VectorState(np.array((5, 1, 1)))
-        s3 = VectorState(np.array((2, 4, 3)))
-        s4 = VectorState(np.array((1, 4, 3)))
+        s1 = State(Vector(np.array((1, 2, 2))), Memory(0))
+        s2 = State(Vector(np.array((5, 1, 1))), Memory(0))
+        s3 = State(Vector(np.array((2, 4, 3))), Memory(0))
+        s4 = State(Vector(np.array((1, 4, 3))), Memory(0))
 
-        states_encoding = {s1: 1, s2: 2, s3: 3, s4: 4}
+        states_encoding = {1: s1, 2: s2, 3: s3, 4: s4}
 
         result_AP_lables = {APs[0]: 'property_0', APs[1]: 'property_1'}
         result_state_labels = {1: {'property_0', 'property_1'},
@@ -612,4 +618,4 @@ class TestModel(unittest.TestCase):
             rules.add(rule)
         model.rules = rules
         ts = model.generate_direct_transition_system()
-        ts.save_to_json("Testing/direct_ts.json")
+        self.assertEqual(ts.bound, 2)

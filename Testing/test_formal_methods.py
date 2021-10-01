@@ -1,7 +1,9 @@
 import unittest
 
 import Parsing.ParsePCTLformula
+import Parsing.ParseCTLformula
 from Analysis.PCTL import PCTL
+from Analysis.CTL import CTL
 from Errors.ComplexOutOfScope import ComplexOutOfScope
 from Parsing.ParseBCSL import Parser, load_TS_from_json
 
@@ -63,6 +65,7 @@ class TestFormalMethods(unittest.TestCase):
     def test_tumor_model_checking(self):
         model_parsed = self.model_parser.parse(self.tumor).data
         ts = model_parsed.generate_direct_transition_system()
+        ts.change_to_vector_backend()
         ts.save_to_json('/tmp/ts.json')
         ts = load_TS_from_json('/tmp/ts.json')
 
@@ -83,6 +86,7 @@ class TestFormalMethods(unittest.TestCase):
         model_parsed = self.model_parser.parse(self.tumor_parametric).data
         formula = Parsing.ParsePCTLformula.PCTLparser().parse("P=? [F T(P{m})::x>2]")
         ts = model_parsed.generate_direct_transition_system()
+        ts.change_to_vector_backend()
         ts.save_to_json('/tmp/ts.json', params=['d2'])
         ts = load_TS_from_json('/tmp/ts.json')
         result = PCTL.parameter_synthesis(ts, formula, region=None)
@@ -91,6 +95,7 @@ class TestFormalMethods(unittest.TestCase):
     def test_parametric_model(self):
         model_parsed = self.model_parser.parse(self.model).data
         ts = model_parsed.generate_direct_transition_system()
+        ts.change_to_vector_backend()
         ts.save_to_json('/tmp/ts.json', params=['q'])
         ts = load_TS_from_json('/tmp/ts.json')
 
@@ -119,6 +124,7 @@ class TestFormalMethods(unittest.TestCase):
         model = self.model_parser.parse(model_str).data
         formula = Parsing.ParsePCTLformula.PCTLparser().parse('P <= 0.5[F X()::out = 1]')
         ts = model.generate_direct_transition_system()
+        ts.change_to_vector_backend()
         ts.save_to_json('/tmp/ts.json', params=['k1'])
         ts = load_TS_from_json('/tmp/ts.json')
         self.assertRaises(ComplexOutOfScope, PCTL.parameter_synthesis, ts, formula, '0<=k1<=1')
@@ -139,6 +145,7 @@ class TestFormalMethods(unittest.TestCase):
         """
         model = self.model_parser.parse(model_str).data
         ts = model.generate_direct_transition_system()
+        ts.change_to_vector_backend()
         ts.save_to_json('/tmp/ts.json', params=['k1'])
         ts = load_TS_from_json('/tmp/ts.json')
 
@@ -167,6 +174,7 @@ class TestFormalMethods(unittest.TestCase):
         """
         model = self.model_parser.parse(model_str).data
         ts = model.generate_direct_transition_system()
+        ts.change_to_vector_backend()
         ts.save_to_json('/tmp/ts.json', params=['k1'])
         ts = load_TS_from_json('/tmp/ts.json')
 
@@ -195,6 +203,7 @@ class TestFormalMethods(unittest.TestCase):
         """
         model = self.model_parser.parse(model_str).data
         ts = model.generate_direct_transition_system()
+        ts.change_to_vector_backend()
         ts.save_to_json('/tmp/ts.json')
         ts = load_TS_from_json('/tmp/ts.json')
 
@@ -224,6 +233,7 @@ class TestFormalMethods(unittest.TestCase):
         """
         model = self.model_parser.parse(model_str).data
         ts = model.generate_direct_transition_system()
+        ts.change_to_vector_backend()
         ts.save_to_json('/tmp/ts.json')
         ts = load_TS_from_json('/tmp/ts.json')
 
