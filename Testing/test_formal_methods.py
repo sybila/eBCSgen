@@ -244,3 +244,30 @@ class TestFormalMethods(unittest.TestCase):
         formula = Parsing.ParsePCTLformula.PCTLparser().parse('P=? [F X()::rep = 1]')
         output = PCTL.model_checking(ts, formula)
         self.assertTrue("Result (for initial states)" in str(output))
+
+    def test_CTL_model_checking(self):
+        model_str = """
+        #! rules
+        X()::rep => @ k1*[X()::rep]
+        Z()::rep => X()::rep @ k2
+        => Y()::rep @ 1/(1+([X()::rep])**4)
+
+        #! inits
+        2 X()::rep
+        Y()::rep
+
+        #! definitions
+        k2 = 5
+        k1 = 2
+        """
+        model = self.model_parser.parse(model_str).data
+        ts = model.generate_direct_transition_system()
+        ts.change_to_vector_backend()
+
+        formula = Parsing.ParseCTLformula.CTLparser().parse('E(F([Y()::rep > 1]))')
+        result, states = CTL.model_checking(ts, formula)
+        self.assertTrue(result)
+
+        formula = Parsing.ParseCTLformula.CTLparser().parse('E(F([Z()::rep > 1]))')
+        result, states = CTL.model_checking(ts, formula)
+        self.assertFalse(result)
