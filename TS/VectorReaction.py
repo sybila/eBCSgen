@@ -26,17 +26,21 @@ class VectorReaction:
         return hash(str(self))
 
     def evaluate_rate(self, state, definitions):
+        _ = definitions  # unused argument
         return self.rate.evaluate(state)
 
     def match(self, state, all=False):
+        _ = all  # unused argument
         if state >= self.source:
             return [self.source.content]
         return None
 
     def replace(self, aligned_match):
+        _ = aligned_match  # unused argument
         return self.target.content
 
     def reconstruct_complexes_from_match(self, match):
+        # to ensure compatibility with Rule
         return match
 
     def to_symbolic(self):
