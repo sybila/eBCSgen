@@ -34,7 +34,7 @@ class TestRegulations(unittest.TestCase):
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
         direct_ts = model.generate_direct_transition_system()
-        direct_ts = direct_ts.to_vector_ts()
+        direct_ts.change_to_vector_backend()
 
         vm = model.to_vector_model()
         indirect_ts = vm.generate_transition_system()
@@ -52,7 +52,7 @@ class TestRegulations(unittest.TestCase):
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
         direct_ts = model.generate_direct_transition_system()
-        direct_ts = direct_ts.to_vector_ts()
+        direct_ts.change_to_vector_backend()
 
         vm = model.to_vector_model()
         indirect_ts = vm.generate_transition_system()
@@ -70,7 +70,7 @@ class TestRegulations(unittest.TestCase):
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
         direct_ts = model.generate_direct_transition_system()
-        direct_ts = direct_ts.to_vector_ts()
+        direct_ts.change_to_vector_backend()
 
         vm = model.to_vector_model()
         indirect_ts = vm.generate_transition_system()
@@ -88,7 +88,7 @@ class TestRegulations(unittest.TestCase):
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
         direct_ts = model.generate_direct_transition_system()
-        direct_ts = direct_ts.to_vector_ts()
+        direct_ts.change_to_vector_backend()
 
         vm = model.to_vector_model()
         indirect_ts = vm.generate_transition_system()
@@ -106,7 +106,7 @@ class TestRegulations(unittest.TestCase):
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
         direct_ts = model.generate_direct_transition_system()
-        direct_ts = direct_ts.to_vector_ts()
+        direct_ts.change_to_vector_backend()
 
         vm = model.to_vector_model()
         indirect_ts = vm.generate_transition_system()
@@ -117,7 +117,7 @@ class TestRegulations(unittest.TestCase):
         model = self.model_parser.parse(self.model_with_labels).data
 
         direct_ts = model.generate_direct_transition_system()
-        direct_ts = direct_ts.to_vector_ts()
+        direct_ts.change_to_vector_backend()
 
         vm = model.to_vector_model()
         indirect_ts = vm.generate_transition_system()

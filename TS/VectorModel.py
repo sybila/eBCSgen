@@ -7,7 +7,7 @@ import pandas as pd
 import random
 from sortedcontainers import SortedList
 
-from TS.State import VectorState, FullMemoryVectorState, OneStepMemoryVectorState
+from TS.State import State, Memory
 from TS.TSworker import TSworker
 from TS.TransitionSystem import TransitionSystem
 
@@ -34,7 +34,7 @@ def handle_number_of_threads(number, workers):
 
 
 class VectorModel:
-    def __init__(self, vector_reactions: set, init: VectorState, ordering: SortedList, bound: int, regulation=None):
+    def __init__(self, vector_reactions: set, init: State, ordering: SortedList, bound: int, regulation=None):
         self.vector_reactions = vector_reactions
         self.init = init
         self.ordering = ordering
@@ -61,8 +61,8 @@ class VectorModel:
 
         :return: maximal bound
         """
-        reation_max = max(map(lambda r: max(max(r.source.sequence), max(r.target.sequence)), self.vector_reactions))
-        return max(reation_max, max(self.init.sequence))
+        reation_max = max(map(lambda r: max(max(r.source.content.value), max(r.target.content.value)), self.vector_reactions))
+        return max(reation_max, max(self.init.content.value))
 
     def deterministic_simulation(self, max_time: float, volume: float, step: float = 0.01) -> pd.DataFrame:
         """
@@ -84,19 +84,19 @@ class VectorModel:
             """
             return list(map(eval, ODEs))
 
-        ODEs = [""] * len(self.init)
+        ODEs = [""] * len(self.init.content)
         for reaction in self.vector_reactions:
             reaction.to_symbolic()
-            for i in range(len(self.init)):
+            for i in range(len(self.init.content)):
                 # negative effect
-                if reaction.source.sequence[i] > 0:
-                    ODEs[i] += " - {}*({})".format(reaction.source.sequence[i], reaction.rate)
+                if reaction.source.content.value[i] > 0:
+                    ODEs[i] += " - {}*({})".format(reaction.source.content.value[i], reaction.rate)
                     # positive effect
-                if reaction.target.sequence[i] > 0:
-                    ODEs[i] += " + {}*({})".format(reaction.target.sequence[i], reaction.rate)
+                if reaction.target.content.value[i] > 0:
+                    ODEs[i] += " + {}*({})".format(reaction.target.content.value[i], reaction.rate)
         
         t = np.arange(0, max_time + step, step)
-        y_0 = list(map(lambda x: x / (AVOGADRO * volume), self.init.sequence))
+        y_0 = list(map(lambda x: x / (AVOGADRO * volume), self.init.content.value))
         y = odeint(fun, y_0, t)
         df = pd.DataFrame(data=y, columns=list(map(str, self.ordering)))
         df.insert(0, "times", t)
@@ -129,11 +129,17 @@ class VectorModel:
             time = 0.0
             while time < max_time:
                 # add to data
-                df.loc[time] = list(solution.sequence)
+                df.loc[time] = list(solution.content.value)
 
-                applied_reactions = pd.DataFrame(data=[reaction.apply(solution, np.math.inf)
+                applied_reactions = pd.DataFrame(data=[(solution.update_state(reaction.source.content,
+                                                                              reaction.target.content,
+                                                                              None,
+                                                                              np.math.inf),
+                                                        reaction.match(solution),
+                                                        reaction.evaluate_rate(solution, None)
+                                                        )
                                                        for reaction in self.vector_reactions],
-                                                 columns=["state", "rate"])
+                                                 columns=["state", "match", "rate"])
                 applied_reactions = applied_reactions.dropna()
                 if not applied_reactions.empty:
                     rates_sum = applied_reactions.sum()["rate"]
@@ -186,19 +192,14 @@ class VectorModel:
         """
         if not ts:
             ts = TransitionSystem(self.ordering, self.bound)
-            if self.regulation:
-                if self.regulation.memory == 0:
-                    ts.init = VectorState(self.init.sequence)
-                elif self.regulation.memory == 1:
-                    ts.init = OneStepMemoryVectorState(self.init.sequence)
-                else:
-                    ts.init = FullMemoryVectorState(self.init.sequence)
-            else:
-                ts.init = VectorState(self.init.sequence)
-
+            memory = 0 if not self.regulation else self.regulation.memory
+            ts.init = State(self.init.content, Memory(memory))
             ts.unprocessed = {ts.init}
+        else:
+            ts.decode()
 
-        workers = [TSworker(ts, self) for _ in range(multiprocessing.cpu_count())]
+        workers = [TSworker(ts, self.vector_reactions, None, self.regulation)
+                   for _ in range(multiprocessing.cpu_count())]
         for worker in workers:
             worker.start()
 
@@ -208,7 +209,7 @@ class VectorModel:
         try:
             while any([worker.work.is_set() for worker in workers]) \
                     and time.time() - start_time < max_time \
-                    and len(ts.processed) + len(ts.states_encoding) < max_size:
+                    and len(ts.states) + len(ts.states_encoding) < max_size:
                 handle_number_of_threads(len(ts.unprocessed), workers)
                 time.sleep(1)
         # probably should be changed to a different exceptions for the case when the execution is stopped on Galaxy

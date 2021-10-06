@@ -14,9 +14,9 @@ from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
 from Core.Rate import Rate
 from Core.Side import Side
-from TS.DirectTS import DirectTS
-from TS.State import FullMemoryMultisetState, OneStepMemoryMultisetState, MultisetState
-from TS.TSworker import DirectTSworker
+from TS.TransitionSystem import TransitionSystem
+from TS.State import State, Memory, Multiset
+from TS.TSworker import TSworker
 from TS.VectorModel import VectorModel, handle_number_of_threads
 
 
@@ -173,17 +173,19 @@ class Model:
         :param max_time: maximal simulation time
         :return: generated dataframe containing simulated time series
         """
-        state = FullMemoryMultisetState(copy.deepcopy(self.init))
+        memory = 0 if not self.regulation else self.regulation.memory
+        state = State(Multiset(self.init), Memory(memory))
+        
         for rule in self.rules:
             # precompute complexes for each rule
-            rule.lhs, _ = rule.create_complexes()
+            rule.lhs, rule.rhs = rule.create_complexes()
             rule.rate_agents, _ = rule.rate.get_params_and_agents()
 
-        history = dict()
-        collected_agents = set(state.multiset)
+        time_series = dict()
+        collected_agents = set(state.content.value)
         time = 0.0
-        history[time] = state.multiset
-        used_rules = []
+        time_series[time] = state
+        bound = self.compute_bound()
         while time < max_time:
             candidate_rules = pd.DataFrame(data=[(rule,
                                                   rule.evaluate_rate(state, self.definitions),
@@ -195,7 +197,6 @@ class Model:
 
             if self.regulation:
                 rules = {item: None for item in candidate_rules['rule']}
-                state.used_rules = used_rules
                 applicable_rules = self.regulation.filter(state, rules)
                 candidate_rules = candidate_rules[candidate_rules['rule'].isin(applicable_rules)]
 
@@ -215,23 +216,21 @@ class Model:
 
                 # update state based on match & replace operation
                 match = rule.reconstruct_complexes_from_match(match)
-                state = FullMemoryMultisetState(update_state(state.multiset, match, produced_agents))
-                if self.regulation:
-                    used_rules.append(rule.label)
+                state = state.update_state(match, produced_agents, rule.label, bound)
             else:
                 rates_sum = random.uniform(0.5, 0.9)
 
             # update time
             time += random.expovariate(rates_sum)
-            collected_agents = collected_agents.union(set(state.multiset))
-            history[time] = state.multiset
+            collected_agents = collected_agents.union(set(state.content.value))
+            time_series[time] = state
 
         # create pandas DataFrame
         ordered_agents = list(collected_agents)
         header = list(map(str, ordered_agents))
         df = pd.DataFrame(columns=header)
-        for time in history:
-            vector = [history[time][agent] for agent in ordered_agents]
+        for time in time_series:
+            vector = [time_series[time].content.value[agent] for agent in ordered_agents]
             df.loc[time] = vector
 
         df.index.name = 'times'
@@ -258,18 +257,6 @@ class Model:
         :param bound: bound for individual elements
         :return: generated transitions system
         """
-        ts = DirectTS()
-        if self.regulation:
-            if self.regulation.memory == 0:
-                ts.init = MultisetState(self.init)
-            elif self.regulation.memory == 1:
-                ts.init = OneStepMemoryMultisetState(self.init)
-            else:
-                ts.init = FullMemoryMultisetState(self.init)
-        else:
-            ts.init = MultisetState(self.init)
-        ts.unprocessed = {ts.init}
-        ts.unique_complexes.update(set(ts.init.multiset))
 
         for rule in self.rules:
             # precompute complexes for each rule
@@ -278,9 +265,15 @@ class Model:
 
         if bound is None:
             bound = self.compute_bound()
-        ts.bound = bound
 
-        workers = [DirectTSworker(ts, self) for _ in range(multiprocessing.cpu_count())]
+        ts = TransitionSystem(bound=bound)
+        memory = 0 if not self.regulation else self.regulation.memory
+        ts.init = State(Multiset(self.init), Memory(memory))
+        ts.unprocessed = {ts.init}
+        ts.unique_complexes.update(set(ts.init.content.value))
+
+        workers = [TSworker(ts, self.rules, self.definitions, self.regulation)
+                   for _ in range(multiprocessing.cpu_count())]
         for worker in workers:
             worker.start()
 
@@ -290,7 +283,7 @@ class Model:
         try:
             while any([worker.work.is_set() for worker in workers]) \
                     and time.time() - start_time < max_time \
-                    and len(ts.processed) < max_size:
+                    and len(ts.states) < max_size:
                 handle_number_of_threads(len(ts.unprocessed), workers)
                 time.sleep(1)
         except (KeyboardInterrupt, EOFError) as e:
@@ -303,9 +296,3 @@ class Model:
             time.sleep(1)
 
         return ts
-
-
-def update_state(state, consumed, produced):
-    consumed = collections.Counter(consumed)
-    produced = collections.Counter(produced)
-    return state - consumed + produced

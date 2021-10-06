@@ -34,7 +34,7 @@ class Ordered(BaseRegulation):
             closure = closure_until_now
 
     def filter(self, current_state, candidates):
-        if len(current_state.used_rules) == 0:
+        if len(current_state.memory.history) == 0:
             return candidates
-        last_rule = current_state.used_rules[-1]
+        last_rule = current_state.memory.history[-1]
         return {rule: values for rule, values in candidates.items() if not (last_rule, rule.label) in self.regulation}

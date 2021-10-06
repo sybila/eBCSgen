@@ -1,9 +1,9 @@
 from Core.Rate import Rate
-from TS.State import VectorState
+from TS.State import State
 
 
 class VectorReaction:
-    def __init__(self, source: VectorState, target: VectorState, rate: Rate, label=None):
+    def __init__(self, source: State, target: State, rate: Rate, label=None):
         self.source = source
         self.target = target
         self.rate = rate
@@ -25,21 +25,23 @@ class VectorReaction:
     def __hash__(self):
         return hash(str(self))
 
-    def apply(self, state: VectorState, bound: float):
-        """
-        Applies the reaction on a given VectorState.
-        First, source is subtracted from the given VectorState, then it is checked if all
-        values are greater then 0. If so, new VectorState is create as sum with target
-        and rate is evaluated. Moreover, it is possible that the resulting state is greater
-        than allowed bound, then infinite VectorState is returned instead.
-        :param state: given VectorState
-        :param bound: allow bound on particular values
-        :return: new VectorState and evaluated rate
-        """
+    def evaluate_rate(self, state, definitions):
+        _ = definitions  # unused argument
+        return self.rate.evaluate(state)
+
+    def match(self, state, all=False):
+        _ = all  # unused argument
         if state >= self.source:
-            new_state = state - self.source
-            return new_state.add_with_bound(self.target, bound), self.rate.evaluate(state)
-        return None, None
+            return [self.source.content]
+        return None
+
+    def replace(self, aligned_match):
+        _ = aligned_match  # unused argument
+        return self.target.content
+
+    def reconstruct_complexes_from_match(self, match):
+        # to ensure compatibility with Rule
+        return match
 
     def to_symbolic(self):
         """

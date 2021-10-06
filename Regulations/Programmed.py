@@ -18,9 +18,9 @@ class Programmed(BaseRegulation):
         return "type programmed\n" + str(self.regulation)
 
     def filter(self, current_state, candidates):
-        if len(current_state.used_rules) == 0:
+        if len(current_state.memory.history) == 0:
             return candidates
-        last_rule = current_state.used_rules[-1]
+        last_rule = current_state.memory.history[-1]
         if last_rule in self.regulation:
             return {rule: values for rule, values in candidates.items() if rule.label in self.regulation[last_rule]}
         return candidates

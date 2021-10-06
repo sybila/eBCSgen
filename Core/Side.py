@@ -3,7 +3,7 @@ import numpy as np
 from sortedcontainers import SortedList
 
 from Core.Complex import Complex
-from TS.State import VectorState
+from TS.State import State, Memory, Vector
 
 
 class Side:
@@ -44,18 +44,18 @@ class Side:
             return self.to_counter().most_common(1)[0][1]
         return 0
 
-    def to_vector(self, ordering: SortedList) -> VectorState:
+    def to_vector(self, ordering: SortedList) -> State:
         """
         Convert the Side to a VectorState according to given ordering.
 
-        :param ordering: sequence of complex agents
+        :param ordering: value of complex agents
         :return: VectorState representing vector
         """
         vector = np.zeros(len(ordering), dtype=int)
         multiset = self.to_counter()
         for agent in list(multiset):
             vector[ordering.index(agent)] = multiset[agent]
-        return VectorState(vector)
+        return State(Vector(vector), Memory(0))
 
     def compatible(self, other: 'Side') -> bool:
         """

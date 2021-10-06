@@ -20,6 +20,6 @@ class Regular(BaseRegulation):
         return "type regular\n" + "\n".join(self.regulation)
 
     def filter(self, current_state, candidates):
-        path = "".join(current_state.used_rules)
+        path = "".join(current_state.memory.history)
         return {rule: values for rule, values in candidates.items()
                 if self.regulation.fullmatch(path + rule.label, partial=True) is not None}
