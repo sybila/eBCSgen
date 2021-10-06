@@ -59,7 +59,8 @@ class TransitionSystem:
         except KeyError:
             return False
 
-        return set(map(hash, ts.edges)) == set(map(hash, other.edges))
+        return sorted(ts.edges) == sorted(other.edges)
+        # return set(map(hash, ts.edges)) == set(map(hash, other.edges))
 
     def encode(self):
         """

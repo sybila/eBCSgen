@@ -11,7 +11,10 @@ class Edge:
         return hash((self.source, self.target, prob))
 
     def __eq__(self, other: 'Edge'):
-        return self.source == other.source and self.target == other.target and self.probability == other.probability
+        self_prob = truncate(self.probability, 5) if type(self.probability) == float else self.probability
+        other_prob = truncate(other.probability, 5) if type(other.probability) == float else other.probability
+        return self.source == other.source and self.target == other.target \
+               and self_prob == other_prob
 
     def __lt__(self, other: 'Edge'):
         if self.source != other.source:
