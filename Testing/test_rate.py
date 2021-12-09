@@ -106,7 +106,7 @@ class TestRate(unittest.TestCase):
         params = {"v_1": 5}
         self.assertEqual(self.rate_3.evaluate_direct(values, params), 9/10)
 
-            def test_mathML(self):
+    def test_mathML(self):
         rate_expr = "(3.0*[K(T{i}).X()::cyt])/([K()::cyt]**2.0+4.0*p)"
         rate = Core.Rate.Rate(self.parser.parse(rate_expr).data)
         expression = rate.to_mathML()
