@@ -1,9 +1,10 @@
+import collections
 import unittest
 
 import Parsing.ParseBCSL
 from Core.Structure import StructureAgent
 from Core.Atomic import AtomicAgent
-from Core.Complex import Complex
+from Core.Complex import Complex, align_agents
 
 
 class TestComplex(unittest.TestCase):
@@ -14,6 +15,7 @@ class TestComplex(unittest.TestCase):
         self.a4 = AtomicAgent("T", "_")
         self.a5 = AtomicAgent("U", "_")
         self.a6 = AtomicAgent("S", "_")
+        self.a7 = AtomicAgent("U", "b")
 
         self.s1 = StructureAgent("X", {self.a1})
         self.s2 = StructureAgent("A", {self.a2, self.a3})
@@ -21,6 +23,7 @@ class TestComplex(unittest.TestCase):
         self.s4 = StructureAgent("A", {self.a2, self.a5})
         self.s5 = StructureAgent("A", {self.a6, self.a3})
         self.s6 = StructureAgent("A", set())
+        self.s7 = StructureAgent("A", {self.a2, self.a7})
 
         self.c1 = Complex([self.s1, self.s2, self.s2], "cyt")
         self.c2 = Complex([self.s3, self.s4, self.s5], "cyt")
@@ -97,3 +100,17 @@ class TestComplex(unittest.TestCase):
         complex = complex_parser.parse("KaiB().KaiB().KaiB()::cyt").data.children[0]
         output_comples = complex.create_all_compatible(atomic_signature, structure_signature)
         self.assertEqual(output_comples, results)
+
+    def test_align_agents(self):
+        agent = "X(T{s}).A(S{i},U{a}).A(S{i},U{b})::cyt"
+        pattern = "A().A(S{i}).X()::cyt"
+
+        complex_parser = Parsing.ParseBCSL.Parser("rate_complex")
+
+        complex = complex_parser.parse(agent).data.children[0]
+        pattern = complex_parser.parse(pattern).data.children[0]
+
+        expected_result = {(self.s2, self.s7, self.s1), (self.s7, self.s2, self.s1)}
+        result = align_agents(pattern.agents, collections.Counter(complex.agents))
+        result = {tuple(item) for item in result}
+        self.assertEqual(expected_result, result)

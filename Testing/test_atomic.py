@@ -38,3 +38,7 @@ class TestAtomic(unittest.TestCase):
 
     def test_reduce_context(self):
         self.assertEqual(self.a3.reduce_context(), self.a4)
+
+    def test_replace(self):
+        self.assertEqual(self.a4.replace(self.a6), self.a6)
+        self.assertEqual(self.a6.replace(self.a7), self.a6)

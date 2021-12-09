@@ -3,7 +3,7 @@ import sympy
 from lark import Transformer, Tree, Token
 from sortedcontainers import SortedList
 
-import TS.State
+from TS.State import Vector
 
 STATIC_MATH = """<kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply>{}</apply></math></kineticLaw>"""
 
@@ -91,7 +91,27 @@ class Rate:
         transformer = Extractor()
         transformer.transform(self.expression)
         return transformer.agents, transformer.params
+    
+    def evaluate_direct(self, values, params) -> float:
+        """
+        Evaluates
 
+        If the result is nan, None is returned instead.
+
+        :param values: given mapping complex -> count
+        :return: Sympy object for expression representation
+        """
+        evaluater = DirectEvaluater(values, params)
+        result = evaluater.transform(self.expression)
+
+        try:
+            value = sympy.sympify("".join(tree_to_string(result)))
+            if value == sympy.nan:
+                return None
+            return value
+        except TypeError:
+            return None
+          
     def to_mathML(self):
         transformer = MathMLtransformer()
         expression = transformer.transform(self.expression)
@@ -128,7 +148,7 @@ class Vectorizer(Transformer):
             if complex.compatible(self.ordering[i]):
                 result[i] = 1
 
-        result = TS.State.State(result)
+        result = Vector(result)
         self.visited.append(result)
         return Tree("agent", [result])
 
@@ -146,12 +166,29 @@ class Evaluater(Transformer):
         self.locals = dict()
 
     def agent(self, state):
-        return sum(self.state * state[0])
+        return sum(self.state.content * state[0])
 
     def param(self, matches):
         name = matches[0]
         self.locals[name] = sympy.Symbol(name)
         return name
+
+
+class DirectEvaluater(Transformer):
+    def __init__(self, values, params):
+        super(Transformer, self).__init__()
+        self.values = values
+        self.params = params
+
+    def rate_agent(self, matches):
+        return Tree('fun', [matches[1]])
+
+    def agent(self, matches):
+        return self.values.get(matches[0], 0)
+
+    def param(self, matches):
+        par = self.params.get(str(matches[0]), str(matches[0]))
+        return Tree('fun', [par])
 
 
 class Extractor(Transformer):

@@ -5,7 +5,6 @@ from lark.load_grammar import _TERMINAL_NAMES
 from Core.Formula import Formula, AtomicProposition
 import Parsing.ParseBCSL
 
-
 GRAMMAR = """
     start: state_formula
     !state_formula: TRUE | ap | state_formula (AND|OR) state_formula | NOT state_formula | prob | brackets
@@ -46,6 +45,7 @@ GRAMMAR = """
     %import common.WS
     %ignore WS
 """
+
 
 class TreeToStrings(Transformer):
     def _extend_ws(self, matches):
@@ -115,9 +115,9 @@ class PCTLparser:
             return Formula(True, tree.children[0])
         except UnexpectedCharacters as u:
             return Formula(False, {"unexpected": expression[u.pos_in_stream],
-                                  "expected": self.replace(u.allowed),
-                                  "line": u.line, "column": u.column})
+                                   "expected": self.replace(u.allowed),
+                                   "line": u.line, "column": u.column})
         except UnexpectedToken as u:
             return Formula(False, {"unexpected": str(u.token),
-                                  "expected": self.replace(u.expected),
-                                  "line": u.line, "column": u.column})
+                                   "expected": self.replace(u.expected),
+                                   "line": u.line, "column": u.column})

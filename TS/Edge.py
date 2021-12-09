@@ -1,15 +1,20 @@
 class Edge:
-    def __init__(self, source, target, probability, encoded=False):
+    def __init__(self, source, target, probability, label=None, encoded=False):
         self.source = source
         self.target = target
         self.probability = probability
+        self.label = label
         self._is_encoded = encoded
 
     def __hash__(self):
-        return hash((self.source, self.target, self.probability))
+        prob = truncate(self.probability, 5) if type(self.probability) == float else self.probability
+        return hash((self.source, self.target, prob))
 
     def __eq__(self, other: 'Edge'):
-        return self.source == other.source and self.target == other.target and self.probability == other.probability
+        self_prob = truncate(self.probability, 5) if type(self.probability) == float else self.probability
+        other_prob = truncate(other.probability, 5) if type(other.probability) == float else other.probability
+        return self.source == other.source and self.target == other.target \
+               and self_prob == other_prob
 
     def __lt__(self, other: 'Edge'):
         if self.source != other.source:
@@ -70,7 +75,10 @@ class Edge:
 
         :return: dict representing the edge
         """
-        return {'s': self.source, 't': self.target, 'p': self.probability}
+        result = {'s': self.source, 't': self.target, 'p': self.probability}
+        if self.label:
+            result['label'] = self.label
+        return result
 
     def to_PRISM_string(self, decoding) -> str:
         """
@@ -80,6 +88,11 @@ class Edge:
         """
         return str(self.probability) + " : " + decoding[self.target].to_PRISM_string(True)
 
+    def to_vector(self, ordering):
+        source = self.source.to_vector(ordering)
+        target = self.target.to_vector(ordering)
+        return Edge(source, target, self.probability)
+
 
 def edge_from_dict(d: dict) -> Edge:
     """
@@ -88,4 +101,9 @@ def edge_from_dict(d: dict) -> Edge:
     :param d: dict representing the edge
     :return: Edge
     """
-    return Edge(d['s'], d['t'], d['p'], True)
+    label = d.get('label', None)
+    return Edge(d['s'], d['t'], d['p'], label, encoded=True)
+
+
+def truncate(f, n):
+    return float(int(f * 10 ** n)) / (10 ** n)

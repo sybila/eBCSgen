@@ -1,40 +1,61 @@
 import collections
-import subprocess
+import multiprocessing
+import random
+import time
+import numpy as np
+from lark import Tree
+import pandas as pd
 import copy
 from sortedcontainers import SortedList
 import libsbml
 
-from Core.Formula import Formula
+from Regulations.Conditional import Conditional, VectorConditional
 from Core.Atomic import AtomicAgent
 from Core.Complex import Complex
+from Core.Rate import Rate
 from Core.Side import Side
 from TS.TransitionSystem import TransitionSystem
-from TS.VectorModel import VectorModel
-from Errors.ComplexOutOfScope import ComplexOutOfScope
-from Errors.StormNotAvailable import StormNotAvailable
+from TS.State import State, Memory, Multiset
+from TS.TSworker import TSworker
+from TS.VectorModel import VectorModel, handle_number_of_threads
 from Translating.ModelSBML import ModelSBML
 
 class Model:
-    def __init__(self, rules: set, init: collections.Counter, definitions: dict, params: set):
-        self.rules = rules              # set of Rules
-        self.init = init                # Counter: Complex -> int
+    def __init__(self, rules: set, init: collections.Counter, definitions: dict, params: set, regulation=None):
+        self.rules = rules  # set of Rules
+        self.init = init  # Counter: Complex -> int
         self.definitions = definitions  # dict str -> float
-        self.params = params            # set of str
-        self.all_rates = True           # indicates whether model is quantitative
+        self.params = params  # set of str
+        self.all_rates = self.check_rates()  # indicates whether model is quantitative
+        self.regulation = regulation  # used to rules filtering, can be unspecified (None)
+        
         # autocomplete
         self.atomic_signature, self.structure_signature = self.extract_signatures()
 
     def __eq__(self, other: 'Model') -> bool:
-        return self.rules == other.rules and self.init == other.init and self.definitions == other.definitions
+        return set(map(hash, self.rules)) == set(map(hash, other.rules)) \
+               and self.init == other.init and self.definitions == other.definitions
 
     def __str__(self):
         return "Model:\n" + "\n".join(map(str, self.rules)) + "\n\n" + str(self.init) + "\n\n" + str(self.definitions) \
-               + "\n\n" + str(self.atomic_signature) + "\n" + str(self.structure_signature)
+               + "\n\n" + str(self.atomic_signature) + "\n" + str(self.structure_signature) + "\n" + str(self.regulation)
 
     def __repr__(self):
         return "#! rules\n" + "\n".join(map(str, self.rules)) + \
                "\n\n#! inits\n" + "\n".join([str(self.init[a]) + " " + str(a) for a in self.init]) + \
                "\n\n#! definitions\n" + "\n".join([str(p) + " = " + str(self.definitions[p]) for p in self.definitions])
+
+    def check_rates(self):
+        """
+        Checks if all rates are defined.
+        If not, attribute all_rates is set to False and default value is assigned to the rate
+        """
+        all_rates = True
+        for rule in self.rules:
+            if rule.rate is None:
+                all_rates = False
+                rule.rate = Rate(Tree('rate', [Tree('fun', [1.0])]))
+        return all_rates
 
     def extract_signatures(self):
         """
@@ -46,8 +67,6 @@ class Model:
         atomic_signature, structure_signature = dict(), dict()
         atomic_names = set()
         for rule in self.rules:
-            if rule.rate is None:
-                self.all_rates = False
             for agent in rule.agents:
                 atomic_signature, structure_signature = agent.extend_signature(atomic_signature, structure_signature)
                 if type(agent) == AtomicAgent:
@@ -97,7 +116,13 @@ class Model:
         for reaction in reactions:
             vector_reactions.add(reaction.to_vector(ordering, self.definitions))
 
-        return VectorModel(vector_reactions, init, ordering, bound)
+        if type(self.regulation) == Conditional:
+            regulation = {k: Side(v).to_vector(ordering) for k, v in self.regulation.regulation.items()}
+            regulation = VectorConditional(regulation)
+        else:
+            regulation = self.regulation
+
+        return VectorModel(vector_reactions, init, ordering, bound, regulation)
 
     def eliminate_redundant(self):
         """
@@ -141,128 +166,139 @@ class Model:
         """
         return any(list(map(lambda a: a.exists_compatible_agent(agent), self.rules)))
 
-    def PCTL_model_checking(self, PCTL_formula: Formula, bound: int = None, storm_local: bool = True):
+    def network_free_simulation(self, max_time: float):
         """
-        Model checking of given PCTL formula.
+        Direct simulation method using Network-free Gillespie method.
 
-        First transition system is generated, then Storm explicit file is generated and
-        appropriate PCTL formula issues resolved are (e.g. naming of agents). Finally,
-        Storm model checker is called and results are returned.
-
-        :param PCTL_formula: given PCTL formula
-        :param bound: given bound
-        :param storm_local: use local Storm installation
-        :return: output of Storm model checker
+        :param max_time: maximal simulation time
+        :return: generated dataframe containing simulated time series
         """
-        path = "/tmp/"
-        vm = self.to_vector_model(bound)
-        ts = vm.generate_transition_system()
+        memory = 0 if not self.regulation else self.regulation.memory
+        state = State(Multiset(self.init), Memory(memory))
+        
+        for rule in self.rules:
+            # precompute complexes for each rule
+            rule.lhs, rule.rhs = rule.create_complexes()
+            rule.rate_agents, _ = rule.rate.get_params_and_agents()
 
-        # generate labels and give them to save_storm
-        APs = PCTL_formula.get_APs()
-        state_labels, AP_labeles = self.create_AP_labels(APs, ts, vm.bound)
-        formula = PCTL_formula.replace_APs(AP_labeles)
-        transitions_file = path + "exp_transitions.tra"
-        labels_file = path + "exp_labels.lab"
-        ts.save_to_STORM_explicit(transitions_file, labels_file, state_labels, AP_labeles)
+        time_series = dict()
+        collected_agents = set(state.content.value)
+        time = 0.0
+        time_series[time] = state
+        bound = self.compute_bound()
+        while time < max_time:
+            candidate_rules = pd.DataFrame(data=[(rule,
+                                                  rule.evaluate_rate(state, self.definitions),
+                                                  rule.match(state)) for rule in self.rules],
+                                           columns=["rule", "rate", "match"])
 
-        command = "storm --explicit {0} {1} --prop '{2}'"
-        result = call_storm(command.format(transitions_file, labels_file, formula),
-                            [transitions_file, labels_file], storm_local)
-        return result
+            # drop rules which cannot be actually used (do not pass stoichiometry check)
+            candidate_rules = candidate_rules.dropna()
 
-    def PCTL_synthesis(self, PCTL_formula: Formula, region: str, bound: int = None, storm_local: bool = True):
-        """
-        Parameter synthesis of given PCTL formula in given region.
+            if self.regulation:
+                rules = {item: None for item in candidate_rules['rule']}
+                applicable_rules = self.regulation.filter(state, rules)
+                candidate_rules = candidate_rules[candidate_rules['rule'].isin(applicable_rules)]
 
-        First transition system is generated, PRISM file with encoded explicit TS is generated
-        and appropriate PCTL formula issues are resolved (e.g. naming of agents). Finally,
-        Storm model checker is called and results are returned.
+            if not candidate_rules.empty:
+                rates_sum = candidate_rules['rate'].sum()
+                sorted_candidates = candidate_rules.sort_values(by=["rate"])
+                sorted_candidates["cumsum"] = sorted_candidates["rate"].cumsum()
 
-        Note: rates of the model could be checked on "linearity", then PRISM file could be maybe computed
-            directly with no need of TS generating.
+                # pick random rule based on rates
+                rand_number = rates_sum * random.random()
+                sorted_candidates.drop(sorted_candidates[sorted_candidates["cumsum"] < rand_number].index, inplace=True)
 
-        :param PCTL_formula: given PCTL formula
-        :param region: string representation of region which will be checked by Storm
-        :param bound: given bound
-        :param storm_local: use local Storm installation
-        :return: output of Storm model checker
-        """
-        path = "/tmp/"
-        vm = self.to_vector_model(bound)
-        ts = vm.generate_transition_system()
+                # apply chosen rule to matched agents
+                match = sorted_candidates.iloc[0]["match"]
+                rule = sorted_candidates.iloc[0]["rule"]
+                produced_agents = rule.replace(match)
 
-        labels, prism_formulas = self.create_complex_labels(PCTL_formula.get_complexes(), ts.ordering)
-        formula = PCTL_formula.replace_complexes(labels)
-
-        prism_file = path + "prism-parametric.pm"
-
-        ts.save_to_prism(prism_file, vm.bound, self.params, prism_formulas)
-
-        command_region = "storm-pars --prism {0} --prop '{1}' --region '{2}' --refine 0.01 10 --printfullresult"
-        command_no_region = "storm-pars --prism {0} --prop '{1}'"
-
-        if region:
-            result = call_storm(command_region.format(prism_file, formula, region), [prism_file], storm_local)
-        else:
-            result = call_storm(command_no_region.format(prism_file, formula), [prism_file], storm_local)
-        return result
-
-    def create_complex_labels(self, complexes: list, ordering: tuple):
-        """
-        Creates label for each unique Complex from Formula.
-        This covers two cases - ground and abstract Complexes.
-        For the abstract ones, a PRISM formula needs to be constructed as a sum
-            of all compatible complexes.
-
-        :param complexes: list of extracted complexes from Formula
-        :param ordering: given complex ordering of TS
-        :return: unique label for each Complex and list of PRISM formulas for abstract Complexes
-        """
-        labels = dict()
-        prism_formulas = list()
-        for complex in complexes:
-            if complex in ordering:
-                labels[complex] = complex.to_PRISM_code(ordering.index(complex))
+                # update state based on match & replace operation
+                match = rule.reconstruct_complexes_from_match(match)
+                state = state.update_state(match, produced_agents, rule.label, bound)
             else:
-                indices = complex.identify_compatible(ordering)
-                if not indices:
-                    raise ComplexOutOfScope(complex)
-                id = "ABSTRACT_VAR_" + "".join(list(map(str, indices)))
-                labels[complex] = id
-                prism_formulas.append(id + " = " + "+".join(["VAR_{}".format(i) for i in indices]) +
-                                      "; // " + str(complex))
-        return labels, prism_formulas
+                rates_sum = random.uniform(0.5, 0.9)
 
-    def create_AP_labels(self, APs: list, ts: TransitionSystem, bound: int):
+            # update time
+            time += random.expovariate(rates_sum)
+            collected_agents = collected_agents.union(set(state.content.value))
+            time_series[time] = state
+
+        # create pandas DataFrame
+        ordered_agents = list(collected_agents)
+        header = list(map(str, ordered_agents))
+        df = pd.DataFrame(columns=header)
+        for time in time_series:
+            vector = [time_series[time].content.value[agent] for agent in ordered_agents]
+            df.loc[time] = vector
+
+        df.index.name = 'times'
+        df.reset_index(inplace=True)
+        return df
+
+    def compute_bound(self):
         """
-        Creates label for each AtomicProposition.
-        Moreover, goes through all states in ts.states_encoding and validates whether they satisfy give
-         APs - if so, the particular label is assigned to the state.
+        Estimates bound from the rules and initial state.
 
-        :param APs: give AtomicProposition extracted from Formula
-        :param ts: given TS
-        :param bound: given bound
-        :return: dictionary of State_code -> set of labels and AP -> label
+        :return: obtained bound
         """
-        AP_lables = dict()
-        for ap in APs:
-            AP_lables[ap] = "property_" + str(len(AP_lables))
+        bound = 0
+        for rule in self.rules:
+            bound = max(bound, max(rule.lhs.most_frequent(), rule.rhs.most_frequent()))
+        return max(bound, Side(self.init).most_frequent())
+    
+    def generate_direct_transition_system(self, max_time: float = np.inf, max_size: float = np.inf, bound=None):
+        """
+        Generates transition system using direct rule firing.
+        :param max_time: max time for TS generating before interrupting
+        :param max_size: max allowed size of TS before interrupting
+        :param bound: bound for individual elements
+        :return: generated transitions system
+        """
 
-        state_labels = dict()
-        ts.change_hell(bound)
-        for state in ts.states_encoding.keys():
-            for ap in APs:
-                if state.check_AP(ap, ts.ordering):
-                    state_labels[ts.states_encoding[state]] = \
-                        state_labels.get(ts.states_encoding[state], set()) | {AP_lables[ap]}
-        state_labels[ts.init] = state_labels.get(ts.init, set()) | {"init"}
-        return state_labels, AP_lables
+        for rule in self.rules:
+            # precompute complexes for each rule
+            rule.lhs, rule.rhs = rule.create_complexes()
+            rule.rate_agents, _ = rule.rate.get_params_and_agents()
 
+        if bound is None:
+            bound = self.compute_bound()
+
+        ts = TransitionSystem(bound=bound)
+        memory = 0 if not self.regulation else self.regulation.memory
+        ts.init = State(Multiset(self.init), Memory(memory))
+        ts.unprocessed = {ts.init}
+        ts.unique_complexes.update(set(ts.init.content.value))
+
+        workers = [TSworker(ts, self.rules, self.definitions, self.regulation)
+                   for _ in range(multiprocessing.cpu_count())]
+        for worker in workers:
+            worker.start()
+
+        workers[0].work.set()
+        start_time = time.time()
+
+        try:
+            while any([worker.work.is_set() for worker in workers]) \
+                    and time.time() - start_time < max_time \
+                    and len(ts.states) < max_size:
+                handle_number_of_threads(len(ts.unprocessed), workers)
+                time.sleep(1)
+        except (KeyboardInterrupt, EOFError) as e:
+            pass
+
+        for worker in workers:
+            worker.join()
+
+        while any([worker.is_alive() for worker in workers]):
+            time.sleep(1)
+
+        return ts
+    
     def export_sbml(self) -> libsbml.SBMLDocument:
         """
         Convert model to a SBML model using SBML-multi package.
-
         :return: SBML document
         """
         test_model = ModelSBML()
@@ -283,7 +319,6 @@ class Model:
         """
         Extracts unique complexes and compartments from rules
         splits complexes by its isomorphisms
-
         :return: set of unique complexes and set of unique params
         """
         #here all complexes will be
@@ -335,49 +370,3 @@ class Model:
         for comp in unique_complexes:
             unique_complexes[comp] = list(unique_complexes[comp])
         return unique_complexes, unique_params_from_rate
-
-def call_storm(command: str, files: list, storm_local: bool):
-    """
-    Calls Storm model checker either locally or on the remote server.
-
-    :param command: given command to be executed
-    :param files: files to be transferred to remote device
-    :param storm_local: use local Storm installation
-    :return: result of Storm execution
-    """
-    if storm_local:
-        return call_local_storm(command)
-    else:
-        import paramiko, scp
-        ssh = paramiko.SSHClient()
-        ssh.load_system_host_keys()
-        try:
-            ssh.connect("psyche07.fi.muni.cz", username="biodivine")
-        except Exception:
-            return call_local_storm(command)
-
-        with scp.SCPClient(ssh.get_transport()) as tunnel:
-            for file in files:
-                tunnel.put(file, file)
-
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
-        output = ssh_stdout.read()
-        ssh.close()
-        del ssh, ssh_stdin, ssh_stdout, ssh_stderr
-        return output
-
-
-def call_local_storm(command: str):
-    """
-    Calls Storm model checker locally.
-
-    :param command: given command to be executed
-    :return: result of Storm execution
-    """
-    status, result = subprocess.getstatusoutput('storm')
-    if status == 0:
-        command = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        stdout, stderr = command.communicate()
-        return stdout
-    else:
-        raise StormNotAvailable

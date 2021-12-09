@@ -10,7 +10,7 @@ from TS.TransitionSystem import TransitionSystem
 from Core.Structure import StructureAgent
 from Core.Complex import Complex
 from Parsing.ParseBCSL import Parser
-from TS.State import State
+from TS.State import Vector, State, Memory
 
 
 def get_storm_result(cmd: str):
@@ -41,36 +41,36 @@ class TestFormalMethods(unittest.TestCase):
 
         ordering = (self.c1, self.c2)
 
-        self.s1 = State(np.array((0, 0)))
-        self.s2 = State(np.array((1, 0)))
-        self.s3 = State(np.array((2, 0)))
-        self.s4 = State(np.array((3, 0)))
-        self.s5 = State(np.array((4, 0)))
-        self.s6 = State(np.array((5, 0)))
-        self.s7 = State(np.array((6, 0)))
-        self.s8 = State(np.array((7, 1)))
-        self.s9 = State(np.array((7, 2)))
-        self.s10 = State(np.array((7, 3)))
-        self.s11 = State(np.array((7, 4)))
-        self.s12 = State(np.array((7, 5)))
-        self.s13 = State(np.array((7, 6)))
+        self.s1 = State(Vector(np.array((0, 0))), Memory(0))
+        self.s2 = State(Vector(np.array((1, 0))), Memory(0))
+        self.s3 = State(Vector(np.array((2, 0))), Memory(0))
+        self.s4 = State(Vector(np.array((3, 0))), Memory(0))
+        self.s5 = State(Vector(np.array((4, 0))), Memory(0))
+        self.s6 = State(Vector(np.array((5, 0))), Memory(0))
+        self.s7 = State(Vector(np.array((6, 0))), Memory(0))
+        self.s8 = State(Vector(np.array((7, 1))), Memory(0))
+        self.s9 = State(Vector(np.array((7, 2))), Memory(0))
+        self.s10 = State(Vector(np.array((7, 3))), Memory(0))
+        self.s11 = State(Vector(np.array((7, 4))), Memory(0))
+        self.s12 = State(Vector(np.array((7, 5))), Memory(0))
+        self.s13 = State(Vector(np.array((7, 6))), Memory(0))
 
-        self.die_ts = TransitionSystem(ordering)
+        self.die_ts = TransitionSystem(ordering, 6)
         self.die_ts.init = 0
-        self.die_ts.states_encoding = {self.s1: 0, self.s2: 1, self.s3: 2, self.s4: 3, self.s5: 4,
-                                       self.s6: 5, self.s7: 6, self.s8: 7, self.s9: 8, self.s10: 9,
-                                       self.s11: 10, self.s12: 11, self.s13: 12}
+        self.die_ts.states_encoding = {0: self.s1, 1: self.s2, 2: self.s3, 3: self.s4, 4: self.s5,
+                                       5: self.s6, 6: self.s7, 7: self.s8, 8: self.s9, 9: self.s10,
+                                       10: self.s11, 11: self.s12, 12: self.s13}
         self.die_ts.edges = {Edge(0, 1, 0.5), Edge(0, 2, 0.5), Edge(1, 3, 0.5), Edge(1, 4, 0.5), Edge(2, 5, 0.5),
                              Edge(2, 6, 0.5), Edge(3, 1, 0.5), Edge(3, 7, 0.5), Edge(4, 8, 0.5), Edge(4, 9, 0.5),
                              Edge(5, 10, 0.5), Edge(5, 11, 0.5), Edge(6, 2, 0.5), Edge(6, 12, 0.5), Edge(7, 7, 1),
                              Edge(8, 8, 1), Edge(9, 9, 1), Edge(10, 10, 1), Edge(11, 11, 1), Edge(12, 12, 1)}
 
         # die parametric TS
-        self.die_ts_parametric = TransitionSystem(ordering)
+        self.die_ts_parametric = TransitionSystem(ordering, 6)
         self.die_ts_parametric.init = 0
-        self.die_ts_parametric.states_encoding = {self.s1: 0, self.s2: 1, self.s3: 2, self.s4: 3, self.s5: 4,
-                                                  self.s6: 5, self.s7: 6, self.s8: 7, self.s9: 8, self.s10: 9,
-                                                  self.s11: 10, self.s12: 11, self.s13: 12}
+        self.die_ts_parametric.states_encoding = {0: self.s1, 1: self.s2, 2: self.s3, 3: self.s4, 4: self.s5,
+                                                  5: self.s6, 6: self.s7, 7: self.s8, 8: self.s9, 9: self.s10,
+                                                  10: self.s11, 11: self.s12, 12: self.s13}
         self.die_ts_parametric.edges = {Edge(0, 1, "p"), Edge(0, 2, "(1-p)"), Edge(1, 3, "p"), Edge(1, 4, "(1-p)"),
                                         Edge(2, 5, "p"),
                                         Edge(2, 6, "(1-p)"), Edge(3, 1, "p"), Edge(3, 7, "(1-p)"), Edge(4, 8, "p"),
@@ -124,7 +124,7 @@ class TestFormalMethods(unittest.TestCase):
 
     # Test non-parametric prism file (die model). Checking equality with example file modified die.pm from storm web.
     def test_die_pm(self):
-        self.die_ts.save_to_prism(path + "die_prism.pm", 6, set(), [])
+        self.die_ts.save_to_prism(path + "die_prism.pm", set(), [])
         with open(path + "die.pm") as f:
             test_prism = re.sub(r"\s+", "", f.read(), flags=re.UNICODE)
         with open(path + "die_prism.pm") as f:
@@ -132,7 +132,7 @@ class TestFormalMethods(unittest.TestCase):
         self.assertEqual(test_prism, our_prism)
 
     def test_prism_parametric(self):
-        self.die_ts_parametric.save_to_prism(path + "die_prism_parametric.pm", 6, {"p"}, [])
+        self.die_ts_parametric.save_to_prism(path + "die_prism_parametric.pm", {"p"}, [])
         with open(path + "parametric_die.pm") as f:
             test_prism = re.sub(r"\s+", "", f.read(), flags=re.UNICODE)
         with open(path + "die_prism_parametric.pm") as f:

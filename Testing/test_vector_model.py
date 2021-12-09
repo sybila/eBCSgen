@@ -8,7 +8,7 @@ from Core.Structure import StructureAgent
 from Core.Complex import Complex
 from Parsing.ParseBCSL import Parser, load_TS_from_json
 from TS.Edge import Edge
-from TS.State import State
+from TS.State import State, Vector, Memory
 from TS.TransitionSystem import TransitionSystem
 from TS.VectorModel import VectorModel
 from TS.VectorReaction import VectorReaction
@@ -40,17 +40,29 @@ class TestVectorModel(unittest.TestCase):
         rate_3 = Rate(self.rate_parser.parse(rate_expr).data)
         rate_3.vectorize(ordering, params)
 
-        init = State(np.array([2.0, 1.0, 1.0]))
+        init = State(Vector(np.array([2.0, 1.0, 1.0])), Memory(0))
 
-        vector_reactions = {VectorReaction(State(np.array([0.0, 0.0, 0.0])), State(np.array([0.0, 1.0, 0.0])), rate_1),
-                            VectorReaction(State(np.array([1.0, 0.0, 0.0])), State(np.array([0.0, 0.0, 0.0])), rate_2),
-                            VectorReaction(State(np.array([0.0, 0.0, 1.0])), State(np.array([1.0, 0.0, 0.0])), None)}
+        vector_reactions = {VectorReaction(State(Vector(np.array([0.0, 0.0, 0.0])), Memory(0)),
+                                           State(Vector(np.array([0.0, 1.0, 0.0])), Memory(0)),
+                                           rate_1),
+                            VectorReaction(State(Vector(np.array([1.0, 0.0, 0.0])), Memory(0)),
+                                           State(Vector(np.array([0.0, 0.0, 0.0])), Memory(0)),
+                                           rate_2),
+                            VectorReaction(State(Vector(np.array([0.0, 0.0, 1.0])), Memory(0)),
+                                           State(Vector(np.array([1.0, 0.0, 0.0])), Memory(0)),
+                                           None)}
 
         self.vm_1 = VectorModel(vector_reactions, init, ordering, None)
 
-        vector_reactions = {VectorReaction(State(np.array([0.0, 0.0, 0.0])), State(np.array([0.0, 1.0, 0.0])), rate_1),
-                            VectorReaction(State(np.array([1.0, 0.0, 0.0])), State(np.array([0.0, 0.0, 0.0])), rate_2),
-                            VectorReaction(State(np.array([0.0, 0.0, 1.0])), State(np.array([1.0, 0.0, 0.0])), rate_3)}
+        vector_reactions = {VectorReaction(State(Vector(np.array([0.0, 0.0, 0.0])), Memory(0)),
+                                           State(Vector(np.array([0.0, 1.0, 0.0])), Memory(0)),
+                                           rate_1),
+                            VectorReaction(State(Vector(np.array([1.0, 0.0, 0.0])), Memory(0)),
+                                           State(Vector(np.array([0.0, 0.0, 0.0])), Memory(0)),
+                                           rate_2),
+                            VectorReaction(State(Vector(np.array([0.0, 0.0, 1.0])), Memory(0)),
+                                           State(Vector(np.array([1.0, 0.0, 0.0])), Memory(0)),
+                                           rate_3)}
 
         self.vm_2 = VectorModel(vector_reactions, init, ordering, None)
 
@@ -113,21 +125,21 @@ class TestVectorModel(unittest.TestCase):
         gamma = 2
         omega = 3
 
-        self.test_ts = TransitionSystem(ordering)
+        self.test_ts = TransitionSystem(ordering, 2)
 
-        states = [State(np.array((0.0, 0.0, 0.0, 0.0, 1.0))),
-                                  State(np.array((0.0, 0.0, 0.0, 0.0, 0.0))),
-                                  State(np.array((0.0, 0.0, 1.0, 0.0, 0.0))),
-                                  State(np.array((0.0, 0.0, 1.0, 0.0, 1.0))),
-                                  State(np.array((np.inf, np.inf, np.inf, np.inf, np.inf))),
-                                  State(np.array((0.0, 0.0, 0.0, 1.0, 1.0))),
-                                  State(np.array((0.0, 0.0, 1.0, 1.0, 1.0))),
-                                  State(np.array((0.0, 1.0, 0.0, 0.0, 0.0))),
-                                  State(np.array((0.0, 0.0, 0.0, 1.0, 0.0))),
-                                  State(np.array((0.0, 0.0, 1.0, 1.0, 0.0))),
-                                  State(np.array((0.0, 1.0, 1.0, 0.0, 0.0))),
-                                  State(np.array((0.0, 1.0, 0.0, 1.0, 0.0))),
-                                  State(np.array((0.0, 1.0, 1.0, 1.0, 0.0)))]
+        states = [State(Vector(np.array((0.0, 0.0, 0.0, 0.0, 1.0))), Memory(0)),
+                  State(Vector(np.array((0.0, 0.0, 0.0, 0.0, 0.0))), Memory(0)),
+                  State(Vector(np.array((0.0, 0.0, 1.0, 0.0, 0.0))), Memory(0)),
+                  State(Vector(np.array((0.0, 0.0, 1.0, 0.0, 1.0))), Memory(0)),
+                  State(Vector(np.array((np.inf, np.inf, np.inf, np.inf, np.inf))), Memory(0), True),
+                  State(Vector(np.array((0.0, 0.0, 0.0, 1.0, 1.0))), Memory(0)),
+                  State(Vector(np.array((0.0, 0.0, 1.0, 1.0, 1.0))), Memory(0)),
+                  State(Vector(np.array((0.0, 1.0, 0.0, 0.0, 0.0))), Memory(0)),
+                  State(Vector(np.array((0.0, 0.0, 0.0, 1.0, 0.0))), Memory(0)),
+                  State(Vector(np.array((0.0, 0.0, 1.0, 1.0, 0.0))), Memory(0)),
+                  State(Vector(np.array((0.0, 1.0, 1.0, 0.0, 0.0))), Memory(0)),
+                  State(Vector(np.array((0.0, 1.0, 0.0, 1.0, 0.0))), Memory(0)),
+                  State(Vector(np.array((0.0, 1.0, 1.0, 1.0, 0.0))), Memory(0))]
 
         # in edges we have probabilities, not rates, so we must normalise
         go = gamma + omega  # 5
@@ -136,7 +148,7 @@ class TestVectorModel(unittest.TestCase):
         gob = gamma + omega + beta  # 10
         oa = omega + alpha  # 13
 
-        self.test_ts.processed = set(states)
+        self.test_ts.states = set(states)
 
         self.test_ts.edges = {Edge(states[0], states[1], gamma / go), Edge(states[0], states[3], omega / go),
                               Edge(states[1], states[2], omega / omega),
@@ -156,7 +168,8 @@ class TestVectorModel(unittest.TestCase):
                               Edge(states[12], states[4], 1)
                               }
 
-        self.test_ts.encode(states[0])
+        self.test_ts.init = states[0]
+        self.test_ts.encode()
 
         # bigger TS
 
@@ -255,10 +268,6 @@ class TestVectorModel(unittest.TestCase):
         vector_model = model.to_vector_model()
 
         data_simulated = vector_model.stochastic_simulation(5, 4, testing=True)
-
-        # to save dataframe to csv file
-        # data_simulated.to_csv("Testing/stochastic_out.csv", index=None, header=True)
-
         data_loaded = pd.read_csv("Testing/stochastic_out.csv")
         pd.testing.assert_frame_equal(data_simulated, data_loaded)
 

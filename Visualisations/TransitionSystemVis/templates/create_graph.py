@@ -72,7 +72,7 @@ def write_node(ID, label, node_class):
         ID, label, node_class)
 
 
-def write_reaction(edge_id, left_index, right_index, substrates, products, rate):
+def write_reaction(edge_id, left_index, right_index, substrates, products, rate, label):
     """
     Creates string representation of a reaction
 
@@ -82,11 +82,13 @@ def write_reaction(edge_id, left_index, right_index, substrates, products, rate)
     :param substrates: enumeration of substrates
     :param products: enumeration of products
     :param rate: rate of the reaction (if any)
+    :param label: used rule label
     :return: string representation
     """
     rate = " @ " + str(rate) if rate else ""
-    return "\t\t{{id: {}, from: {}, to: {}, arrows: 'to', text: '{} => {}{}'}},\n".format(
-        edge_id, left_index, right_index, side_to_string(substrates), side_to_string(products), rate)
+    label = label + " ~ " if label else ""
+    return "\t\t{{id: {}, from: {}, to: {}, arrows: 'to', text: '{}{} => {}{}'}},\n".format(
+        edge_id, left_index, right_index, label, side_to_string(substrates), side_to_string(products), rate)
 
 
 def create_HTML_graph(data):
@@ -104,8 +106,10 @@ def create_HTML_graph(data):
     for edge_id, edge in enumerate(data['edges'], 1):
         substrates, products = create_sides(nodes[edge['s']], nodes[edge['t']])
         if edge['s'] == edge['t']:
-            self_loops.append((edge_id, edge['s'], edge['t'], substrates, products, edge.get('p', None)))
-        edges.append((edge_id, edge['s'], edge['t'], substrates, products, edge.get('p', None)))
+            self_loops.append((edge_id, edge['s'], edge['t'], substrates,
+                               products, edge.get('p', None), edge.get('label', None)))
+        edges.append((edge_id, edge['s'], edge['t'], substrates, products,
+                      edge.get('p', None), edge.get('label', None)))
         if products == inf and substrates != inf:
             border_nodes.add(edge['s'])
 

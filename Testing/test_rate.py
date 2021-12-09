@@ -8,7 +8,7 @@ from Core.Complex import Complex
 import Core.Rate
 from Core.Structure import StructureAgent
 from Parsing.ParseBCSL import Parser
-from TS.State import State
+from TS.State import Vector, State, Memory
 
 
 CORRECT_MATHML = """
@@ -52,10 +52,14 @@ class TestRate(unittest.TestCase):
 
         self.rate_2 = Core.Rate.Rate(self.parser.parse(rate_expr).data)
 
+        rate_expr = "(3.0*[K()::cyt])/(2.0*v_1)"
+
+        self.rate_3 = Core.Rate.Rate(self.parser.parse(rate_expr).data)
+
         # states
 
-        self.state_1 = State(np.array([2, 3]))
-        self.state_2 = State(np.array([2, 0, 3, 1, 6, 2]))
+        self.state_1 = State(Vector(np.array([2, 3])), Memory(0))
+        self.state_2 = State(Vector(np.array([2, 0, 3, 1, 6, 2])), Memory(0))
 
     def test_to_str(self):
         self.assertEqual(str(self.rate_1), "3.0*[K()::cyt]/2.0*v_1")
@@ -66,10 +70,10 @@ class TestRate(unittest.TestCase):
 
     def test_vectorize(self):
         ordering = (self.c2, self.c3)
-        self.assertEqual(self.rate_1.vectorize(ordering, dict()), [State(np.array([1, 1]))])
+        self.assertEqual(self.rate_1.vectorize(ordering, dict()), [Vector(np.array([1, 1]))])
         ordering = (self.c2, self.c3, self.c4, self.c5, self.c6, self.c7)
-        self.assertEqual(self.rate_2.vectorize(ordering, dict()), [State(np.array([0, 0, 1, 1, 0, 0])),
-                                                                   State(np.array([1, 1, 0, 0, 0, 0]))])
+        self.assertEqual(self.rate_2.vectorize(ordering, dict()),
+                         [Vector(np.array([0, 0, 1, 1, 0, 0])), Vector(np.array([1, 1, 0, 0, 0, 0]))])
 
     def test_evaluate(self):
         ordering = (self.c2, self.c3)
@@ -97,7 +101,12 @@ class TestRate(unittest.TestCase):
 
         self.assertEqual(rate.reduce_context(), self.rate_1)
 
-    def test_mathML(self):
+    def test_evaluate_direct(self):
+        values = {self.c1: 3}
+        params = {"v_1": 5}
+        self.assertEqual(self.rate_3.evaluate_direct(values, params), 9/10)
+
+            def test_mathML(self):
         rate_expr = "(3.0*[K(T{i}).X()::cyt])/([K()::cyt]**2.0+4.0*p)"
         rate = Core.Rate.Rate(self.parser.parse(rate_expr).data)
         expression = rate.to_mathML()
@@ -111,15 +120,4 @@ class TestRate(unittest.TestCase):
             rate_expr = rate_expr.replace(op, operators[op])
 
         self.assertEqual(expression, rate_expr)
-
-    def test_get_params_and_agents(self):
-        rate_expr = "k1*[K(T{i}).X(S{a})::cyt] + [K()::cyt] + (4*p)"
-        rate = Core.Rate.Rate(self.parser.parse(rate_expr).data)
-        original_rate = copy.deepcopy(rate)
-        correct_agents = {self.c1, self.c4}
-        correct_params = {'k1', 'p'}
-
-        result_agents, result_params = rate.get_params_and_agents()
-        self.assertEqual(rate, original_rate)
-        self.assertEqual(correct_agents, result_agents)
-        self.assertEqual(correct_params, result_params)
+ 

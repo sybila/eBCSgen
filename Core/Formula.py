@@ -1,5 +1,7 @@
-import Core.Rate
 from lark import Transformer, Tree
+
+from Errors.ComplexOutOfScope import ComplexOutOfScope
+import Core.Rate
 
 
 class Formula:
@@ -41,17 +43,43 @@ class Formula:
         extractor.transform(self.data)
         return extractor.APs
 
-    def replace_APs(self, replacements: dict) -> 'Formula':
+    def replace_APs(self, replacements: dict, extra_quotes=True) -> 'Formula':
         """
         Replaces APs according to given dictionary.
         This is used for explicit file format for PRISM.
 
         :param replacements: dictionary of type AtomicProposition -> str
+        :param extra_quotes: wrap AP labels in quotes
         :return: new Formula with replaced APS
         """
-        replacetor = APreplacetor(replacements)
+        replacetor = APreplacetor(replacements, extra_quotes)
         data = replacetor.transform(self.data)
         return Formula(True, data)
+
+    def create_complex_labels(self, ordering: tuple):
+        """
+        Creates label for each unique Complex from Formula.
+        This covers two cases - ground and abstract Complexes.
+        For the abstract ones, a PRISM formula needs to be constructed as a sum
+            of all compatible complexes.
+
+        :param ordering: given complex ordering of TS
+        :return: unique label for each Complex and list of PRISM formulas for abstract Complexes
+        """
+        labels = dict()
+        prism_formulas = list()
+        for complex in self.get_complexes():
+            if complex in ordering:
+                labels[complex] = complex.to_PRISM_code(ordering.index(complex))
+            else:
+                indices = complex.identify_compatible(ordering)
+                if not indices:
+                    raise ComplexOutOfScope(complex)
+                id = "ABSTRACT_VAR_" + "".join(list(map(str, indices)))
+                labels[complex] = id
+                prism_formulas.append(id + " = " + "+".join(["VAR_{}".format(i) for i in indices]) +
+                                      "; // " + str(complex))
+        return labels, prism_formulas
 
 
 class AtomicProposition:
@@ -83,12 +111,14 @@ class APextractor(Transformer):
 
 
 class APreplacetor(Transformer):
-    def __init__(self, replacements):
+    def __init__(self, replacements, extra_quotes):
         super(Transformer, self).__init__()
         self.replacements = replacements
+        self.extra_quotes = extra_quotes
 
     def ap(self, proposition):
-        return Tree("ap", ['"' + self.replacements[proposition[0]] + '"'])
+        quotes = '"' if self.extra_quotes else ''
+        return Tree("ap", [quotes + self.replacements[proposition[0]] + quotes])
 
 
 class ComplexReplacetor(Transformer):

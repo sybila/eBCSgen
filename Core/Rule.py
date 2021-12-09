@@ -1,10 +1,13 @@
+import collections
 import itertools
-from copy import copy
+import random
+from copy import copy, deepcopy
 
 from Core import Rate
 from Core.Complex import Complex
 from Core.Side import Side
 from Core.Reaction import Reaction
+from TS.State import Multiset
 
 
 def column(lst, index):
@@ -12,7 +15,7 @@ def column(lst, index):
 
 
 class Rule:
-    def __init__(self, agents: tuple, mid: int, compartments: list, complexes: list, pairs: list, rate: Rate):
+    def __init__(self, agents: tuple, mid: int, compartments: list, complexes: list, pairs: list, rate: Rate, label=None):
         """
         Class to represent BCSL rule
 
@@ -29,6 +32,7 @@ class Rule:
         self.complexes = complexes
         self.pairs = pairs
         self.rate = rate
+        self.label = label
         self.comment = (False, [])
 
     def __eq__(self, other: 'Rule'):
@@ -47,8 +51,10 @@ class Rule:
             pre_comment = comment + "// " if self.comment[0] else ""
             post_comment = " " + comment if not self.comment[0] else ""
 
-        return pre_comment + " + ".join(lhs.to_list_of_strings()) + " => " + " + ".join(rhs.to_list_of_strings()) \
-               + rate + post_comment
+        label = str(self.label) + " ~ " if self.label else ""
+
+        return label + pre_comment + " + ".join(lhs.to_list_of_strings()) + \
+               " => " + " + ".join(rhs.to_list_of_strings()) + rate + post_comment
 
     def __lt__(self, other):
         return str(self) < str(other)
@@ -100,7 +106,7 @@ class Rule:
         :return: created Reaction
         """
         lhs, rhs = self.create_complexes()
-        return Reaction(lhs, rhs, copy(self.rate))
+        return Reaction(lhs, rhs, copy(self.rate), self.label)
 
     def rate_to_vector(self, ordering, definitions: dict):
         """
@@ -136,7 +142,7 @@ class Rule:
         reactions = set()
         for result in itertools.product(*results):
             new_agents = tuple(filter(None, column(result, 0) + column(result, 1)))
-            new_rule = Rule(new_agents, self.mid, self.compartments, self.complexes, self.pairs, self.rate)
+            new_rule = Rule(new_agents, self.mid, self.compartments, self.complexes, self.pairs, self.rate, self.label)
             reactions.add(new_rule.to_reaction())
         return reactions
 
@@ -192,3 +198,92 @@ class Rule:
         :return: set of all created Complexes
         """
         return self.to_reaction().create_all_compatible(atomic_signature, structure_signature)
+
+    def evaluate_rate(self, state, params):
+        """
+        Evaluate rate based on current state and parameter values.
+
+        @param state: given state
+        @param params: mapping of params to its value
+        @return: a real number of the rate
+        """
+        values = dict()
+        for (state_complex, count) in state.content.value.items():
+            for agent in self.rate_agents:
+                if agent.compatible(state_complex):
+                    values[agent] = values.get(agent, 0) + count
+        return self.rate.evaluate_direct(values, params)
+
+    def match(self, state, all=False):
+        """
+        Find all possible matches of the rule to given state.
+
+        @param state: given state
+        @param all: bool to indicate if choose one matching randomly or return all of them
+        @return: random match/all matches
+        """
+        state = deepcopy(state.content.value)
+        matches = find_all_matches(self.lhs.agents, state)
+        matches = [sum(match, []) for match in matches]
+
+        if len(matches) == 0:
+            return None
+        if not all:
+            return random.choice(matches)
+        return matches
+
+    def replace(self, aligned_match):
+        """
+        Apply rule to chosen match.
+        Match contains agents which satisfy LHS of the rule an can be safely replaced based on RHS
+
+        @param aligned_match: complexes fitting LHS of the rule
+        """
+        # replace respective agents
+        resulting_rhs = []
+        for i, rhs_agent in enumerate(self.agents[self.mid:]):
+            if len(aligned_match) <= i:
+                resulting_rhs.append(rhs_agent)
+            else:
+                resulting_rhs.append(rhs_agent.replace(aligned_match[i]))
+
+        # construct resulting complexes
+        output_complexes = []
+        for (f, t) in list(filter(lambda item: item[0] >= self.mid, self.complexes)):
+            output_complexes.append(Complex(resulting_rhs[f - self.mid:t - self.mid + 1], self.compartments[f]))
+
+        return Multiset(collections.Counter(output_complexes))
+
+    def reconstruct_complexes_from_match(self, match):
+        """
+        Create complexes from agents matched to the LHS
+
+        @param match: value of
+        """
+        output_complexes = []
+        for (f, t) in list(filter(lambda item: item[1] < self.mid, self.complexes)):
+            output_complexes.append(Complex(match[f:t + 1], self.compartments[f]))
+        return Multiset(collections.Counter(output_complexes))
+
+
+def find_all_matches(lhs_agents, state):
+    """
+    Finds all possible matches which actually can be used for given state.
+
+    @param lhs_agents: given LHS of a rule
+    @param state: state to be applied to
+    @return: candidates for match
+    """
+    choices = []
+    if len(lhs_agents) == 0:
+        return [choices]
+
+    lhs_complex = lhs_agents[0]
+    for candidate in list(state):
+        if lhs_complex.compatible(candidate):
+            state[candidate] -= 1
+            aligns = candidate.align_match(lhs_complex)
+            for branch in find_all_matches(lhs_agents[1:], deepcopy(+state)):
+                for align in aligns:
+                    choices.append([align] + branch)
+    return choices
