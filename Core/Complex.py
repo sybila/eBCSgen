@@ -1,6 +1,5 @@
 import collections
 import itertools
-import random
 from copy import deepcopy
 
 import Core.Atomic
@@ -56,15 +55,7 @@ class Complex:
         :return: <str> id of SBML - speciesType of this complex agent
 
         """
-        #string has to be sorted that is why this line
-       # name = ".".join(list(map(str, sorted(self.agents)))) + "::" + self.compartment
-       # result = ''
-       # forbiden_symbols = ['.','(', ')', ':', '}', '{', ',']
-       # for letter in name:
-       #     if letter in forbiden_symbols:
-       #         result += '_'
-       #     else:
-       #         result += letter
+
         return "st_"+"_".join(sorted(self.get_agent_names())) +"_"+ str(self.compartment)
 
     def to_SBML_species_code(self):
@@ -84,9 +75,9 @@ class Complex:
     def is_composed(self):
 
         """
-            Determines if this complex agent is composed out of more
-            atomic/structure agents
-         :return: <bool>"""
+        Determines if this complex agent is composed out of more
+        atomic/structure agents or single agent.
+        :return: <bool>"""
         return len(self.agents) > 1
 
     def extend_signature(self, atomic_signature: dict, structure_signature: dict):

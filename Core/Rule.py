@@ -70,19 +70,20 @@ class Rule:
         unique_complexes_from_rule = dict()
         for (f, t) in self.complexes:
             c = Complex(self.agents[f:t + 1], self.compartments[f])
-            # if new complex is not among complexes names
-            #(can be different isomorphism, that counts)
+            # saving both complex and its unique name is useful so we can work with Complex agent
+            #that has different ordering of inner agents and not lose information about the differenc
+            #when comparing it with eq function -> SBML_species_code() distinguishes them
+            double =  (c, c.to_SBML_species_code())
+
+            #if new complex is not among complexes names
             #create new key with this complex name
             #and add its value as new set with SBML_code
             #that represents this given complex
-            double =  (c, c.to_SBML_species_code()) # saving both complex and its name
-            #to be able to use that complex and not confuse it with other
             if c not in unique_complexes_from_rule.keys():
                 unique_complexes_from_rule[c] = set()
                 unique_complexes_from_rule[c].add(double)
             else:
-                #just add its sbml code to set
-                #... eg different isomorphism
+                #just add its sbml code to set when the isomorphism is different
                 unique_complexes_from_rule[c].add(double)
         return unique_complexes_from_rule
 

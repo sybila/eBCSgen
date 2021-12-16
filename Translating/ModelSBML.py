@@ -16,13 +16,18 @@ class ModelSBML:
         self.model = self.document.createModel()
         self.modelPlug = self.model.getPlugin("multi")
 
-##THIS ARE SOME INNER DATA -COULD BE STORET BETTER
+        #CREATED SPECIES TYPES REPRESENTING COMPLEXES and COMPARTMENTS
         self.finishedCompartments = []
         self.finishedComplexTypes = []
 
 
     def create_species_feature_type(self, new_species_type, atomic: str, atomics: dict):
-        """Function creates species feature inside Atomic agent"""
+        """Function creates species feature inside Atomic agent
+
+        :param: new_species_type -> libsbml object of new speciesType
+        :param: atomic -> <string> name of given atomic agent
+        :param: atomics -> atomic signature of the model
+        """
         new_feature_type =new_species_type.createSpeciesFeatureType()
         new_feature_type.setId(atomic + "_feature_type")
         new_feature_type.setOccur(1)
@@ -31,7 +36,9 @@ class ModelSBML:
                 .setId(atomic+"_"+feature_value)
 
     def create_species_types_from_atomic(self, atomics: dict):
-        """Function creates speciesTypes from Atomic agents"""
+        """Function creates speciesTypes from Atomic agents
+        :param: atomics -> atomic signature of the model in <dict>
+        """
         for atomic in atomics:
             new_species_type = self.modelPlug.createMultiSpeciesType()
             new_species_type.setId("st_"+atomic)
@@ -40,7 +47,9 @@ class ModelSBML:
 
 
     def create_species_types_from_structure(self, structs: dict):
-        """Function creates speciesTypes from Structure agents"""
+        """Function creates speciesTypes from Structure agents
+        :param: structs -> structure signature of the model in <dict>
+        """
         for struct in structs:
             new_species_type = self.modelPlug.createMultiSpeciesType()
             new_species_type.setId("st_"+struct)
@@ -50,7 +59,9 @@ class ModelSBML:
                 new_instance.setSpeciesType("st_"+subcomponent)
 
     def create_species_type_from_complex(self, comp_agent : Core.Complex):
-        """All composed complex agents are translated to SpeciesTypes Here"""
+        """All complex agents are translated to SpeciesTypes Here
+        :param: comp_agent -> <Core.Complex> -> BCSL agent to be translated to SBML-multi species type
+        """
         new_species_type = self.modelPlug.createMultiSpeciesType()
         name = comp_agent.to_SBML_speciesTypes_code()
         new_species_type.setId(name)
@@ -70,14 +81,13 @@ class ModelSBML:
     def create_basic_species_types(self,atomics: dict, structs: dict):
         '''Function creates SBML speciesTypes from signatures. speciesTypes do not have compartments by default.
         compartment is added in specific species later and they are cereated using map compartments -> outside agents
+
+        :param: atomics -> signature of atomic agents
+        :param: struct -> signature of structure agents
         '''
 
         self.create_species_types_from_atomic(atomics)
         self.create_species_types_from_structure(structs)
-
-    ##############################################
-
-    #FUNCTION TO CREATE COMPARTMENT
 
     def create_compartment(self, compartment: str):
 
@@ -93,11 +103,15 @@ class ModelSBML:
         self.finishedCompartments.append(compartment)
 
 
-    #FUNCTIONS TO CREATE SPECIES
-
-
     def set_species_feature(self, agent, plugin, component_ref, is_component):
-        """Creates and sets up species feature"""
+        """Creates and sets up species feature
+        :param: agent -> agent of given feature
+        :param: plugin -> multi plugin to manipulate with species features
+        :param: component_ref -> reference to agent where this feature belongs.
+        If there are 2 or more agents in complex with the same name, reference can
+        distingush between them by mentioning their parent structure agent too
+        :param: is_component -> <bool> says about if setting the component atr. is necessary
+        """
         sf = libsbml.SpeciesFeature(3, 1, 1)
         sf.setSpeciesFeatureType(agent.name + "_feature_type")
         if is_component:
@@ -108,7 +122,10 @@ class ModelSBML:
         plugin.addSpeciesFeature(sf)
 
     def create_species_features(self, comp_agent: Core.Complex, new_species_multi_plugin):
-        """Creates all species features for given speces"""
+        """Creates all species features for given species
+        :param: comp_agent -> BCSL complex agent to create SBML species features for
+        :param: new_species_multi_plugin -> libsbml plugin for manipulating SBML-multi species
+        """
         for num, agent in enumerate(sorted(comp_agent.agents)):
             if isinstance(agent,Core.Atomic.AtomicAgent):
                 component_ref = ""
@@ -118,8 +135,10 @@ class ModelSBML:
                     component_ref = agent.name+"_"+str(num)+"_"+atomic_agent.name
                     self.set_species_feature(atomic_agent, new_species_multi_plugin, component_ref, is_component=True)
 
-    def create_species(self, comp_agent):
-        '''Creates all species in the model'''
+    def create_species(self, comp_agent : Core.Complex):
+        """Creates all species in the model
+        :param: comp_agent -> BCSL Complex agent to be translated to SBML Species
+        """
         new_species = self.model.createSpecies()
         new_species_multi_plugin = new_species.getPlugin("multi")
         new_species_multi_plugin.setSpeciesType(comp_agent.to_SBML_speciesTypes_code())  # uses speciesType template
@@ -135,27 +154,32 @@ class ModelSBML:
         new_species.setName(str(comp_agent))
 
     def create_all_species_compartments_and_complex_species_types(self, unique_complexes: dict):
-        '''Creates species for every unique Complex agent in keys, creates SpeciesType
-                 for composed Complex agent if there is new one
-            No isomorphisms possible here                 '''
+        """
+        Creates all compartments
+        Creates species for every unique Complex agent in values
+        Creates SpeciesType for Complex agent if there is new one - no isomorphisms here
+
+        :param: unique_complexes -> dict() of representative Complexes[Keys]
+                                    & tuple() of pairs (Core.Complex,str. SBML_species_code())
+                                    Encapsulates all used Complexes and theirs isomorphisms in the model
+        """
         for comp_agent in unique_complexes:
+            # Not composed agents are created 2 times
+            # firstly as structs from signature and secondly as complex here
+            # create species type from complex agent if it does not exist.
+            if comp_agent.to_SBML_speciesTypes_code() not in self.finishedComplexTypes:
+                self.create_species_type_from_complex(comp_agent)
+                self.finishedComplexTypes.append(comp_agent.to_SBML_speciesTypes_code())
+
             for agent in unique_complexes[comp_agent]:
                 if agent[0].compartment not in self.finishedCompartments:
                     self.create_compartment(agent[0].compartment)
-                #if agent is composed - control removed. not composed agents are therefore created 2 times
-                # firstly as structs and secondly as complex
-                #this can be good choice because it enables usages of those structs if there
-                #were far more richer rules. Complexes have their compartments in naming convention
-                # this distinguishes complex in different compartment for the reaction
-                # it has to be 2 different species because reaction for changing complexes is not possible here
-                if agent[0].to_SBML_speciesTypes_code() not in self.finishedComplexTypes:
-                    self.create_species_type_from_complex(agent[0])
-                    self.finishedComplexTypes.append(agent[0].to_SBML_speciesTypes_code())
-
                 self.create_species(agent[0])
 
     def create_reactants(self, items:list(), reaction):
-        """Creates all reactants from Complexes in list of tuples"""
+        """Creates all reactants from Complexes in list of tuples
+        :param: items -> list of LHS complexes in reaction
+        """
         for itm in items:
             reactant = reaction.createReactant()
             reactant.setSpecies(itm[0].to_SBML_species_code())
@@ -163,7 +187,8 @@ class ModelSBML:
             reactant.setStoichiometry(itm[1])
 
     def create_products(self, items:list(), reaction):
-        """Creates all products from Complexes in list of tuples"""
+        """Creates all products from Complexes in list of tuples
+        :param: items -> list of RHS complexes in reaction"""
         for itm in items:
             product = reaction.createProduct()
             product.setSpecies(itm[0].to_SBML_species_code())
@@ -171,12 +196,15 @@ class ModelSBML:
             product.setStoichiometry(itm[1])
 
     def create_kinetic_law_and_modifiers(self, rules, reaction_objects):
-        '''  creates kinetic law for all reactions
-             and at the same time it creates modifiers
-             for those Complexes that were not used either
-             as reactant or product.
+        """creates kinetic law for all reactions
+           and at the same time it creates modifiers
+           for those Complexes that were not used either
+           as reactant or product.
+          :param: rules -> BCSL rules
+          :param: reaction_objects -> list of all libsbml reaction objects inorder
+           to work with given reaction in this librialry
 
-         '''
+         """
         for i, r in enumerate(rules):
             reac = r.to_reaction()
             rate = reac.rate
@@ -203,13 +231,13 @@ class ModelSBML:
                 modifier.setSpecies(remaining_actor)
 
     def create_reaction_for_isomorphisms(self, unique_complexes):
-        '''Function creates all reactions between isomorphism
-        possible improvements:
-        use reversible(True) and do half of reactions
-        check if reaction was not already created as reglar reaction
-        so it is not duplicit'''
+        """Function creates all reactions between isomorphism in order to
+        ensure that given Complexes are interchangeable but specific rule
+        applyies only to that exact isomorphism
+
+        :param: unique_complexes
+        """
         for compl in unique_complexes:
-            #if there are any isomorphisms
             if len(unique_complexes[compl]) > 1:
                 for i in range(len(unique_complexes[compl])):
                     for j in range(len(unique_complexes[compl])):
@@ -217,6 +245,9 @@ class ModelSBML:
                             reaction = self.model.createReaction()
                             reaction.setId("rc_" + str(unique_complexes[compl][i][1]) + "_to_" + str(unique_complexes[compl][j][1]))
                             reaction.setName(str(unique_complexes[compl][i][0]) + "_to_" + str(unique_complexes[compl][j][0]))
+                            #reversible(True) so only half of reactions
+                            #is needed to be able to transfer
+                            #between all of them
                             reaction.setReversible(True) #reactions are reversible and only one half of them bcs of i>j
                             reaction.setFast(False)
 
@@ -239,6 +270,8 @@ class ModelSBML:
             for those Complexes that were not used either
             as reactant or product.
 
+            :param: rules -> set of BCSL rules used in a model
+
         '''
         reaction_objects = []
         for i, r in enumerate(rules):
@@ -255,7 +288,10 @@ class ModelSBML:
         self.create_kinetic_law_and_modifiers(rules, reaction_objects)
 
     def create_parameters(self, definitions: dict, unique_params: set):
-        """Sets up parameters from definitions"""
+        """Sets up parameters from definitions and parameters in rates
+        :param: definitions -> parameters in BCSL definition
+        :param: unique_params -> parameters in BCSL rates
+        """
         for definition in definitions:
             param = self.model.createParameter()
             param.setId(definition)
@@ -270,6 +306,7 @@ class ModelSBML:
 
     def set_initial_amounts(self, init):
         """Sets up initial Amount of Complex agents from inits
+        :param: init -> Complex agents at the beginning of the running of the model
         """
         for i in init.items():
             asignment = self.model.createInitialAssignment()

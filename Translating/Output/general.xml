@@ -5,7 +5,7 @@
       <compartment id="cyt" constant="true" multi:isType="true"/>
     </listOfCompartments>
     <listOfSpecies>
-      <species id="sp_3351996056668205026" name="KaiC(S{p},T{u}).KaiC(S{p},T{u})::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiC_KaiC_cyt">
+      <species id="sp_634590421596190776" name="KaiC(S{p},T{u}).KaiC(S{p},T{u})::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiC_KaiC_cyt">
         <multi:listOfSpeciesFeatures>
           <multi:speciesFeature multi:speciesFeatureType="S_feature_type" multi:occur="1" multi:component="KaiC_0_S">
             <multi:listOfSpeciesFeatureValues>
@@ -29,7 +29,7 @@
           </multi:speciesFeature>
         </multi:listOfSpeciesFeatures>
       </species>
-      <species id="sp_1823465593310543968" name="KaiC(S{p},T{p}).KaiC(S{p},T{p})::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiC_KaiC_cyt">
+      <species id="sp_6747440337412014771" name="KaiC(S{p},T{p}).KaiC(S{p},T{p})::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiC_KaiC_cyt">
         <multi:listOfSpeciesFeatures>
           <multi:speciesFeature multi:speciesFeatureType="S_feature_type" multi:occur="1" multi:component="KaiC_0_S">
             <multi:listOfSpeciesFeatureValues>
@@ -53,8 +53,8 @@
           </multi:speciesFeature>
         </multi:listOfSpeciesFeatures>
       </species>
-      <species id="sp_7721916696785521088" name="KaiA2()::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiA2_cyt"/>
-      <species id="sp_5635356545414991463" name="KaiC(S{u},T{u})::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiC_cyt">
+      <species id="sp_2136135156647576582" name="KaiA2()::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiA2_cyt"/>
+      <species id="sp_7818344031815731550" name="KaiC(S{u},T{u}).KaiC(S{u},T{u})::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiC_KaiC_cyt">
         <multi:listOfSpeciesFeatures>
           <multi:speciesFeature multi:speciesFeatureType="S_feature_type" multi:occur="1" multi:component="KaiC_0_S">
             <multi:listOfSpeciesFeatureValues>
@@ -66,9 +66,19 @@
               <multi:speciesFeatureValue multi:value="T_u"/>
             </multi:listOfSpeciesFeatureValues>
           </multi:speciesFeature>
+          <multi:speciesFeature multi:speciesFeatureType="S_feature_type" multi:occur="1" multi:component="KaiC_1_S">
+            <multi:listOfSpeciesFeatureValues>
+              <multi:speciesFeatureValue multi:value="S_u"/>
+            </multi:listOfSpeciesFeatureValues>
+          </multi:speciesFeature>
+          <multi:speciesFeature multi:speciesFeatureType="T_feature_type" multi:occur="1" multi:component="KaiC_1_T">
+            <multi:listOfSpeciesFeatureValues>
+              <multi:speciesFeatureValue multi:value="T_u"/>
+            </multi:listOfSpeciesFeatureValues>
+          </multi:speciesFeature>
         </multi:listOfSpeciesFeatures>
       </species>
-      <species id="sp_8664656374200377960" name="KaiB4{a}::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiB4_cyt">
+      <species id="sp_6748588642464437061" name="KaiB4{a}::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiB4_cyt">
         <multi:listOfSpeciesFeatures>
           <multi:speciesFeature multi:speciesFeatureType="KaiB4_feature_type" multi:occur="1">
             <multi:listOfSpeciesFeatureValues>
@@ -77,33 +87,18 @@
           </multi:speciesFeature>
         </multi:listOfSpeciesFeatures>
       </species>
-      <species id="sp_7472091680313064326" name="KaiC(S{u},T{u}).KaiC(S{u},T{u})::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiC_KaiC_cyt">
+      <species id="sp_5402253953277041498" name="KaiB4{a}.KaiA2()::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiA2_KaiB4_cyt">
         <multi:listOfSpeciesFeatures>
-          <multi:speciesFeature multi:speciesFeatureType="S_feature_type" multi:occur="1" multi:component="KaiC_0_S">
+          <multi:speciesFeature multi:speciesFeatureType="KaiB4_feature_type" multi:occur="1">
             <multi:listOfSpeciesFeatureValues>
-              <multi:speciesFeatureValue multi:value="S_u"/>
-            </multi:listOfSpeciesFeatureValues>
-          </multi:speciesFeature>
-          <multi:speciesFeature multi:speciesFeatureType="T_feature_type" multi:occur="1" multi:component="KaiC_0_T">
-            <multi:listOfSpeciesFeatureValues>
-              <multi:speciesFeatureValue multi:value="T_u"/>
-            </multi:listOfSpeciesFeatureValues>
-          </multi:speciesFeature>
-          <multi:speciesFeature multi:speciesFeatureType="S_feature_type" multi:occur="1" multi:component="KaiC_1_S">
-            <multi:listOfSpeciesFeatureValues>
-              <multi:speciesFeatureValue multi:value="S_u"/>
-            </multi:listOfSpeciesFeatureValues>
-          </multi:speciesFeature>
-          <multi:speciesFeature multi:speciesFeatureType="T_feature_type" multi:occur="1" multi:component="KaiC_1_T">
-            <multi:listOfSpeciesFeatureValues>
-              <multi:speciesFeatureValue multi:value="T_u"/>
+              <multi:speciesFeatureValue multi:value="KaiB4_a"/>
             </multi:listOfSpeciesFeatureValues>
           </multi:speciesFeature>
         </multi:listOfSpeciesFeatures>
       </species>
-      <species id="sp_8627384146931164905" name="KaiC()::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiC_cyt"/>
-      <species id="sp_4543394367031699174" name="KaiC().KaiC()::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiC_KaiC_cyt"/>
-      <species id="sp_1724088749267005160" name="KaiB4{i}::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiB4_cyt">
+      <species id="sp_6864967787055212570" name="KaiC()::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiC_cyt"/>
+      <species id="sp_1090491237705863078" name="KaiC().KaiC()::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiC_KaiC_cyt"/>
+      <species id="sp_6761211743988310960" name="KaiB4{i}::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiB4_cyt">
         <multi:listOfSpeciesFeatures>
           <multi:speciesFeature multi:speciesFeatureType="KaiB4_feature_type" multi:occur="1">
             <multi:listOfSpeciesFeatureValues>
@@ -112,11 +107,16 @@
           </multi:speciesFeature>
         </multi:listOfSpeciesFeatures>
       </species>
-      <species id="sp_3887483690665631520" name="KaiB4{a}.KaiA2()::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiA2_KaiB4_cyt">
+      <species id="sp_2024117422015348135" name="KaiC(S{u},T{u})::cyt" compartment="cyt" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" multi:speciesType="st_KaiC_cyt">
         <multi:listOfSpeciesFeatures>
-          <multi:speciesFeature multi:speciesFeatureType="KaiB4_feature_type" multi:occur="1">
+          <multi:speciesFeature multi:speciesFeatureType="S_feature_type" multi:occur="1" multi:component="KaiC_0_S">
             <multi:listOfSpeciesFeatureValues>
-              <multi:speciesFeatureValue multi:value="KaiB4_a"/>
+              <multi:speciesFeatureValue multi:value="S_u"/>
+            </multi:listOfSpeciesFeatureValues>
+          </multi:speciesFeature>
+          <multi:speciesFeature multi:speciesFeatureType="T_feature_type" multi:occur="1" multi:component="KaiC_0_T">
+            <multi:listOfSpeciesFeatureValues>
+              <multi:speciesFeatureValue multi:value="T_u"/>
             </multi:listOfSpeciesFeatureValues>
           </multi:speciesFeature>
         </multi:listOfSpeciesFeatures>
@@ -132,26 +132,26 @@
       <parameter id="Kmb1" value="2.423" constant="true"/>
       <parameter id="k11" value="0.0008756" constant="true"/>
       <parameter id="kdimer" value="1.77" constant="true"/>
-      <parameter id="kcat1" constant="false"/>
       <parameter id="kcat3" constant="false"/>
+      <parameter id="kcat1" constant="false"/>
     </listOfParameters>
     <listOfInitialAssignments>
-      <initialAssignment symbol="sp_5635356545414991463">
+      <initialAssignment symbol="sp_2024117422015348135">
         <math xmlns="http://www.w3.org/1998/Math/MathML">
           <cn type="integer"> 2 </cn>
         </math>
       </initialAssignment>
-      <initialAssignment symbol="sp_7472091680313064326">
+      <initialAssignment symbol="sp_7818344031815731550">
         <math xmlns="http://www.w3.org/1998/Math/MathML">
           <cn type="integer"> 2 </cn>
         </math>
       </initialAssignment>
-      <initialAssignment symbol="sp_8664656374200377960">
+      <initialAssignment symbol="sp_6748588642464437061">
         <math xmlns="http://www.w3.org/1998/Math/MathML">
           <cn type="integer"> 1 </cn>
         </math>
       </initialAssignment>
-      <initialAssignment symbol="sp_7721916696785521088">
+      <initialAssignment symbol="sp_2136135156647576582">
         <math xmlns="http://www.w3.org/1998/Math/MathML">
           <cn type="integer"> 1 </cn>
         </math>
@@ -160,13 +160,13 @@
     <listOfReactions>
       <reaction id="rc_0" name="KaiC(S{p},T{u}).KaiC(S{p},T{u})::cyt =&gt; KaiC(S{p},T{p}).KaiC(S{p},T{p})::cyt @ (kcat3*[KaiA2()::cyt]*[KaiC(S{p},T{u}).KaiC(S{p},T{u})::cyt])/(Km+[KaiC(S{p},T{u}).KaiC(S{p},T{u})::cyt])" reversible="false" fast="false">
         <listOfReactants>
-          <speciesReference species="sp_3351996056668205026" stoichiometry="1" constant="false"/>
+          <speciesReference species="sp_634590421596190776" stoichiometry="1" constant="false"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="sp_1823465593310543968" stoichiometry="1" constant="false"/>
+          <speciesReference species="sp_6747440337412014771" stoichiometry="1" constant="false"/>
         </listOfProducts>
         <listOfModifiers>
-          <modifierSpeciesReference species="sp_7721916696785521088"/>
+          <modifierSpeciesReference species="sp_2136135156647576582"/>
         </listOfModifiers>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
@@ -175,91 +175,27 @@
               <apply>
                 <times/>
                 <ci> kcat3 </ci>
-                <ci> sp_7721916696785521088 </ci>
-                <ci> sp_3351996056668205026 </ci>
+                <ci> sp_2136135156647576582 </ci>
+                <ci> sp_634590421596190776 </ci>
               </apply>
               <apply>
                 <plus/>
                 <ci> Km </ci>
-                <ci> sp_3351996056668205026 </ci>
+                <ci> sp_634590421596190776 </ci>
               </apply>
             </apply>
           </math>
         </kineticLaw>
       </reaction>
-      <reaction id="rc_1" name="KaiC()::cyt + KaiC()::cyt =&gt; KaiC().KaiC()::cyt @ kdimer*[KaiC()::cyt]*([KaiC()::cyt]-1.0)" reversible="false" fast="false">
+      <reaction id="rc_1" name="KaiC(S{u},T{u}).KaiC(S{u},T{u})::cyt =&gt; KaiC(S{p},T{u}).KaiC(S{p},T{u})::cyt @ (kcat1*[KaiA2()::cyt]*[KaiC(S{u},T{u}).KaiC(S{u},T{u})::cyt])/(Km+[KaiC(S{u},T{u}).KaiC(S{u},T{u})::cyt])" reversible="false" fast="false">
         <listOfReactants>
-          <speciesReference species="sp_8627384146931164905" stoichiometry="2" constant="false"/>
+          <speciesReference species="sp_7818344031815731550" stoichiometry="1" constant="false"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="sp_4543394367031699174" stoichiometry="1" constant="false"/>
-        </listOfProducts>
-        <kineticLaw>
-          <math xmlns="http://www.w3.org/1998/Math/MathML">
-            <apply>
-              <times/>
-              <ci> kdimer </ci>
-              <ci> sp_8627384146931164905 </ci>
-              <apply>
-                <minus/>
-                <ci> sp_8627384146931164905 </ci>
-                <cn> 1 </cn>
-              </apply>
-            </apply>
-          </math>
-        </kineticLaw>
-      </reaction>
-      <reaction id="rc_2" name="KaiC().KaiC()::cyt =&gt; KaiC()::cyt + KaiC()::cyt @ kdimer*[KaiC().KaiC()::cyt]" reversible="false" fast="false">
-        <listOfReactants>
-          <speciesReference species="sp_4543394367031699174" stoichiometry="1" constant="false"/>
-        </listOfReactants>
-        <listOfProducts>
-          <speciesReference species="sp_8627384146931164905" stoichiometry="2" constant="false"/>
-        </listOfProducts>
-        <kineticLaw>
-          <math xmlns="http://www.w3.org/1998/Math/MathML">
-            <apply>
-              <times/>
-              <ci> kdimer </ci>
-              <ci> sp_4543394367031699174 </ci>
-            </apply>
-          </math>
-        </kineticLaw>
-      </reaction>
-      <reaction id="rc_3" name="KaiB4{i}::cyt =&gt; KaiB4{a}::cyt @ (kcatb2*[KaiB4{i}::cyt])/(Kmb2+[KaiB4{i}::cyt])" reversible="false" fast="false">
-        <listOfReactants>
-          <speciesReference species="sp_1724088749267005160" stoichiometry="1" constant="false"/>
-        </listOfReactants>
-        <listOfProducts>
-          <speciesReference species="sp_8664656374200377960" stoichiometry="1" constant="false"/>
-        </listOfProducts>
-        <kineticLaw>
-          <math xmlns="http://www.w3.org/1998/Math/MathML">
-            <apply>
-              <divide/>
-              <apply>
-                <times/>
-                <ci> kcatb2 </ci>
-                <ci> sp_1724088749267005160 </ci>
-              </apply>
-              <apply>
-                <plus/>
-                <ci> Kmb2 </ci>
-                <ci> sp_1724088749267005160 </ci>
-              </apply>
-            </apply>
-          </math>
-        </kineticLaw>
-      </reaction>
-      <reaction id="rc_4" name="KaiC(S{u},T{u}).KaiC(S{u},T{u})::cyt =&gt; KaiC(S{p},T{u}).KaiC(S{p},T{u})::cyt @ (kcat1*[KaiA2()::cyt]*[KaiC(S{u},T{u}).KaiC(S{u},T{u})::cyt])/(Km+[KaiC(S{u},T{u}).KaiC(S{u},T{u})::cyt])" reversible="false" fast="false">
-        <listOfReactants>
-          <speciesReference species="sp_7472091680313064326" stoichiometry="1" constant="false"/>
-        </listOfReactants>
-        <listOfProducts>
-          <speciesReference species="sp_3351996056668205026" stoichiometry="1" constant="false"/>
+          <speciesReference species="sp_634590421596190776" stoichiometry="1" constant="false"/>
         </listOfProducts>
         <listOfModifiers>
-          <modifierSpeciesReference species="sp_7721916696785521088"/>
+          <modifierSpeciesReference species="sp_2136135156647576582"/>
         </listOfModifiers>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
@@ -268,52 +204,46 @@
               <apply>
                 <times/>
                 <ci> kcat1 </ci>
-                <ci> sp_7721916696785521088 </ci>
-                <ci> sp_7472091680313064326 </ci>
+                <ci> sp_2136135156647576582 </ci>
+                <ci> sp_7818344031815731550 </ci>
               </apply>
               <apply>
                 <plus/>
                 <ci> Km </ci>
-                <ci> sp_7472091680313064326 </ci>
+                <ci> sp_7818344031815731550 </ci>
               </apply>
             </apply>
           </math>
         </kineticLaw>
       </reaction>
-      <reaction id="rc_5" name="KaiB4{a}::cyt =&gt; KaiB4{i}::cyt @ (kcatb1*[KaiB4{a}::cyt])/(Kmb1+[KaiB4{a}::cyt])" reversible="false" fast="false">
+      <reaction id="rc_2" name="KaiB4{a}::cyt + KaiA2()::cyt =&gt; KaiB4{a}.KaiA2()::cyt @ k11*[KaiB4{a}::cyt]*[KaiA2()::cyt]" reversible="false" fast="false">
         <listOfReactants>
-          <speciesReference species="sp_8664656374200377960" stoichiometry="1" constant="false"/>
+          <speciesReference species="sp_6748588642464437061" stoichiometry="1" constant="false"/>
+          <speciesReference species="sp_2136135156647576582" stoichiometry="1" constant="false"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="sp_1724088749267005160" stoichiometry="1" constant="false"/>
+          <speciesReference species="sp_5402253953277041498" stoichiometry="1" constant="false"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
             <apply>
-              <divide/>
-              <apply>
-                <times/>
-                <ci> kcatb1 </ci>
-                <ci> sp_8664656374200377960 </ci>
-              </apply>
-              <apply>
-                <plus/>
-                <ci> Kmb1 </ci>
-                <ci> sp_8664656374200377960 </ci>
-              </apply>
+              <times/>
+              <ci> k11 </ci>
+              <ci> sp_6748588642464437061 </ci>
+              <ci> sp_2136135156647576582 </ci>
             </apply>
           </math>
         </kineticLaw>
       </reaction>
-      <reaction id="rc_6" name="KaiC(S{p},T{u}).KaiC(S{p},T{u})::cyt =&gt; KaiC(S{u},T{u}).KaiC(S{u},T{u})::cyt @ (kcat2*[KaiB4{a}.KaiA2()::cyt]*[KaiC(S{p},T{u}).KaiC(S{p},T{u})::cyt])/(Km+[KaiC(S{p},T{u}).KaiC(S{p},T{u})::cyt])" reversible="false" fast="false">
+      <reaction id="rc_3" name="KaiC(S{p},T{u}).KaiC(S{p},T{u})::cyt =&gt; KaiC(S{u},T{u}).KaiC(S{u},T{u})::cyt @ (kcat2*[KaiB4{a}.KaiA2()::cyt]*[KaiC(S{p},T{u}).KaiC(S{p},T{u})::cyt])/(Km+[KaiC(S{p},T{u}).KaiC(S{p},T{u})::cyt])" reversible="false" fast="false">
         <listOfReactants>
-          <speciesReference species="sp_3351996056668205026" stoichiometry="1" constant="false"/>
+          <speciesReference species="sp_634590421596190776" stoichiometry="1" constant="false"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="sp_7472091680313064326" stoichiometry="1" constant="false"/>
+          <speciesReference species="sp_7818344031815731550" stoichiometry="1" constant="false"/>
         </listOfProducts>
         <listOfModifiers>
-          <modifierSpeciesReference species="sp_3887483690665631520"/>
+          <modifierSpeciesReference species="sp_5402253953277041498"/>
         </listOfModifiers>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
@@ -322,46 +252,91 @@
               <apply>
                 <times/>
                 <ci> kcat2 </ci>
-                <ci> sp_3887483690665631520 </ci>
-                <ci> sp_3351996056668205026 </ci>
+                <ci> sp_5402253953277041498 </ci>
+                <ci> sp_634590421596190776 </ci>
               </apply>
               <apply>
                 <plus/>
                 <ci> Km </ci>
-                <ci> sp_3351996056668205026 </ci>
+                <ci> sp_634590421596190776 </ci>
               </apply>
             </apply>
           </math>
         </kineticLaw>
       </reaction>
-      <reaction id="rc_7" name="KaiB4{a}::cyt + KaiA2()::cyt =&gt; KaiB4{a}.KaiA2()::cyt @ k11*[KaiB4{a}::cyt]*[KaiA2()::cyt]" reversible="false" fast="false">
+      <reaction id="rc_4" name="KaiC()::cyt + KaiC()::cyt =&gt; KaiC().KaiC()::cyt @ kdimer*[KaiC()::cyt]*([KaiC()::cyt]-1.0)" reversible="false" fast="false">
         <listOfReactants>
-          <speciesReference species="sp_8664656374200377960" stoichiometry="1" constant="false"/>
-          <speciesReference species="sp_7721916696785521088" stoichiometry="1" constant="false"/>
+          <speciesReference species="sp_6864967787055212570" stoichiometry="2" constant="false"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="sp_3887483690665631520" stoichiometry="1" constant="false"/>
+          <speciesReference species="sp_1090491237705863078" stoichiometry="1" constant="false"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
             <apply>
               <times/>
-              <ci> k11 </ci>
-              <ci> sp_8664656374200377960 </ci>
-              <ci> sp_7721916696785521088 </ci>
+              <ci> kdimer </ci>
+              <ci> sp_6864967787055212570 </ci>
+              <apply>
+                <minus/>
+                <ci> sp_6864967787055212570 </ci>
+                <cn> 1 </cn>
+              </apply>
             </apply>
           </math>
         </kineticLaw>
       </reaction>
-      <reaction id="rc_8" name="KaiC(S{p},T{p}).KaiC(S{p},T{p})::cyt =&gt; KaiC(S{p},T{u}).KaiC(S{p},T{u})::cyt @ (kcat4*[KaiB4{a}.KaiA2()::cyt]*[KaiC(S{p},T{p}).KaiC(S{p},T{p})::cyt])/(Km+[KaiC(S{p},T{p}).KaiC(S{p},T{p})::cyt])" reversible="false" fast="false">
+      <reaction id="rc_5" name="KaiC().KaiC()::cyt =&gt; KaiC()::cyt + KaiC()::cyt @ kdimer*[KaiC().KaiC()::cyt]" reversible="false" fast="false">
         <listOfReactants>
-          <speciesReference species="sp_1823465593310543968" stoichiometry="1" constant="false"/>
+          <speciesReference species="sp_1090491237705863078" stoichiometry="1" constant="false"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="sp_3351996056668205026" stoichiometry="1" constant="false"/>
+          <speciesReference species="sp_6864967787055212570" stoichiometry="2" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> kdimer </ci>
+              <ci> sp_1090491237705863078 </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="rc_6" name="KaiB4{i}::cyt =&gt; KaiB4{a}::cyt @ (kcatb2*[KaiB4{i}::cyt])/(Kmb2+[KaiB4{i}::cyt])" reversible="false" fast="false">
+        <listOfReactants>
+          <speciesReference species="sp_6761211743988310960" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="sp_6748588642464437061" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> kcatb2 </ci>
+                <ci> sp_6761211743988310960 </ci>
+              </apply>
+              <apply>
+                <plus/>
+                <ci> Kmb2 </ci>
+                <ci> sp_6761211743988310960 </ci>
+              </apply>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="rc_7" name="KaiC(S{p},T{p}).KaiC(S{p},T{p})::cyt =&gt; KaiC(S{p},T{u}).KaiC(S{p},T{u})::cyt @ (kcat4*[KaiB4{a}.KaiA2()::cyt]*[KaiC(S{p},T{p}).KaiC(S{p},T{p})::cyt])/(Km+[KaiC(S{p},T{p}).KaiC(S{p},T{p})::cyt])" reversible="false" fast="false">
+        <listOfReactants>
+          <speciesReference species="sp_6747440337412014771" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="sp_634590421596190776" stoichiometry="1" constant="false"/>
         </listOfProducts>
         <listOfModifiers>
-          <modifierSpeciesReference species="sp_3887483690665631520"/>
+          <modifierSpeciesReference species="sp_5402253953277041498"/>
         </listOfModifiers>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
@@ -370,13 +345,38 @@
               <apply>
                 <times/>
                 <ci> kcat4 </ci>
-                <ci> sp_3887483690665631520 </ci>
-                <ci> sp_1823465593310543968 </ci>
+                <ci> sp_5402253953277041498 </ci>
+                <ci> sp_6747440337412014771 </ci>
               </apply>
               <apply>
                 <plus/>
                 <ci> Km </ci>
-                <ci> sp_1823465593310543968 </ci>
+                <ci> sp_6747440337412014771 </ci>
+              </apply>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="rc_8" name="KaiB4{a}::cyt =&gt; KaiB4{i}::cyt @ (kcatb1*[KaiB4{a}::cyt])/(Kmb1+[KaiB4{a}::cyt])" reversible="false" fast="false">
+        <listOfReactants>
+          <speciesReference species="sp_6748588642464437061" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="sp_6761211743988310960" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> kcatb1 </ci>
+                <ci> sp_6748588642464437061 </ci>
+              </apply>
+              <apply>
+                <plus/>
+                <ci> Kmb1 </ci>
+                <ci> sp_6748588642464437061 </ci>
               </apply>
             </apply>
           </math>
@@ -384,22 +384,22 @@
       </reaction>
     </listOfReactions>
     <multi:listOfSpeciesTypes>
-      <multi:speciesType multi:id="st_T">
-        <multi:listOfSpeciesFeatureTypes>
-          <multi:speciesFeatureType multi:id="T_feature_type" multi:occur="1">
-            <multi:listOfPossibleSpeciesFeatureValues>
-              <multi:possibleSpeciesFeatureValue multi:id="T_p"/>
-              <multi:possibleSpeciesFeatureValue multi:id="T_u"/>
-            </multi:listOfPossibleSpeciesFeatureValues>
-          </multi:speciesFeatureType>
-        </multi:listOfSpeciesFeatureTypes>
-      </multi:speciesType>
       <multi:speciesType multi:id="st_S">
         <multi:listOfSpeciesFeatureTypes>
           <multi:speciesFeatureType multi:id="S_feature_type" multi:occur="1">
             <multi:listOfPossibleSpeciesFeatureValues>
-              <multi:possibleSpeciesFeatureValue multi:id="S_p"/>
               <multi:possibleSpeciesFeatureValue multi:id="S_u"/>
+              <multi:possibleSpeciesFeatureValue multi:id="S_p"/>
+            </multi:listOfPossibleSpeciesFeatureValues>
+          </multi:speciesFeatureType>
+        </multi:listOfSpeciesFeatureTypes>
+      </multi:speciesType>
+      <multi:speciesType multi:id="st_T">
+        <multi:listOfSpeciesFeatureTypes>
+          <multi:speciesFeatureType multi:id="T_feature_type" multi:occur="1">
+            <multi:listOfPossibleSpeciesFeatureValues>
+              <multi:possibleSpeciesFeatureValue multi:id="T_u"/>
+              <multi:possibleSpeciesFeatureValue multi:id="T_p"/>
             </multi:listOfPossibleSpeciesFeatureValues>
           </multi:speciesFeatureType>
         </multi:listOfSpeciesFeatureTypes>
@@ -408,8 +408,8 @@
         <multi:listOfSpeciesFeatureTypes>
           <multi:speciesFeatureType multi:id="KaiB4_feature_type" multi:occur="1">
             <multi:listOfPossibleSpeciesFeatureValues>
-              <multi:possibleSpeciesFeatureValue multi:id="KaiB4_i"/>
               <multi:possibleSpeciesFeatureValue multi:id="KaiB4_a"/>
+              <multi:possibleSpeciesFeatureValue multi:id="KaiB4_i"/>
             </multi:listOfPossibleSpeciesFeatureValues>
           </multi:speciesFeatureType>
         </multi:listOfSpeciesFeatureTypes>
@@ -427,25 +427,16 @@
           <multi:speciesTypeInstance multi:id="KaiC_1" multi:speciesType="st_KaiC"/>
         </multi:listOfSpeciesTypeInstances>
         <multi:listOfSpeciesTypeComponentIndexes>
-          <multi:speciesTypeComponentIndex multi:id="KaiC_0_T" multi:component="T" multi:identifyingParent="KaiC_0"/>
           <multi:speciesTypeComponentIndex multi:id="KaiC_0_S" multi:component="S" multi:identifyingParent="KaiC_0"/>
-          <multi:speciesTypeComponentIndex multi:id="KaiC_1_T" multi:component="T" multi:identifyingParent="KaiC_1"/>
+          <multi:speciesTypeComponentIndex multi:id="KaiC_0_T" multi:component="T" multi:identifyingParent="KaiC_0"/>
           <multi:speciesTypeComponentIndex multi:id="KaiC_1_S" multi:component="S" multi:identifyingParent="KaiC_1"/>
+          <multi:speciesTypeComponentIndex multi:id="KaiC_1_T" multi:component="T" multi:identifyingParent="KaiC_1"/>
         </multi:listOfSpeciesTypeComponentIndexes>
       </multi:speciesType>
       <multi:speciesType multi:id="st_KaiA2_cyt">
         <multi:listOfSpeciesTypeInstances>
           <multi:speciesTypeInstance multi:id="KaiA2_0" multi:speciesType="st_KaiA2"/>
         </multi:listOfSpeciesTypeInstances>
-      </multi:speciesType>
-      <multi:speciesType multi:id="st_KaiC_cyt">
-        <multi:listOfSpeciesTypeInstances>
-          <multi:speciesTypeInstance multi:id="KaiC_0" multi:speciesType="st_KaiC"/>
-        </multi:listOfSpeciesTypeInstances>
-        <multi:listOfSpeciesTypeComponentIndexes>
-          <multi:speciesTypeComponentIndex multi:id="KaiC_0_T" multi:component="T" multi:identifyingParent="KaiC_0"/>
-          <multi:speciesTypeComponentIndex multi:id="KaiC_0_S" multi:component="S" multi:identifyingParent="KaiC_0"/>
-        </multi:listOfSpeciesTypeComponentIndexes>
       </multi:speciesType>
       <multi:speciesType multi:id="st_KaiB4_cyt">
         <multi:listOfSpeciesTypeInstances>
@@ -456,6 +447,11 @@
         <multi:listOfSpeciesTypeInstances>
           <multi:speciesTypeInstance multi:id="KaiA2_0" multi:speciesType="st_KaiA2"/>
           <multi:speciesTypeInstance multi:id="KaiB4_1" multi:speciesType="st_KaiB4"/>
+        </multi:listOfSpeciesTypeInstances>
+      </multi:speciesType>
+      <multi:speciesType multi:id="st_KaiC_cyt">
+        <multi:listOfSpeciesTypeInstances>
+          <multi:speciesTypeInstance multi:id="KaiC_0" multi:speciesType="st_KaiC"/>
         </multi:listOfSpeciesTypeInstances>
       </multi:speciesType>
     </multi:listOfSpeciesTypes>

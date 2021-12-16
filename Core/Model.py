@@ -298,14 +298,13 @@ class Model:
     
     def export_sbml(self) -> libsbml.SBMLDocument:
         """
-        Convert model to a SBML model using SBML-multi package.
+        Convert model to a SBML model using SBML-multi package (libsbml).
         :return: SBML document
         """
         test_model = ModelSBML()
         test_model.docPlug.setRequired(True)
         unique_complexes, unique_params = self.create_unique_complexes_and_params()
 
-        #print(unique_complexes) #just testing of isomorphism grouping
         test_model.create_basic_species_types(self.atomic_signature, self.structure_signature) #1
         test_model.create_all_species_compartments_and_complex_species_types(unique_complexes)#2
         test_model.create_all_reactions(self.rules)#3
@@ -319,9 +318,9 @@ class Model:
         """
         Extracts unique complexes and compartments from rules
         splits complexes by its isomorphisms
-        :return: set of unique complexes and set of unique params
+        :return: dict of unique complexes mapped to list of its isomorphisms and set of unique params
         """
-        #here all complexes will be
+        #here all complexes will be (complexAgent:{(complexAgent, SBML_code_isomprphism1),(complexAgent, SBML_code_isomprphism2)... })
         unique_complexes = dict()
         #gets all initialization complexes
         initialization_complexes = set(map(lambda x : x[0],self.init.items()))
@@ -332,9 +331,9 @@ class Model:
             # gets all params and agents from single rate
             agents, params = rule.rate.get_params_and_agents()
 
-            # these are SBML codes in values
-            #as dict distributed by complexes keys
-            #splited by isomorphism groups
+            #get dict of all complex agents in rule as 'Keys'
+            #mapped to all occurences of isomorphism of this agent
+            #as SBML_code as 'Values' in set of tuples (compAgent, specific_SBML_code)
             complexes_from_rule_in_dict = rule.get_unique_complexes_from_rule()
             #this adds all elements in dict rule to all
             #complexes from previous runs
@@ -353,19 +352,19 @@ class Model:
                     unique_complexes[agent] = empty_set
                 else:
                     unique_complexes[agent].add(double_agent)
-            #unique_complexes = unique_complexes.union(rule.get_unique_complexes_from_rule()).union(agents)
             unique_params_from_rate = unique_params_from_rate.union(params)
-            #loops over all initialization complexes
-            #there might be agent that is isomorphic to some agent in rules
-            #but not present in rule directly... it has to be convertable to those
-            for agent in initialization_complexes:
-                double_agent = (agent, agent.to_SBML_species_code())
-                if agent not in unique_complexes:
-                    empty_set = set()
-                    empty_set.add(double_agent)
-                    unique_complexes[agent] = empty_set
-                else:
-                    unique_complexes[agent].add(double_agent)
+
+        #loops over all initialization complexes
+        #there might be agent that is isomorphic to some agent in rules
+        #but not present in rule directly... it has to be convertable to those
+        for agent in initialization_complexes:
+            double_agent = (agent, agent.to_SBML_species_code())
+            if agent not in unique_complexes:
+                empty_set = set()
+                empty_set.add(double_agent)
+                unique_complexes[agent] = empty_set
+            else:
+                unique_complexes[agent].add(double_agent)
         #convert set to list for better handling
         for comp in unique_complexes:
             unique_complexes[comp] = list(unique_complexes[comp])
