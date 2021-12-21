@@ -58,6 +58,7 @@ class Result:
     """
     Class to represent output from the Parser.
     """
+
     def __init__(self, success, data):
         self.success = success
         self.data = data
@@ -67,6 +68,7 @@ class SideHelper:
     """
     Class to represent side of a rule.
     """
+
     def __init__(self):
         self.seq = []
         self.comp = []
@@ -80,7 +82,7 @@ class SideHelper:
         return str(self)
 
     def to_side(self):
-        return Side([Complex(self.seq[c[0]:c[1]+1], self.comp[c[0]]) for c in self.complexes])
+        return Side([Complex(self.seq[c[0]:c[1] + 1], self.comp[c[0]]) for c in self.complexes])
 
 
 GRAMMAR = r"""
@@ -115,7 +117,7 @@ GRAMMAR = r"""
     DEFNS_START: "#! definitions"
     COMPLEXES_START: "#! complexes"
     REGULATION_START: "#! regulation"
-    
+
     !label: CNAME "~"
 
     param: CNAME
@@ -144,8 +146,8 @@ EXTENDED_GRAMMAR = """
 """
 
 COMPLEX_GRAMMAR = """
-    rate_complex: (value|cmplx_name) DOUBLE_COLON compartment
-    value: (agent ".")* agent
+    rate_complex: value DOUBLE_COLON compartment
+    value: ((agent | cmplx_name) ".")* (agent | cmplx_name)
     agent: atomic | structure
     structure: s_name "(" composition ")"
     composition: (atomic ",")* atomic?
@@ -166,17 +168,17 @@ COMPLEX_GRAMMAR = """
 
 REGULATIONS_GRAMMAR = """
     regulation_def: "type" ( regular | programmed | ordered | concurrent_free | conditional ) 
-    
+
     !regular: "regular" (DIGIT|LETTER| "+" | "*" | "(" | ")" | "[" | "]" | "_" | "|" | "&")+
-    
+
     programmed: "programmed" successors+
     successors: CNAME ":" "{" CNAME ("," CNAME)* "}"
-    
+
     ordered: "ordered" order ("," order)*
     order: ("(" CNAME "," CNAME ")")
-    
+
     concurrent_free: "concurrent-free" order ("," order)*
-    
+
     conditional: "conditional" context+
     context: CNAME ":" "{" rate_complex ("," rate_complex)* "}"
 """
@@ -224,6 +226,7 @@ class ReplaceVariables(Transformer):
     This class is used to replace variables in rule (marked by ?) by
     the given cmplx_name (so far limited only to that).
     """
+
     def __init__(self, to_replace):
         super(ReplaceVariables, self).__init__()
         self.to_replace = to_replace
@@ -238,6 +241,7 @@ class ExtractComplexNames(Transformer):
 
     Also multiplies rule with variable to its instances using ReplaceVariables Transformer.
     """
+
     def __init__(self):
         super(ExtractComplexNames, self).__init__()
         self.complex_defns = dict()
@@ -266,6 +270,7 @@ class TransformAbstractSyntax(Transformer):
     Divided to three special cases (declared below).
     Based on replacing subtrees in parent trees.
     """
+
     def __init__(self, complex_defns):
         super(TransformAbstractSyntax, self).__init__()
         self.complex_defns = complex_defns
@@ -331,12 +336,22 @@ class TransformAbstractSyntax(Transformer):
     def get_name(self, agent):
         return str(agent.children[0].children[0])
 
+    def complex(self, matches):
+        result = []
+        for match in matches[0].children:
+            if match.data == 'value':
+                result += match.children
+            else:
+                result.append(match)
+        return Tree('complex', [Tree('value', result)] + matches[1:])
+
 
 class TreeToComplex(Transformer):
     """
     Creates actual Complexes in rates of the rules - there it is safe,
     order is not important. Does not apply to the rest of the rule!
     """
+
     def state(self, matches):
         return "".join(map(str, matches))
 
@@ -367,12 +382,14 @@ class TreeToObjects(Transformer):
     def __init__(self):
         super(TreeToObjects, self).__init__()
         self.params = set()
+
     """
     A transformer which is called on a tree in a bottom-up manner and transforms all subtrees/tokens it encounters.
     Note the defined methods have the same name as elements in the grammar above.
 
     Creates the actual Model object after all the above transformers were applied.
     """
+
     def const(self, matches):
         return float(matches[0])
 
@@ -552,6 +569,7 @@ class Parser:
         try:
             complexer = ExtractComplexNames()
             tree = complexer.transform(tree)
+
             de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
             tree = de_abstracter.transform(tree)
             tree = TreeToComplex().transform(tree)
