@@ -84,7 +84,7 @@ class SideHelper:
 
 
 GRAMMAR = r"""
-    model: rules inits (definitions)? (complexes)? (regulation)?
+    model: rules (inits)? (definitions)? (complexes)? (regulation)?
 
     rules: RULES_START (rule|COMMENT)+
     inits: INITS_START (init|COMMENT)+
@@ -466,6 +466,7 @@ class TreeToObjects(Transformer):
     def model(self, matches):
         definitions = dict()
         regulation = None
+        inits = collections.Counter()
         for match in matches:
             if type(match) == dict:
                 key, value = list(match.items())[0]
