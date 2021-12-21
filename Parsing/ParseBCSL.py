@@ -263,6 +263,33 @@ class ExtractComplexNames(Transformer):
         return Tree('rules', new_rules)
 
 
+def remove_nested_complex_aliases(complex_defns):
+    """
+    Removes nested complex aliases from their definitions.
+    """
+    def replace_aliases(complex_defns):
+        new_definitions = dict()
+        for defn in complex_defns:
+            result = []
+            for child in complex_defns[defn]:
+                if child.data == 'cmplx_name':
+                    result += complex_defns[str(child.children[0])]
+                else:
+                    result.append(child)
+            new_definitions[defn] = result
+        return new_definitions
+
+    complex_defns = {key: complex_defns[key].children for key in complex_defns}
+    new_defns = replace_aliases(complex_defns)
+
+    while new_defns != complex_defns:
+        complex_defns = new_defns
+        new_defns = replace_aliases(complex_defns)
+
+    complex_defns = {key: Tree('value', complex_defns[key]) for key in complex_defns}
+    return complex_defns
+
+
 class TransformAbstractSyntax(Transformer):
     """
     Transformer to remove "zooming" syntax.
@@ -569,7 +596,7 @@ class Parser:
         try:
             complexer = ExtractComplexNames()
             tree = complexer.transform(tree)
-
+            complexer.complex_defns = remove_nested_complex_aliases(complexer.complex_defns)
             de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
             tree = de_abstracter.transform(tree)
             tree = TreeToComplex().transform(tree)
