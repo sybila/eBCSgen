@@ -14,7 +14,7 @@ class BCS(Text):
         """
         content = open(filename, 'r').read()
         keywords = ["#! rules", "#! inits", "#! definitions"]
-        return all(keyword in content for keyword in keywords)
+        return any(keyword in content for keyword in keywords)
 
 class BCS_TS(Text):
     """Class describing a .bcs.ts file"""
