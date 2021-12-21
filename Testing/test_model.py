@@ -489,7 +489,7 @@ class TestModel(unittest.TestCase):
                          {"unexpected": ";", "expected": {'?', 'name'}, "line": 3, "column": 37})
 
         self.assertEqual(self.model_parser.parse(self.model_wrong_2).data,
-                         {"expected": {'decimal', '#! inits', ']', '#! definitions', '=>', '@', 'int',
+                         {"expected": {'decimal', '#! inits', ']', '#! definitions', '=>, <=>', '@', 'int',
                                        '+', 'name', ';', '}', ',', '#! complexes', '#! regulation'},
                           "line": 3, "column": 26, "unexpected": "="})
 

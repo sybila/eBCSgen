@@ -109,7 +109,7 @@ GRAMMAR = r"""
 
     COM: "//"
     POW: "**"
-    ARROW: "=>"
+    ARROW: "=>" | "<=>" 
     RULES_START: "#! rules"
     INITS_START: "#! inits"
     DEFNS_START: "#! definitions"
@@ -405,7 +405,7 @@ class TreeToObjects(Transformer):
         return helper
 
     def rule(self, matches):
-        label = None
+        label = None  # TODO create implicit label
         rate = None
         if len(matches) == 5:
             label, lhs, arrow, rhs, rate = matches
@@ -435,10 +435,21 @@ class TreeToObjects(Transformer):
                 if not replication:
                     pairs += [(None, i + lhs.counter)]
 
-        return Rule(agents, mid, compartments, complexes, pairs, Rate(rate) if rate else None, label)
+        reversible = False
+        if arrow == '<=>':
+            reversible = True
+        return reversible, Rule(agents, mid, compartments, complexes, pairs, Rate(rate) if rate else None, label)
 
     def rules(self, matches):
-        return {'rules': matches[1:]}
+        rules = []
+        for reversible, rule in matches[1:]:
+            if reversible:
+                reversible_rule = rule.create_reversible()
+                rules.append(rule)
+                rules.append(reversible_rule)
+            else:
+                rules.append(rule)
+        return {'rules': rules}
 
     def definitions(self, matches):
         result = dict()
@@ -492,7 +503,7 @@ class Parser:
 
         self.terminals = dict((v, k) for k, v in _TERMINAL_NAMES.items())
         self.terminals.update({"COM": "//",
-                               "ARROW": "=>",
+                               "ARROW": "=>, <=>",
                                "POW": "**",
                                "DOUBLE_COLON": "::",
                                "RULES_START": "#! rules",
@@ -538,18 +549,17 @@ class Parser:
         :param tree: given parsed Tree
         :return: Result containing constructed BCSL object
         """
-        # try:
-        complexer = ExtractComplexNames()
-        tree = complexer.transform(tree)
-        de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
-        tree = de_abstracter.transform(tree)
-        tree = TreeToComplex().transform(tree)
-        tree = TransformRegulations().transform(tree)
-        tree = TreeToObjects().transform(tree)
-
-        return Result(True, tree.children[0])
-        # except Exception as u:
-        #     return Result(False, {"error": str(u)})
+        try:
+            complexer = ExtractComplexNames()
+            tree = complexer.transform(tree)
+            de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
+            tree = de_abstracter.transform(tree)
+            tree = TreeToComplex().transform(tree)
+            tree = TransformRegulations().transform(tree)
+            tree = TreeToObjects().transform(tree)
+            return Result(True, tree.children[0])
+        except Exception as u:
+            return Result(False, {"error": str(u)})
 
     def syntax_check(self, expression: str) -> Result:
         """

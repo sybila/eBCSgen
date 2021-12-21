@@ -241,6 +241,36 @@ class Rule:
             output_complexes.append(Complex(match[f:t + 1], self.compartments[f]))
         return Multiset(collections.Counter(output_complexes))
 
+    def create_reversible(self):
+        """
+        Create a reversible version of the rule with _bw label.
+
+        Also add implicit _fw label to current Rule.
+
+        TODO: allow two rates
+
+        @return: reversed Rule
+        """
+        agents = self.agents[self.mid:] + self.agents[:self.mid]
+        mid = len(self.agents) - self.mid
+        compartments = self.compartments[self.mid:] + self.compartments[:self.mid]
+        complexes = sorted([((f - self.mid) % len(self.agents),
+                             (t - self.mid) % len(self.agents)) for (f, t) in self.complexes])
+        pairs = []
+        for (l, r) in self.pairs:
+            if l is None or r is None:
+                pairs.append((r, l))
+            else:
+                pairs.append((l, r))
+
+        rate = self.rate
+        label = None
+        if self.label:
+            label = self.label + "_bw"
+            self.label += "_fw"
+
+        return Rule(agents, mid, compartments, complexes, pairs, rate, label)
+
 
 def find_all_matches(lhs_agents, state):
     """
