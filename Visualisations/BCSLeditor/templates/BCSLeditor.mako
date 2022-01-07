@@ -115,7 +115,7 @@ data = "\n".join(list(hda.datatype.dataprovider( hda, 'line', comment_char=none,
                 var cont = ace.edit('editor').getValue();
                 var dInputs = {
                     dbkey: '?',
-                    file_type: 'auto',
+                    file_type: 'bcs',
                     'files_0|type': 'upload_dataset',
                     'files_0|space_to_tab': null,
                     'files_0|to_posix_lines': 'Yes'

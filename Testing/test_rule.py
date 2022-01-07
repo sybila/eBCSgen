@@ -193,32 +193,32 @@ class TestRule(unittest.TestCase):
                          {self.reaction_c1_1})
 
         rule_exp = "K(T{a}).K().K()::cyt => K(T{i}).K().K()::cyt @ k1*[K(T{a}).K().K()::cyt]"
-        rule = self.parser.parse(rule_exp).data
+        rule = self.parser.parse(rule_exp).data[1]
         result = rule.create_reactions(atomic_signature, structure_signature)
 
         reactions = set()
         with open("Testing/reactions.txt") as file:
             for complex in file.readlines():
-                rule = self.parser.parse(complex).data
+                rule = self.parser.parse(complex).data[1]
                 reactions.add(rule.to_reaction())
 
         self.assertEqual(result, reactions)
 
     def test_parser(self):
         rule_expr = "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt + D(B{_})::cell @ 3*[K()::cyt]/2*v_1"
-        self.assertEqual(self.parser.parse(rule_expr).data, self.r2)
+        self.assertEqual(self.parser.parse(rule_expr).data[1], self.r2)
 
         rule_expr = "K(B{-}).B()::cyt + D(B{_})::cell => K(B{+})::cyt + B()::cyt @ 3*[K(T{3+})::cyt]/2*v_1"
-        self.assertEqual(self.parser.parse(rule_expr).data, self.r3)
+        self.assertEqual(self.parser.parse(rule_expr).data[1], self.r3)
 
         rule_expr = "X()::rep => @ k1*[X()::rep]"
-        self.assertEqual(self.parser.parse(rule_expr).data, self.r4)
+        self.assertEqual(self.parser.parse(rule_expr).data[1], self.r4)
 
         rule_expr = "=> Y()::rep @ 1/(1+([X()::rep])**4)"
-        self.assertEqual(self.parser.parse(rule_expr).data, self.r5)
+        self.assertEqual(self.parser.parse(rule_expr).data[1], self.r5)
 
         rule_expr = "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt"
-        self.assertEqual(self.parser.parse(rule_expr).data, self.rule_no_rate)
+        self.assertEqual(self.parser.parse(rule_expr).data[1], self.rule_no_rate)
 
     def test_compatible(self):
         self.assertTrue(self.r1.compatible(self.r2))
@@ -226,48 +226,48 @@ class TestRule(unittest.TestCase):
 
         rule_expr_1 = "K(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt + D(B{_})::cell @ 3*[K()::cyt]/2*v_1"
         rule_expr_2 = "K().B()::cyt => K()::cyt + B()::cyt + D(B{_})::cell @ 3*[K()::cyt]/2*v_1"
-        rule1 = self.parser.parse(rule_expr_1).data
-        rule2 = self.parser.parse(rule_expr_2).data
+        rule1 = self.parser.parse(rule_expr_1).data[1]
+        rule2 = self.parser.parse(rule_expr_2).data[1]
 
         self.assertFalse(rule1.compatible(rule2))
         self.assertTrue(rule2.compatible(rule1))
 
     def test_reduce_context(self):
         rule_expr_1 = "K(S{u}).B{i}::cyt => K(S{p})::cyt + B{a}::cyt + D(B{_})::cell @ 3*[K(S{u}).B{i}::cyt]/2*v_1"
-        rule1 = self.parser.parse(rule_expr_1).data
+        rule1 = self.parser.parse(rule_expr_1).data[1]
 
         rule_expr_2 = "K().B{_}::cyt => K()::cyt + B{_}::cyt + D()::cell @ 3*[K().B{_}::cyt]/2*v_1"
-        rule2 = self.parser.parse(rule_expr_2).data
+        rule2 = self.parser.parse(rule_expr_2).data[1]
 
         self.assertEqual(rule1.reduce_context(), rule2)
 
         # next case
 
         rule_expr_1 = "K(S{u})::cyt => K(S{p})::cyt + D(B{_})::cell @ 3*[K(S{u})::cyt]/2*v_1"
-        rule1 = self.parser.parse(rule_expr_1).data
+        rule1 = self.parser.parse(rule_expr_1).data[1]
 
         rule_expr_2 = "K()::cyt => K()::cyt + D()::cell @ 3*[K()::cyt]/2*v_1"
-        rule2 = self.parser.parse(rule_expr_2).data
+        rule2 = self.parser.parse(rule_expr_2).data[1]
 
         self.assertEqual(rule1.reduce_context(), rule2)
 
         # next case - covering replication
 
         rule_expr_1 = "K(S{u})::cyt => 2 K(S{u})::cyt @ 3*[K(S{u})::cyt]/2*v_1"
-        rule1 = self.parser.parse(rule_expr_1).data
+        rule1 = self.parser.parse(rule_expr_1).data[1]
 
         rule_expr_2 = "K()::cyt => 2 K()::cyt @ 3*[K()::cyt]/2*v_1"
-        rule2 = self.parser.parse(rule_expr_2).data
+        rule2 = self.parser.parse(rule_expr_2).data[1]
 
         self.assertEqual(rule1.reduce_context(), rule2)
 
         # next case - covering replication
 
         rule_expr_1 = "K(S{u})::cyt => 3 K(S{u})::cyt @ 3*[K(S{u})::cyt]/2*v_1"
-        rule1 = self.parser.parse(rule_expr_1).data
+        rule1 = self.parser.parse(rule_expr_1).data[1]
 
         rule_expr_2 = "K()::cyt => 3 K()::cyt @ 3*[K()::cyt]/2*v_1"
-        rule2 = self.parser.parse(rule_expr_2).data
+        rule2 = self.parser.parse(rule_expr_2).data[1]
 
         self.assertEqual(rule1.reduce_context(), rule2)
 
@@ -277,6 +277,6 @@ class TestRule(unittest.TestCase):
         complex = complex_parser.parse(agent).data.children[0]
 
         rule_expr = "K().A{i}::cyt => K().A{a}::cyt"
-        rule = self.parser.parse(rule_expr).data
+        rule = self.parser.parse(rule_expr).data[1]
 
         self.assertTrue(rule.exists_compatible_agent(complex))

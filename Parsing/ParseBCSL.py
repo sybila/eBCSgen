@@ -58,6 +58,7 @@ class Result:
     """
     Class to represent output from the Parser.
     """
+
     def __init__(self, success, data):
         self.success = success
         self.data = data
@@ -67,6 +68,7 @@ class SideHelper:
     """
     Class to represent side of a rule.
     """
+
     def __init__(self):
         self.seq = []
         self.comp = []
@@ -80,11 +82,11 @@ class SideHelper:
         return str(self)
 
     def to_side(self):
-        return Side([Complex(self.seq[c[0]:c[1]+1], self.comp[c[0]]) for c in self.complexes])
+        return Side([Complex(self.seq[c[0]:c[1] + 1], self.comp[c[0]]) for c in self.complexes])
 
 
 GRAMMAR = r"""
-    model: rules inits (definitions)? (complexes)? (regulation)?
+    model: rules (inits)? (definitions)? (complexes)? (regulation)?
 
     rules: RULES_START (rule|COMMENT)+
     inits: INITS_START (init|COMMENT)+
@@ -109,13 +111,13 @@ GRAMMAR = r"""
 
     COM: "//"
     POW: "**"
-    ARROW: "=>"
+    ARROW: "=>" | "<=>" 
     RULES_START: "#! rules"
     INITS_START: "#! inits"
     DEFNS_START: "#! definitions"
     COMPLEXES_START: "#! complexes"
     REGULATION_START: "#! regulation"
-    
+
     !label: CNAME "~"
 
     param: CNAME
@@ -144,8 +146,8 @@ EXTENDED_GRAMMAR = """
 """
 
 COMPLEX_GRAMMAR = """
-    rate_complex: (value|cmplx_name) DOUBLE_COLON compartment
-    value: (agent ".")* agent
+    rate_complex: value DOUBLE_COLON compartment
+    value: ((agent | cmplx_name) ".")* (agent | cmplx_name)
     agent: atomic | structure
     structure: s_name "(" composition ")"
     composition: (atomic ",")* atomic?
@@ -166,17 +168,17 @@ COMPLEX_GRAMMAR = """
 
 REGULATIONS_GRAMMAR = """
     regulation_def: "type" ( regular | programmed | ordered | concurrent_free | conditional ) 
-    
+
     !regular: "regular" (DIGIT|LETTER| "+" | "*" | "(" | ")" | "[" | "]" | "_" | "|" | "&")+
-    
+
     programmed: "programmed" successors+
     successors: CNAME ":" "{" CNAME ("," CNAME)* "}"
-    
+
     ordered: "ordered" order ("," order)*
     order: ("(" CNAME "," CNAME ")")
-    
+
     concurrent_free: "concurrent-free" order ("," order)*
-    
+
     conditional: "conditional" context+
     context: CNAME ":" "{" rate_complex ("," rate_complex)* "}"
 """
@@ -224,6 +226,7 @@ class ReplaceVariables(Transformer):
     This class is used to replace variables in rule (marked by ?) by
     the given cmplx_name (so far limited only to that).
     """
+
     def __init__(self, to_replace):
         super(ReplaceVariables, self).__init__()
         self.to_replace = to_replace
@@ -238,6 +241,7 @@ class ExtractComplexNames(Transformer):
 
     Also multiplies rule with variable to its instances using ReplaceVariables Transformer.
     """
+
     def __init__(self):
         super(ExtractComplexNames, self).__init__()
         self.complex_defns = dict()
@@ -259,6 +263,33 @@ class ExtractComplexNames(Transformer):
         return Tree('rules', new_rules)
 
 
+def remove_nested_complex_aliases(complex_defns):
+    """
+    Removes nested complex aliases from their definitions.
+    """
+    def replace_aliases(complex_defns):
+        new_definitions = dict()
+        for defn in complex_defns:
+            result = []
+            for child in complex_defns[defn]:
+                if child.data == 'cmplx_name':
+                    result += complex_defns[str(child.children[0])]
+                else:
+                    result.append(child)
+            new_definitions[defn] = result
+        return new_definitions
+
+    complex_defns = {key: complex_defns[key].children for key in complex_defns}
+    new_defns = replace_aliases(complex_defns)
+
+    while new_defns != complex_defns:
+        complex_defns = new_defns
+        new_defns = replace_aliases(complex_defns)
+
+    complex_defns = {key: Tree('value', complex_defns[key]) for key in complex_defns}
+    return complex_defns
+
+
 class TransformAbstractSyntax(Transformer):
     """
     Transformer to remove "zooming" syntax.
@@ -266,6 +297,7 @@ class TransformAbstractSyntax(Transformer):
     Divided to three special cases (declared below).
     Based on replacing subtrees in parent trees.
     """
+
     def __init__(self, complex_defns):
         super(TransformAbstractSyntax, self).__init__()
         self.complex_defns = complex_defns
@@ -331,12 +363,22 @@ class TransformAbstractSyntax(Transformer):
     def get_name(self, agent):
         return str(agent.children[0].children[0])
 
+    def complex(self, matches):
+        result = []
+        for match in matches[0].children:
+            if match.data == 'value':
+                result += match.children
+            else:
+                result.append(match)
+        return Tree('complex', [Tree('value', result)] + matches[1:])
+
 
 class TreeToComplex(Transformer):
     """
     Creates actual Complexes in rates of the rules - there it is safe,
     order is not important. Does not apply to the rest of the rule!
     """
+
     def state(self, matches):
         return "".join(map(str, matches))
 
@@ -367,12 +409,14 @@ class TreeToObjects(Transformer):
     def __init__(self):
         super(TreeToObjects, self).__init__()
         self.params = set()
+
     """
     A transformer which is called on a tree in a bottom-up manner and transforms all subtrees/tokens it encounters.
     Note the defined methods have the same name as elements in the grammar above.
 
     Creates the actual Model object after all the above transformers were applied.
     """
+
     def const(self, matches):
         return float(matches[0])
 
@@ -405,7 +449,7 @@ class TreeToObjects(Transformer):
         return helper
 
     def rule(self, matches):
-        label = None
+        label = None  # TODO create implicit label
         rate = None
         if len(matches) == 5:
             label, lhs, arrow, rhs, rate = matches
@@ -435,10 +479,21 @@ class TreeToObjects(Transformer):
                 if not replication:
                     pairs += [(None, i + lhs.counter)]
 
-        return Rule(agents, mid, compartments, complexes, pairs, Rate(rate) if rate else None, label)
+        reversible = False
+        if arrow == '<=>':
+            reversible = True
+        return reversible, Rule(agents, mid, compartments, complexes, pairs, Rate(rate) if rate else None, label)
 
     def rules(self, matches):
-        return {'rules': matches[1:]}
+        rules = []
+        for reversible, rule in matches[1:]:
+            if reversible:
+                reversible_rule = rule.create_reversible()
+                rules.append(rule)
+                rules.append(reversible_rule)
+            else:
+                rules.append(rule)
+        return {'rules': rules}
 
     def definitions(self, matches):
         result = dict()
@@ -466,6 +521,7 @@ class TreeToObjects(Transformer):
     def model(self, matches):
         definitions = dict()
         regulation = None
+        inits = collections.Counter()
         for match in matches:
             if type(match) == dict:
                 key, value = list(match.items())[0]
@@ -491,7 +547,7 @@ class Parser:
 
         self.terminals = dict((v, k) for k, v in _TERMINAL_NAMES.items())
         self.terminals.update({"COM": "//",
-                               "ARROW": "=>",
+                               "ARROW": "=>, <=>",
                                "POW": "**",
                                "DOUBLE_COLON": "::",
                                "RULES_START": "#! rules",
@@ -537,18 +593,18 @@ class Parser:
         :param tree: given parsed Tree
         :return: Result containing constructed BCSL object
         """
-        # try:
-        complexer = ExtractComplexNames()
-        tree = complexer.transform(tree)
-        de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
-        tree = de_abstracter.transform(tree)
-        tree = TreeToComplex().transform(tree)
-        tree = TransformRegulations().transform(tree)
-        tree = TreeToObjects().transform(tree)
-
-        return Result(True, tree.children[0])
-        # except Exception as u:
-        #     return Result(False, {"error": str(u)})
+        try:
+            complexer = ExtractComplexNames()
+            tree = complexer.transform(tree)
+            complexer.complex_defns = remove_nested_complex_aliases(complexer.complex_defns)
+            de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
+            tree = de_abstracter.transform(tree)
+            tree = TreeToComplex().transform(tree)
+            tree = TransformRegulations().transform(tree)
+            tree = TreeToObjects().transform(tree)
+            return Result(True, tree.children[0])
+        except Exception as u:
+            return Result(False, {"error": str(u)})
 
     def syntax_check(self, expression: str) -> Result:
         """
