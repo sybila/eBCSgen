@@ -56,7 +56,7 @@ class Complex:
 
         """
 
-        return "st_"+"_".join(sorted(self.get_agent_names())) +"_"+ str(self.compartment)
+        return f"st_{"_".join(sorted(self.get_agent_names()))}_{self.compartment}"
 
     def to_SBML_species_code(self):
         """
