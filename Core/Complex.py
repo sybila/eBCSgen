@@ -60,15 +60,11 @@ class Complex:
 
     def to_SBML_species_code(self):
         """
-        Using hash that is specific for different ordering of agents
-        instead of self.__hash()__ function it outputs different number for
-        isomorphic agents which sufficiently distinguishes them from one another
-        Instead of '-' symbol we use '_'
-        list of agents is casted to tuple() because list() is unhashable type
-        so it is compatible with SBML - id naming later some nicer
-        id could be implemented
+        Compute a unique SBML ID for complex.
+        Uses modified hash which takes into account the ordering of agents
+        (compared to self.__hash__() which treats them as a multiset).
 
-        :return: <str> id of SBML - species of this complex agent"""
+        :return: <str> ID of SBML species of this complex agent"""
         code = str(hash((tuple(self.agents),self.compartment)))
         return "sp_" + code[1:] if code[0] == "-" else "sp_" + code
 
