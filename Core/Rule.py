@@ -79,12 +79,7 @@ class Rule:
             #create new key with this complex name
             #and add its value as new set with SBML_code
             #that represents this given complex
-            if c not in unique_complexes_from_rule.keys():
-                unique_complexes_from_rule[c] = set()
-                unique_complexes_from_rule[c].add(double)
-            else:
-                #just add its sbml code to set when the isomorphism is different
-                unique_complexes_from_rule[c].add(double)
+            unique_complexes_from_rule[c] = unique_complexes_from_rule.get(c, set()) | {double}
         return unique_complexes_from_rule
 
     def create_complexes(self):
