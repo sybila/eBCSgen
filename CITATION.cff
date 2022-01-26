@@ -11,7 +11,7 @@ version: 1.0.0
 date-released: 2020-05-20
 url: "https://github.com/sybila/eBCSgen"
 preferred-citation:
-  type: inproceedings
+  type: proceedings
   authors:
     - family-names: "Troják"
       given-names: "Matej"
@@ -25,7 +25,9 @@ preferred-citation:
       given-names: "Luboš"
       orcid: "https://orcid.org/0000-0001-9393-7545"
   title: "eBCSgen: A Software Tool for Biochemical Space Language"
-  booktitle: "International Conference on Computational Methods in Systems Biology"
-  organization: "Springer"
-  pages: 356-361
+  collection-title: "International Conference on Computational Methods in Systems Biology"
+  publisher:
+    name: "Springer"
+  start: 356
+  end: 361
   year: 2020
