@@ -18,7 +18,7 @@ from TS.TransitionSystem import TransitionSystem
 from TS.State import State, Memory, Multiset
 from TS.TSworker import TSworker
 from TS.VectorModel import VectorModel, handle_number_of_threads
-from Translating.ModelSBML import ModelSBML
+from Export.ModelSBML import ModelSBML
 
 class Model:
     def __init__(self, rules: set, init: collections.Counter, definitions: dict, params: set, regulation=None):
@@ -301,16 +301,16 @@ class Model:
         Convert model to a SBML model using SBML-multi package (libsbml).
         :return: SBML document
         """
-        test_model = ModelSBML()
+        test_model = ModelSBML(3, 1)
         test_model.docPlug.setRequired(True)
         unique_complexes, unique_params = self.create_unique_complexes_and_params()
 
-        test_model.create_basic_species_types(self.atomic_signature, self.structure_signature) #1
-        test_model.create_all_species_compartments_and_complex_species_types(unique_complexes)#2
-        test_model.create_all_reactions(self.rules)#3
-        test_model.create_reaction_for_isomorphisms(unique_complexes)#3.1
-        test_model.create_parameters(self.definitions, unique_params)#4
-        test_model.set_initial_amounts(self.init)#5
+        test_model.create_basic_species_types(self.atomic_signature, self.structure_signature)
+        test_model.create_all_species_compartments_and_complex_species_types(unique_complexes)
+        test_model.create_all_reactions(self.rules)
+        test_model.create_reaction_for_isomorphisms(unique_complexes)
+        test_model.create_parameters(self.definitions, unique_params)
+        test_model.set_initial_amounts(self.init)
 
         return test_model.document
 
@@ -324,48 +324,26 @@ class Model:
         unique_complexes = dict()
         #gets all initialization complexes
         initialization_complexes = set(map(lambda x : x[0],self.init.items()))
-        unique_params_from_rate = set() # Might be usefull later
+        unique_params_from_rate = set()
 
-        #traverses all rules
         for rule in self.rules:
-            # gets all params and agents from single rate
             agents, params = rule.rate.get_params_and_agents()
-
-            #get dict of all complex agents in rule as 'Keys'
-            #mapped to all occurences of isomorphism of this agent
-            #as SBML_code as 'Values' in set of tuples (compAgent, specific_SBML_code)
             complexes_from_rule_in_dict = rule.get_unique_complexes_from_rule()
-            #this adds all elements in dict rule to all
-            #complexes from previous runs
             for comp in complexes_from_rule_in_dict:
                 if comp not in unique_complexes:
                     unique_complexes[comp] = complexes_from_rule_in_dict[comp]
                 else:
                     unique_complexes[comp] = unique_complexes[comp].union(complexes_from_rule_in_dict[comp])
-            #this adds all agents from rates
-            #to all complexes from previous runs
+
             for agent in agents:
                 double_agent = (agent, agent.to_SBML_species_code())
-                if agent not in unique_complexes:
-                    empty_set = set()
-                    empty_set.add(double_agent)
-                    unique_complexes[agent] = empty_set
-                else:
-                    unique_complexes[agent].add(double_agent)
-            unique_params_from_rate = unique_params_from_rate.union(params)
+                unique_complexes[agent] = unique_complexes.get(agent, set() | {double_agent})
 
-        #loops over all initialization complexes
-        #there might be agent that is isomorphic to some agent in rules
-        #but not present in rule directly... it has to be convertable to those
+            unique_params_from_rate = unique_params_from_rate.union(params)
         for agent in initialization_complexes:
             double_agent = (agent, agent.to_SBML_species_code())
-            if agent not in unique_complexes:
-                empty_set = set()
-                empty_set.add(double_agent)
-                unique_complexes[agent] = empty_set
-            else:
-                unique_complexes[agent].add(double_agent)
-        #convert set to list for better handling
+            unique_complexes[agent] = unique_complexes.get(agent, set() | {double_agent})
+
         for comp in unique_complexes:
             unique_complexes[comp] = list(unique_complexes[comp])
         return unique_complexes, unique_params_from_rate

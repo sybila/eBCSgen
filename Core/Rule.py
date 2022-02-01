@@ -61,6 +61,7 @@ class Rule:
 
     def __hash__(self):
         return hash(str(self))
+
     def get_unique_complexes_from_rule(self) -> dict:
         """Creates complexes from rule and returns them in dict
             Keys: are Complex agents

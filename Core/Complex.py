@@ -55,8 +55,8 @@ class Complex:
         :return: <str> id of SBML - speciesType of this complex agent
 
         """
-
-        return f"st_{"_".join(sorted(self.get_agent_names()))}_{self.compartment}"
+        agents = "_".join(sorted(self.get_agent_names()))
+        return f"st_{agents}_{self.compartment}"
 
     def to_SBML_species_code(self):
         """

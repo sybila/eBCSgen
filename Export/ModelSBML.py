@@ -6,9 +6,9 @@ import Core.Complex
 class ModelSBML:
 
 
-    def __init__(self):
+    def __init__(self, level, version):
         #OBJECTS OF libsbml - for better handling
-        self.document = libsbml.SBMLDocument(libsbml.SBMLNamespaces(3,1,"multi", 1))
+        self.document = libsbml.SBMLDocument(libsbml.SBMLNamespaces(level,version,"multi", 1))
         self.docPlug = self.document.getPlugin("multi")
         self.model = self.document.createModel()
         self.modelPlug = self.model.getPlugin("multi")
@@ -27,11 +27,11 @@ class ModelSBML:
         :param: atomics -> atomic signature of the model
         """
         new_feature_type =new_species_type.createSpeciesFeatureType()
-        new_feature_type.setId(atomic + "_feature_type")
+        new_feature_type.setId(f"{atomic}_feature_type")
         new_feature_type.setOccur(1)
-        for feature_value in atomics[atomic]:
+        for feature_value in atomics:
             new_feature_type.createPossibleSpeciesFeatureValue()\
-                .setId(atomic+"_"+feature_value)
+                .setId(f"{atomic}_{feature_value}")
 
     def create_species_types_from_atomic(self, atomics: dict):
         """
@@ -40,9 +40,9 @@ class ModelSBML:
         """
         for atomic in atomics:
             new_species_type = self.modelPlug.createMultiSpeciesType()
-            new_species_type.setId("st_"+atomic)
+            new_species_type.setId(f"st_{atomic}")
             if atomics[atomic] != set():
-                self.create_species_feature_type(new_species_type, atomic, atomics)
+                self.create_species_feature_type(new_species_type, atomic, atomics[atomic])
 
 
     def create_species_types_from_structure(self, structs: dict):
@@ -52,11 +52,11 @@ class ModelSBML:
         """
         for struct in structs:
             new_species_type = self.modelPlug.createMultiSpeciesType()
-            new_species_type.setId("st_"+struct)
+            new_species_type.setId(f"st_{struct}")
             for num, subcomponent in enumerate(sorted(structs[struct]), start=0):
                 new_instance = new_species_type.createSpeciesTypeInstance()
                 new_instance.setId(subcomponent)
-                new_instance.setSpeciesType("st_"+subcomponent)
+                new_instance.setSpeciesType(f"st_{subcomponent}")
 
     def create_species_type_from_complex(self, comp_agent : Core.Complex):
         """
@@ -69,15 +69,15 @@ class ModelSBML:
 
         for num, subcomponent in enumerate(sorted(comp_agent.get_agent_names()), start=0):
             new_instance = new_species_type.createSpeciesTypeInstance()
-            new_instance.setId(subcomponent+"_"+str(num))
-            new_instance.setSpeciesType("st_"+subcomponent)
+            new_instance.setId(f"{subcomponent}_{str(num)}")
+            new_instance.setSpeciesType(f"st_{subcomponent}")
             agent = sorted(comp_agent.agents)[num]
             if isinstance(agent, Core.Structure.StructureAgent):
                 for atomic in agent.composition:
                     comp_index = new_species_type.createSpeciesTypeComponentIndex()
-                    comp_index.setId(subcomponent +"_" + str(num) + "_" + atomic.name )
+                    comp_index.setId(f"{subcomponent}_{str(num)}_{atomic.name}")
                     comp_index.setComponent(atomic.name)
-                    comp_index.setIdentifyingParent(subcomponent+"_"+str(num))
+                    comp_index.setIdentifyingParent(f"{subcomponent}_{str(num)}")
 
     def create_basic_species_types(self,atomics: dict, structs: dict):
         """
@@ -116,12 +116,12 @@ class ModelSBML:
         :param: is_component -> <bool> says about if setting the component atr. is necessary
         """
         sf = libsbml.SpeciesFeature(3, 1, 1)
-        sf.setSpeciesFeatureType(agent.name + "_feature_type")
+        sf.setSpeciesFeatureType(f"{agent.name}_feature_type")
         if is_component:
             sf.setComponent(component_ref)
         sf.setOccur(1)
         sfv = sf.createSpeciesFeatureValue()
-        sfv.setValue(agent.name + "_" + agent.state)
+        sfv.setValue(f"{agent.name}_{agent.state}")
         plugin.addSpeciesFeature(sf)
 
     def create_species_features(self, comp_agent: Core.Complex, new_species_multi_plugin):
@@ -136,7 +136,7 @@ class ModelSBML:
                 self.set_species_feature(agent, new_species_multi_plugin, component_ref, is_component=False)
             elif isinstance(agent,Core.Structure.StructureAgent):
                 for atomic_agent in sorted(agent.composition):
-                    component_ref = agent.name+"_"+str(num)+"_"+atomic_agent.name
+                    component_ref = f"{agent.name}_{str(num)}_{atomic_agent.name}"
                     self.set_species_feature(atomic_agent, new_species_multi_plugin, component_ref, is_component=True)
 
     def create_species(self, comp_agent : Core.Complex):
@@ -203,7 +203,7 @@ class ModelSBML:
             product.setConstant(False)
             product.setStoichiometry(itm[1])
 
-    def create_kinetic_law_and_modifiers(self, rules, reaction_objects):
+    def create_kinetic_law_and_modifiers(self, ordered_rules, reaction_objects):
         """
         creates kinetic law for all reactions
            and at the same time it creates modifiers
@@ -214,7 +214,7 @@ class ModelSBML:
            to work with given reaction in this librialry
 
          """
-        for i, r in enumerate(rules):
+        for i, r in enumerate(ordered_rules):
             reac = r.to_reaction()
             rate = reac.rate
             res = rate.to_mathML()
@@ -248,13 +248,14 @@ class ModelSBML:
         :param: unique_complexes
         """
         for compl in unique_complexes:
-            if len(unique_complexes[compl]) > 1:
-                for i in range(len(unique_complexes[compl])):
-                    for j in range(len(unique_complexes[compl])):
+            num_of_complexes = len(unique_complexes[compl])
+            if num_of_complexes> 1:
+                for i in range(num_of_complexes):
+                    for j in range(num_of_complexes):
                         if i > j:
                             reaction = self.model.createReaction()
-                            reaction.setId("rc_" + str(unique_complexes[compl][i][1]) + "_to_" + str(unique_complexes[compl][j][1]))
-                            reaction.setName(str(unique_complexes[compl][i][0]) + "_to_" + str(unique_complexes[compl][j][0]))
+                            reaction.setId(f"rc_{str(unique_complexes[compl][i][1])}_to_{str(unique_complexes[compl][j][1])}")
+                            reaction.setName(f"{str(unique_complexes[compl][i][0])}_to_{str(unique_complexes[compl][j][0])}")
                             #reversible(True) so only half of reactions
                             #is needed to be able to transfer
                             #between all of them
@@ -284,9 +285,10 @@ class ModelSBML:
 
         """
         reaction_objects = []
-        for i, r in enumerate(rules):
+        ordered_rules = tuple(rules)
+        for i, r in enumerate(ordered_rules):
             reaction = self.model.createReaction()
-            reaction.setId("rc_"+str(i))
+            reaction.setId(f"rc_{str(i)}")
             reaction.setName(str(r))
             reaction.setReversible(False)
             reaction.setFast(False)
@@ -295,7 +297,7 @@ class ModelSBML:
 
             self.create_reactants(list(reac.lhs.to_counter().items()), reaction)
             self.create_products(list(reac.rhs.to_counter().items()), reaction)
-        self.create_kinetic_law_and_modifiers(rules, reaction_objects)
+        self.create_kinetic_law_and_modifiers(ordered_rules, reaction_objects)
 
     def create_parameters(self, definitions: dict, unique_params: set):
         """
