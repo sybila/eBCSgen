@@ -1,3 +1,4 @@
+import copy
 import unittest
 import numpy as np
 import sympy
@@ -8,6 +9,12 @@ import Core.Rate
 from Core.Structure import StructureAgent
 from Parsing.ParseBCSL import Parser
 from TS.State import Vector, State, Memory
+
+
+CORRECT_MATHML = """
+<kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><divide><times><cn>3.0</cn>\
+<ci>K(T{i}).X()::cyt</ci></times><plus><power><ci>K()::cyt</ci><cn>2.0</cn></power><times>\
+<cn>4.0</cn><ci>p</ci></times></plus></divide></apply></math></kineticLaw>"""
 
 
 class TestRate(unittest.TestCase):
@@ -98,3 +105,19 @@ class TestRate(unittest.TestCase):
         values = {self.c1: 3}
         params = {"v_1": 5}
         self.assertEqual(self.rate_3.evaluate_direct(values, params), 9/10)
+
+    def test_mathML(self):
+        rate_expr = "(3.0*[K(T{i}).X()::cyt])/([K()::cyt]**2.0+4.0*p)"
+        rate = Core.Rate.Rate(self.parser.parse(rate_expr).data)
+        expression = rate.to_mathML()
+        agents, params = rate.get_params_and_agents()
+        str_to_code = {"[" + str(agent) + "]": agent.to_SBML_species_code() for agent in agents}
+
+        operators = {'**': ' ^ ', '*': ' * ', '+': ' + ', '-': ' - ', '/': ' / '}
+        for agent in str_to_code:
+            rate_expr = rate_expr.replace(agent, str_to_code[agent])
+        for op in operators:
+            rate_expr = rate_expr.replace(op, operators[op])
+
+        self.assertEqual(expression, rate_expr)
+ 

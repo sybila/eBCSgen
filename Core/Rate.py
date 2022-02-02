@@ -1,9 +1,11 @@
 import numpy as np
 import sympy
-from lark import Transformer, Tree
+from lark import Transformer, Tree, Token
 from sortedcontainers import SortedList
 
 from TS.State import Vector
+
+STATIC_MATH = """<kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply>{}</apply></math></kineticLaw>"""
 
 
 class Rate:
@@ -83,12 +85,13 @@ class Rate:
     def get_params_and_agents(self):
         """
         Extracts all agents (Complex objects) and params (strings) used in the rate expression.
+
         :return: set of agents and params
         """
         transformer = Extractor()
         transformer.transform(self.expression)
         return transformer.agents, transformer.params
-
+    
     def evaluate_direct(self, values, params) -> float:
         """
         Evaluates
@@ -108,6 +111,15 @@ class Rate:
             return value
         except TypeError:
             return None
+          
+    def to_mathML(self):
+        transformer = MathMLtransformer()
+        expression = transformer.transform(self.expression)
+        return "".join(tree_to_string(expression))
+
+    def get_formula_in_list(self):
+        return tree_to_string(self.expression)
+
 
 
 # Transformers for Tree
@@ -124,7 +136,7 @@ class SymbolicAgents(Transformer):
 
 class Vectorizer(Transformer):
     def __init__(self, ordering, definitions):
-        super(Transformer, self).__init__()
+        super(Vectorizer, self).__init__()
         self.ordering = ordering
         self.definitions = definitions
         self.visited = []
@@ -149,7 +161,7 @@ class Vectorizer(Transformer):
 
 class Evaluater(Transformer):
     def __init__(self, state):
-        super(Transformer, self).__init__()
+        super(Evaluater, self).__init__()
         self.state = state
         self.locals = dict()
 
@@ -192,6 +204,42 @@ class Extractor(Transformer):
     def param(self, matches):
         self.params.add(matches[0])
         return Tree("param", matches)
+
+
+class MathMLtransformer(Transformer):
+    def __init__(self):
+        super(MathMLtransformer, self).__init__()
+        self.operators = {'STAR': ' * ',
+                          'PLUS': ' + ',
+                          'MINUS': ' - ',
+                          'POW': ' ^ ',
+                          'SLASH': ' / '}
+
+    def rate_agent(self, matches):
+        return Tree('rate_agent', [matches[1].children[0].to_SBML_species_code()])
+
+    def fun(self, matches):
+        if len(matches) == 1:
+            # leaf
+            return Tree('fun', matches)
+        elif len(matches) == 3:
+            if type(matches[0]) == Token:
+                # parentheses
+                return Tree('fun', matches)
+            elif type(matches[1]) == Token:
+                # binary operator
+                return self.fix_operator('fun', matches)
+
+    def rate(self, matches):
+        if len(matches) == 3:
+            # rational function
+            return self.fix_operator('rate', matches)
+        else:
+            return matches[0]
+
+    def fix_operator(self, node, matches):
+        operator = self.operators[matches[1].type]
+        return Tree(node, [matches[0], Token(matches[1].type, operator), matches[2]])
 
 
 def tree_to_string(tree):

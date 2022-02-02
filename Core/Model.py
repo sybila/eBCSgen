@@ -4,10 +4,10 @@ import random
 import time
 import numpy as np
 from lark import Tree
-
 import pandas as pd
 import copy
 from sortedcontainers import SortedList
+import libsbml
 
 from Regulations.Conditional import Conditional, VectorConditional
 from Core.Atomic import AtomicAgent
@@ -18,7 +18,7 @@ from TS.TransitionSystem import TransitionSystem
 from TS.State import State, Memory, Multiset
 from TS.TSworker import TSworker
 from TS.VectorModel import VectorModel, handle_number_of_threads
-
+from Export.ModelSBML import ModelSBML
 
 class Model:
     def __init__(self, rules: set, init: collections.Counter, definitions: dict, params: set, regulation=None):
@@ -28,7 +28,7 @@ class Model:
         self.params = params  # set of str
         self.all_rates = self.check_rates()  # indicates whether model is quantitative
         self.regulation = regulation  # used to rules filtering, can be unspecified (None)
-
+        
         # autocomplete
         self.atomic_signature, self.structure_signature = self.extract_signatures()
 
@@ -247,11 +247,10 @@ class Model:
         for rule in self.rules:
             bound = max(bound, max(rule.lhs.most_frequent(), rule.rhs.most_frequent()))
         return max(bound, Side(self.init).most_frequent())
-
+    
     def generate_direct_transition_system(self, max_time: float = np.inf, max_size: float = np.inf, bound=None):
         """
         Generates transition system using direct rule firing.
-
         :param max_time: max time for TS generating before interrupting
         :param max_size: max allowed size of TS before interrupting
         :param bound: bound for individual elements
@@ -296,3 +295,55 @@ class Model:
             time.sleep(1)
 
         return ts
+    
+    def export_sbml(self) -> libsbml.SBMLDocument:
+        """
+        Convert model to a SBML model using SBML-multi package (libsbml).
+        :return: SBML document
+        """
+        test_model = ModelSBML(3, 1)
+        test_model.docPlug.setRequired(True)
+        unique_complexes, unique_params = self.create_unique_complexes_and_params()
+
+        test_model.create_basic_species_types(self.atomic_signature, self.structure_signature)
+        test_model.create_all_species_compartments_and_complex_species_types(unique_complexes)
+        test_model.create_all_reactions(self.rules)
+        test_model.create_reaction_for_isomorphisms(unique_complexes)
+        test_model.create_parameters(self.definitions, unique_params)
+        test_model.set_initial_amounts(self.init)
+
+        return test_model.document
+
+    def create_unique_complexes_and_params(self):
+        """
+        Extracts unique complexes and compartments from rules
+        splits complexes by its isomorphisms
+        :return: dict of unique complexes mapped to list of its isomorphisms and set of unique params
+        """
+        #here all complexes will be (complexAgent:{(complexAgent, SBML_code_isomprphism1),(complexAgent, SBML_code_isomprphism2)... })
+        unique_complexes = dict()
+        #gets all initialization complexes
+        initialization_complexes = set(map(lambda x : x[0],self.init.items()))
+        unique_params_from_rate = set()
+
+        for rule in self.rules:
+            agents, params = rule.rate.get_params_and_agents()
+            complexes_from_rule_in_dict = rule.get_unique_complexes_from_rule()
+            for comp in complexes_from_rule_in_dict:
+                if comp not in unique_complexes:
+                    unique_complexes[comp] = complexes_from_rule_in_dict[comp]
+                else:
+                    unique_complexes[comp] = unique_complexes[comp].union(complexes_from_rule_in_dict[comp])
+
+            for agent in agents:
+                double_agent = (agent, agent.to_SBML_species_code())
+                unique_complexes[agent] = unique_complexes.get(agent, set() | {double_agent})
+
+            unique_params_from_rate = unique_params_from_rate.union(params)
+        for agent in initialization_complexes:
+            double_agent = (agent, agent.to_SBML_species_code())
+            unique_complexes[agent] = unique_complexes.get(agent, set() | {double_agent})
+
+        for comp in unique_complexes:
+            unique_complexes[comp] = list(unique_complexes[comp])
+        return unique_complexes, unique_params_from_rate

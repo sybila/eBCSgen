@@ -1,6 +1,5 @@
 import collections
 import itertools
-import random
 from copy import deepcopy
 
 import Core.Atomic
@@ -43,6 +42,39 @@ class Complex:
         :return: PRISM variable name
         """
         return "VAR_" + str(number)
+
+    def get_agent_names(self):
+        """
+        Maps names to all agents in complex
+        :return: list of agent names in this complex
+        """
+        return [agent.name for agent in self.agents]
+
+    def to_SBML_speciesTypes_code(self):
+        """
+        :return: <str> id of SBML - speciesType of this complex agent
+
+        """
+        agents = "_".join(sorted(self.get_agent_names()))
+        return f"st_{agents}_{self.compartment}"
+
+    def to_SBML_species_code(self):
+        """
+        Compute a unique SBML ID for complex.
+        Uses modified hash which takes into account the ordering of agents
+        (compared to self.__hash__() which treats them as a multiset).
+
+        :return: <str> ID of SBML species of this complex agent"""
+        code = str(hash((tuple(self.agents),self.compartment)))
+        return "sp_" + code[1:] if code[0] == "-" else "sp_" + code
+
+    def is_composed(self):
+
+        """
+        Determines if this complex agent is composed out of more
+        atomic/structure agents or single agent.
+        :return: <bool>"""
+        return len(self.agents) > 1
 
     def extend_signature(self, atomic_signature: dict, structure_signature: dict):
         """
