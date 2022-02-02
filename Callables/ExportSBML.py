@@ -35,9 +35,8 @@ model_str = open(args.model, "r").read()
 
 model = model_parser.parse(model_str)
 if model.success:
-
     document = model.data.export_sbml()
-    libsbml.writeSBML(args.output)
+    libsbml.writeSBMLToFile(document, args.output)
 else:
     if "error" in model.data:
         raise UnspecifiedParsingError(model.data["error"])
