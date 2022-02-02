@@ -4,11 +4,11 @@ import argparse
 # this add to path eBCSgen home dir, so it can be called from anywhere
 sys.path.append(os.path.split(sys.path[0])[0])
 
-from Analysis.CTL import CTL
-from Parsing.ParseBCSL import load_TS_from_json
-import Parsing.ParseCTLformula
-from Errors.FormulaParsingError import FormulaParsingError
-from Errors.InvalidInputError import InvalidInputError
+from eBCSgen.Analysis.CTL import CTL
+from eBCSgen.Parsing.ParseBCSL import load_TS_from_json
+from eBCSgen.Errors.FormulaParsingError import FormulaParsingError
+from eBCSgen.Errors.InvalidInputError import InvalidInputError
+from eBCSgen.Parsing.ParseCTLformula import CTLparser
 
 """
 usage: CTLModelChecking.py [-h] --transition_file TRANSITION_FILE 
@@ -40,7 +40,7 @@ ts = load_TS_from_json(args.transition_file)
 if len(ts.params) != 0:
     raise InvalidInputError("Provided transition system is parametrised - model checking cannot be executed.")
 
-formula = Parsing.ParseCTLformula.CTLparser().parse(args.formula)
+formula = CTLparser().parse(args.formula)
 if formula.success:
     result, states = CTL.model_checking(ts, formula)
     output = 'Result: {}\nNumber of satisfying states: {}'.format(result, len(states))

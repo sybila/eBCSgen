@@ -1,6 +1,6 @@
 import unittest
 
-from Parsing.ParseBCSL import Parser
+from eBCSgen.Parsing.ParseBCSL import Parser
 
 
 class TestRegulations(unittest.TestCase):

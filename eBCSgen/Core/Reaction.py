@@ -1,8 +1,8 @@
 from sortedcontainers import SortedList
 
-from Core import Rate
-from Core.Side import Side
-from TS.VectorReaction import VectorReaction
+from eBCSgen.Core import Rate
+from eBCSgen.Core.Side import Side
+from eBCSgen.TS.VectorReaction import VectorReaction
 
 
 class Reaction:

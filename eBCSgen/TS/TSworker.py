@@ -1,6 +1,6 @@
 import threading
 
-from TS.Edge import Edge
+from eBCSgen.TS.Edge import Edge
 
 
 class TSworker(threading.Thread):

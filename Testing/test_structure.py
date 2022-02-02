@@ -1,6 +1,6 @@
 import unittest
-from Core.Structure import StructureAgent
-from Core.Atomic import AtomicAgent
+from eBCSgen.Core.Structure import StructureAgent
+from eBCSgen.Core.Atomic import AtomicAgent
 
 
 class TestStructure(unittest.TestCase):

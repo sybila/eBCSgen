@@ -1,8 +1,8 @@
 from pyModelChecking.CTL.model_checking import modelcheck
 from pyModelChecking.CTL.parser import Parser
 
-from Core.Formula import Formula
-from TS.TransitionSystem import TransitionSystem
+from eBCSgen.Core.Formula import Formula
+from eBCSgen.TS.TransitionSystem import TransitionSystem
 
 
 class CTL:

@@ -5,18 +5,18 @@ from lark import Tree
 
 import numpy as np
 
-from Core.Formula import Formula
-from Core.Model import Model
-from Core.Rate import Rate
-from Core.Structure import StructureAgent
-from Core.Complex import Complex
-from Core.Rule import Rule
-from Parsing.ParseBCSL import Parser
-from TS.State import Vector, State, Memory
-import TS.TransitionSystem
-from TS.VectorModel import VectorModel
-from TS.VectorReaction import VectorReaction
-import Core.Formula
+from eBCSgen.Core.Formula import Formula
+from eBCSgen.Core.Model import Model
+from eBCSgen.Core.Rate import Rate
+from eBCSgen.Core.Structure import StructureAgent
+from eBCSgen.Core.Complex import Complex
+from eBCSgen.Core.Rule import Rule
+from eBCSgen.Parsing.ParseBCSL import Parser
+from eBCSgen.TS.State import Vector, State, Memory
+from eBCSgen.TS.VectorModel import VectorModel
+from eBCSgen.TS.VectorReaction import VectorReaction
+from eBCSgen.Core.Formula import AtomicProposition
+from eBCSgen.TS.TransitionSystem import TransitionSystem
 
 
 class TestModel(unittest.TestCase):
@@ -563,8 +563,7 @@ class TestModel(unittest.TestCase):
 
         ordering = (complex_1, complex_2, complex_3)
 
-        APs = [Core.Formula.AtomicProposition(complex_abstract, " >= ", "3"),
-               Core.Formula.AtomicProposition(complex_1, " < ", 2)]
+        APs = [AtomicProposition(complex_abstract, " >= ", "3"), AtomicProposition(complex_1, " < ", 2)]
 
         s1 = State(Vector(np.array((1, 2, 2))), Memory(0))
         s2 = State(Vector(np.array((5, 1, 1))), Memory(0))
@@ -578,7 +577,7 @@ class TestModel(unittest.TestCase):
                                3: {'property_0', 'init'},
                                4: {'property_0', 'property_1'}}
 
-        ts = TS.TransitionSystem.TransitionSystem(ordering, 5)
+        ts = TransitionSystem(ordering, 5)
         ts.states_encoding = states_encoding
         ts.init = 3
 

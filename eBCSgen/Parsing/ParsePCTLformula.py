@@ -2,8 +2,9 @@ from lark import Lark, Transformer, Tree
 from lark import UnexpectedCharacters, UnexpectedToken
 from lark.load_grammar import _TERMINAL_NAMES
 
-from Core.Formula import Formula, AtomicProposition
-import Parsing.ParseBCSL
+from eBCSgen.Core.Formula import Formula, AtomicProposition
+from eBCSgen.Parsing.ParseBCSL import COMPLEX_GRAMMAR
+from eBCSgen.Parsing.ParseBCSL import TreeToComplex
 
 GRAMMAR = """
     start: state_formula
@@ -90,11 +91,11 @@ class TreeToStrings(Transformer):
 
 class PCTLparser:
     def __init__(self):
-        grammar = GRAMMAR + Parsing.ParseBCSL.COMPLEX_GRAMMAR
+        grammar = GRAMMAR + COMPLEX_GRAMMAR
         self.parser = Lark(grammar, parser='lalr',
                            propagate_positions=False,
                            maybe_placeholders=False,
-                           transformer=Parsing.ParseBCSL.TreeToComplex()
+                           transformer=TreeToComplex()
                            )
 
         self.terminals = dict((v, k) for k, v in _TERMINAL_NAMES.items())

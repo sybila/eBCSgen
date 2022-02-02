@@ -9,16 +9,16 @@ import copy
 from sortedcontainers import SortedList
 import libsbml
 
-from Regulations.Conditional import Conditional, VectorConditional
-from Core.Atomic import AtomicAgent
-from Core.Complex import Complex
-from Core.Rate import Rate
-from Core.Side import Side
-from TS.TransitionSystem import TransitionSystem
-from TS.State import State, Memory, Multiset
-from TS.TSworker import TSworker
-from TS.VectorModel import VectorModel, handle_number_of_threads
-from Export.ModelSBML import ModelSBML
+from eBCSgen.Regulations.Conditional import Conditional, VectorConditional
+from eBCSgen.Core.Atomic import AtomicAgent
+from eBCSgen.Core.Complex import Complex
+from eBCSgen.Core.Rate import Rate
+from eBCSgen.Core.Side import Side
+from eBCSgen.TS.TransitionSystem import TransitionSystem
+from eBCSgen.TS.State import State, Memory, Multiset
+from eBCSgen.TS.TSworker import TSworker
+from eBCSgen.TS.VectorModel import VectorModel, handle_number_of_threads
+from eBCSgen.Export.ModelSBML import ModelSBML
 
 class Model:
     def __init__(self, rules: set, init: collections.Counter, definitions: dict, params: set, regulation=None):

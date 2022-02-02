@@ -3,11 +3,11 @@ import itertools
 import random
 from copy import copy, deepcopy
 
-from Core import Rate
-from Core.Complex import Complex
-from Core.Side import Side
-from Core.Reaction import Reaction
-from TS.State import Multiset
+from eBCSgen.Core import Rate
+from eBCSgen.Core.Complex import Complex
+from eBCSgen.Core.Side import Side
+from eBCSgen.Core.Reaction import Reaction
+from eBCSgen.TS.State import Multiset
 
 
 def column(lst, index):

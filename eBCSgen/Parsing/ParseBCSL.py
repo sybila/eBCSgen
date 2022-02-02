@@ -1,29 +1,29 @@
 import collections
 import json
-from numpy import inf
 import numpy as np
+from numpy import inf
 from copy import deepcopy
-from lark import Lark, Transformer, Tree, Token
+from lark import Lark, Transformer, Tree
 from lark import UnexpectedCharacters, UnexpectedToken
 from lark.load_grammar import _TERMINAL_NAMES
 import regex
 from sortedcontainers import SortedList
 
-from Core.Atomic import AtomicAgent
-from Core.Complex import Complex
-import Core.Model
-from Core.Rate import Rate
-from Core.Rule import Rule
-from Core.Structure import StructureAgent
-from Regulations.ConcurrentFree import ConcurrentFree
-from Regulations.Conditional import Conditional
-from Regulations.Ordered import Ordered
-from Regulations.Programmed import Programmed
-from Regulations.Regular import Regular
-from TS.State import State, Memory, Vector
-from TS.TransitionSystem import TransitionSystem
-from TS.Edge import edge_from_dict
-from Core.Side import Side
+from eBCSgen.Core.Atomic import AtomicAgent
+from eBCSgen.Core.Complex import Complex
+from eBCSgen.Core.Rate import Rate
+from eBCSgen.Core.Rule import Rule
+from eBCSgen.Core.Structure import StructureAgent
+from eBCSgen.Regulations.ConcurrentFree import ConcurrentFree
+from eBCSgen.Regulations.Conditional import Conditional
+from eBCSgen.Regulations.Ordered import Ordered
+from eBCSgen.Regulations.Programmed import Programmed
+from eBCSgen.Regulations.Regular import Regular
+from eBCSgen.TS.State import State, Memory, Vector
+from eBCSgen.TS.TransitionSystem import TransitionSystem
+from eBCSgen.TS.Edge import edge_from_dict
+from eBCSgen.Core.Side import Side
+from eBCSgen.Core.Model import Model
 
 
 def load_TS_from_json(json_file: str) -> TransitionSystem:
@@ -42,7 +42,7 @@ def load_TS_from_json(json_file: str) -> TransitionSystem:
         ts.states_encoding = dict()
         for node_id in data['nodes']:
             vector = np.array(eval(data['nodes'][node_id]))
-            is_hell = True if vector[0] == np.math.inf else False
+            is_hell = True if vector[0] == inf else False
             ts.states_encoding[int(node_id)] = State(Vector(vector), Memory(0), is_hell)
         ts.edges = {edge_from_dict(edge) for edge in data['edges']}
         ts.init = data['initial']
@@ -534,7 +534,7 @@ class TreeToObjects(Transformer):
                 if key == 'regulation':
                     regulation = value
         params = self.params - set(definitions)
-        return Core.Model.Model(rules, inits, definitions, params, regulation)
+        return Model(rules, inits, definitions, params, regulation)
 
 
 class Parser:
@@ -593,18 +593,18 @@ class Parser:
         :param tree: given parsed Tree
         :return: Result containing constructed BCSL object
         """
-        try:
-            complexer = ExtractComplexNames()
-            tree = complexer.transform(tree)
-            complexer.complex_defns = remove_nested_complex_aliases(complexer.complex_defns)
-            de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
-            tree = de_abstracter.transform(tree)
-            tree = TreeToComplex().transform(tree)
-            tree = TransformRegulations().transform(tree)
-            tree = TreeToObjects().transform(tree)
-            return Result(True, tree.children[0])
-        except Exception as u:
-            return Result(False, {"error": str(u)})
+        # try:
+        complexer = ExtractComplexNames()
+        tree = complexer.transform(tree)
+        complexer.complex_defns = remove_nested_complex_aliases(complexer.complex_defns)
+        de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
+        tree = de_abstracter.transform(tree)
+        tree = TreeToComplex().transform(tree)
+        tree = TransformRegulations().transform(tree)
+        tree = TreeToObjects().transform(tree)
+        return Result(True, tree.children[0])
+        # except Exception as u:
+        #     return Result(False, {"error": str(u)})
 
     def syntax_check(self, expression: str) -> Result:
         """

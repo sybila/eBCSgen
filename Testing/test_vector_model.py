@@ -2,16 +2,16 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from Core.Atomic import AtomicAgent
-from Core.Rate import Rate
-from Core.Structure import StructureAgent
-from Core.Complex import Complex
-from Parsing.ParseBCSL import Parser, load_TS_from_json
-from TS.Edge import Edge
-from TS.State import State, Vector, Memory
-from TS.TransitionSystem import TransitionSystem
-from TS.VectorModel import VectorModel
-from TS.VectorReaction import VectorReaction
+from eBCSgen.Core.Atomic import AtomicAgent
+from eBCSgen.Core.Rate import Rate
+from eBCSgen.Core.Structure import StructureAgent
+from eBCSgen.Core.Complex import Complex
+from eBCSgen.Parsing.ParseBCSL import Parser, load_TS_from_json
+from eBCSgen.TS.Edge import Edge
+from eBCSgen.TS.State import State, Vector, Memory
+from eBCSgen.TS.TransitionSystem import TransitionSystem
+from eBCSgen.TS.VectorModel import VectorModel
+from eBCSgen.TS.VectorReaction import VectorReaction
 
 
 class TestVectorModel(unittest.TestCase):

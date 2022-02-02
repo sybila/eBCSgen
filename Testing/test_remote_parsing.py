@@ -1,8 +1,7 @@
 import unittest
 import requests
-import json
 
-from Parsing.ParseBCSL import Parser
+from eBCSgen.Parsing.ParseBCSL import Parser
 
 
 class TestModel(unittest.TestCase):

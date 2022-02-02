@@ -1,8 +1,8 @@
 import libsbml
-import Core.Rule
-import Core.Atomic
-import Core.Structure
-import Core.Complex
+from eBCSgen import Core
+import eBCSgen.Core.Atomic
+import eBCSgen.Core.Structure
+import eBCSgen.Core.Complex
 
 
 class ModelSBML:
@@ -59,7 +59,7 @@ class ModelSBML:
                 new_instance.setId(subcomponent)
                 new_instance.setSpeciesType("st_{}".format(subcomponent))
 
-    def create_species_type_from_complex(self, comp_agent: Core.Complex):
+    def create_species_type_from_complex(self, comp_agent: eBCSgen.Core.Complex.Complex):
         """
         All complex agents are translated to SpeciesTypes Here
 
@@ -74,7 +74,7 @@ class ModelSBML:
             new_instance.setId("{}_{}".format(subcomponent, str(num)))
             new_instance.setSpeciesType("st_{}".format(subcomponent))
             agent = sorted(comp_agent.agents)[num]
-            if isinstance(agent, Core.Structure.StructureAgent):
+            if isinstance(agent, eBCSgen.Core.Structure.StructureAgent):
                 for atomic in agent.composition:
                     comp_index = new_species_type.createSpeciesTypeComponentIndex()
                     comp_index.setId("{}_{}_{}".format(subcomponent, str(num), atomic.name))
@@ -127,7 +127,7 @@ class ModelSBML:
         sfv.setValue("{}_{}".format(agent.name, agent.state))
         plugin.addSpeciesFeature(sf)
 
-    def create_species_features(self, comp_agent: Core.Complex, new_species_multi_plugin):
+    def create_species_features(self, comp_agent: eBCSgen.Core.Complex.Complex, new_species_multi_plugin):
         """
         Creates all species features for given species
 
@@ -135,15 +135,15 @@ class ModelSBML:
         :param new_species_multi_plugin: libsbml plugin for manipulating SBML-multi species
         """
         for num, agent in enumerate(sorted(comp_agent.agents)):
-            if isinstance(agent, Core.Atomic.AtomicAgent):
+            if isinstance(agent, eBCSgen.Core.Atomic.AtomicAgent):
                 component_ref = ""
                 self.set_species_feature(agent, new_species_multi_plugin, component_ref, is_component=False)
-            elif isinstance(agent, Core.Structure.StructureAgent):
+            elif isinstance(agent, eBCSgen.Core.Structure.StructureAgent):
                 for atomic_agent in sorted(agent.composition):
                     component_ref = "{}_{}_{}".format(agent.name, str(num), atomic_agent.name)
                     self.set_species_feature(atomic_agent, new_species_multi_plugin, component_ref, is_component=True)
 
-    def create_species(self, comp_agent: Core.Complex):
+    def create_species(self, comp_agent: eBCSgen.Core.Complex.Complex):
         """
         Creates all species in the model
 

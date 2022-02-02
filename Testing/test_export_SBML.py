@@ -1,7 +1,7 @@
 import unittest
 import libsbml
 
-from Parsing.ParseBCSL import Parser
+from eBCSgen.Parsing.ParseBCSL import Parser
 
 
 class TestSBMLexport(unittest.TestCase):

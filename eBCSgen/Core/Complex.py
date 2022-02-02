@@ -2,7 +2,7 @@ import collections
 import itertools
 from copy import deepcopy
 
-import Core.Atomic
+from eBCSgen.Core.Atomic import AtomicAgent
 
 
 class Complex:
@@ -32,7 +32,7 @@ class Complex:
 
         :return: set of all atomic names
         """
-        return {agent.name for agent in list(filter(lambda agent: type(agent) == Core.Atomic.AtomicAgent, self.agents))}
+        return {agent.name for agent in list(filter(lambda agent: type(agent) == AtomicAgent, self.agents))}
 
     def to_PRISM_code(self, number: int) -> str:
         """

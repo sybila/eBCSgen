@@ -5,10 +5,9 @@ import numpy as np
 # this add to path eBCSgen home dir, so it can be called from anywhere
 sys.path.append(os.path.split(sys.path[0])[0])
 
-from Parsing.ParseBCSL import Parser, load_TS_from_json
-from Errors.ModelParsingError import ModelParsingError
-from Errors.UnspecifiedParsingError import UnspecifiedParsingError
-from Errors.RatesNotSpecifiedError import RatesNotSpecifiedError
+from eBCSgen.Parsing.ParseBCSL import Parser, load_TS_from_json
+from eBCSgen.Errors.ModelParsingError import ModelParsingError
+from eBCSgen.Errors import UnspecifiedParsingError
 
 """
 usage: GenerateTS.py [-h] --model MODEL --output OUTPUT --direct DIRECT

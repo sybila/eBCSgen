@@ -1,8 +1,8 @@
 import unittest
 
-import Core.Formula
-import Parsing.ParseBCSL
-from Parsing.ParsePCTLformula import PCTLparser
+from eBCSgen.Parsing.ParsePCTLformula import PCTLparser
+from eBCSgen.Parsing.ParseBCSL import Parser
+from eBCSgen.Core.Formula import AtomicProposition
 
 
 class TestPCTL(unittest.TestCase):
@@ -15,13 +15,13 @@ class TestPCTL(unittest.TestCase):
 
         # parse complex
 
-        complex_parser = Parsing.ParseBCSL.Parser("rate_complex")
+        complex_parser = Parser("rate_complex")
 
         self.complex_1 = complex_parser.parse("K(S{i},T{a}).B{o}::cyt").data.children[0]
         self.complex_2 = complex_parser.parse("K(S{a},T{a}).B{o}::cyt").data.children[0]
         self.complex_3 = complex_parser.parse("K(S{a},T{i}).B{o}::cyt").data.children[0]
 
-        self.ap_1 = Core.Formula.AtomicProposition(self.complex_1, " >= ", "5")
+        self.ap_1 = AtomicProposition(self.complex_1, " >= ", "5")
 
     def test_str(self):
         formula = self.parser.parse(self.formula_1)

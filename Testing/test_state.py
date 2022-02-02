@@ -1,9 +1,9 @@
 import unittest
 import numpy as np
 
-import Parsing.ParseBCSL
-from Core.Formula import AtomicProposition
-from TS.State import State, Memory, Vector
+from eBCSgen.Core.Formula import AtomicProposition
+from eBCSgen.TS.State import State, Memory, Vector
+from eBCSgen.Parsing.ParseBCSL import Parser
 
 
 class TestState(unittest.TestCase):
@@ -21,7 +21,7 @@ class TestState(unittest.TestCase):
         self.produced_1 = Vector(np.array((5, 4, 3)))
         self.produced_2 = Vector(np.array((2, 2, 2, 1)))
 
-        complex_parser = Parsing.ParseBCSL.Parser("rate_complex")
+        complex_parser = Parser("rate_complex")
 
         self.complex_1 = complex_parser.parse("K(S{i},T{a}).B{o}::cyt").data.children[0]
         self.complex_2 = complex_parser.parse("K(S{a},T{a}).B{o}::cyt").data.children[0]

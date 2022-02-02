@@ -3,7 +3,7 @@ import sympy
 from lark import Transformer, Tree, Token
 from sortedcontainers import SortedList
 
-from TS.State import Vector
+from eBCSgen.TS.State import Vector
 
 STATIC_MATH = """<kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply>{}</apply></math></kineticLaw>"""
 
