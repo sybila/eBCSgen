@@ -20,6 +20,7 @@ from eBCSgen.TS.TSworker import TSworker
 from eBCSgen.TS.VectorModel import VectorModel, handle_number_of_threads
 from eBCSgen.Export.ModelSBML import ModelSBML
 
+
 class Model:
     def __init__(self, rules: set, init: collections.Counter, definitions: dict, params: set, regulation=None):
         self.rules = rules  # set of Rules
@@ -251,6 +252,7 @@ class Model:
     def generate_direct_transition_system(self, max_time: float = np.inf, max_size: float = np.inf, bound=None):
         """
         Generates transition system using direct rule firing.
+
         :param max_time: max time for TS generating before interrupting
         :param max_size: max allowed size of TS before interrupting
         :param bound: bound for individual elements
@@ -298,7 +300,8 @@ class Model:
     
     def export_sbml(self) -> libsbml.SBMLDocument:
         """
-        Convert model to a SBML model using SBML-multi package (libsbml).
+        Convert model to a SBML model using SBML-multi package (libSBML).
+
         :return: SBML document
         """
         test_model = ModelSBML(3, 1)
@@ -318,12 +321,11 @@ class Model:
         """
         Extracts unique complexes and compartments from rules
         splits complexes by its isomorphisms
+
         :return: dict of unique complexes mapped to list of its isomorphisms and set of unique params
         """
-        #here all complexes will be (complexAgent:{(complexAgent, SBML_code_isomprphism1),(complexAgent, SBML_code_isomprphism2)... })
         unique_complexes = dict()
-        #gets all initialization complexes
-        initialization_complexes = set(map(lambda x : x[0],self.init.items()))
+        initialization_complexes = set(map(lambda x: x[0], self.init.items()))
         unique_params_from_rate = set()
 
         for rule in self.rules:
