@@ -56,7 +56,7 @@ class Complex:
 
         """
         agents = "_".join(sorted(self.get_agent_names()))
-        return f"st_{agents}_{self.compartment}"
+        return "st_{}_{}".format(agents, self.compartment)
 
     def to_SBML_species_code(self):
         """
@@ -65,7 +65,7 @@ class Complex:
         (compared to self.__hash__() which treats them as a multiset).
 
         :return: <str> ID of SBML species of this complex agent"""
-        code = str(hash((tuple(self.agents),self.compartment)))
+        code = str(hash((tuple(self.agents), self.compartment)))
         return "sp_" + code[1:] if code[0] == "-" else "sp_" + code
 
     def is_composed(self):
