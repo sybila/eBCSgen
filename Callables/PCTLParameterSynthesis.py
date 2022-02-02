@@ -6,8 +6,6 @@ sys.path.append(os.path.split(sys.path[0])[0])
 
 from eBCSgen.Analysis.PCTL import PCTL
 from eBCSgen.Parsing.ParseBCSL import load_TS_from_json
-import eBCSgen.Parsing.ParsePCTLformula
-
 from eBCSgen.Errors.FormulaParsingError import FormulaParsingError
 from eBCSgen.Errors.InvalidInputError import InvalidInputError
 from eBCSgen.Parsing.ParsePCTLformula import PCTLparser
