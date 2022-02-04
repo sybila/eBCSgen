@@ -15,8 +15,8 @@ dependencies:
   - sympy
   - python-libsbml
   - lark
-  - lark-parser >=0.11.3
+  - lark-parser
   - pip
   - pytest
   - pip:
-    - pymodelchecking==1.3.3
+    - pymodelchecking
