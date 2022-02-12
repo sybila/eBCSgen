@@ -19,7 +19,7 @@ class TSworker(threading.Thread):
         Method takes a state from pool of states to be states and:
         1. iteratively applies all rules on it
         2. checks whether newly created states (if any) were already states (present in self.ts.states_encoding)
-           2.1 if not, it is added to self.states_to_process
+        2.1 if not, it is added to self.states_to_process
         3. creates Edge from the source state to created ones (since ts.edges is a set, we don't care about its presence)
         4. all outgoing Edges from the state are normalised to probability
         """

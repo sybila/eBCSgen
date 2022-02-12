@@ -145,7 +145,7 @@ class TransitionSystem:
         """
         Creates label for each AtomicProposition.
         Moreover, goes through all states in ts.states_encoding and validates whether they satisfy given
-         APs - if so, the particular label is assigned to the state.
+        APs - if so, the particular label is assigned to the state.
 
         :param APs: give AtomicProposition extracted from Formula
         :return: dictionary of State_code -> set of labels and AP -> label
