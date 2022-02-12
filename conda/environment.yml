@@ -18,5 +18,4 @@ dependencies:
   - lark-parser
   - pip
   - pytest
-  - pip:
-    - pymodelchecking
+  - pymodelchecking
