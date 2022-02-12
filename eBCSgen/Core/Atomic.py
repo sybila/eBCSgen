@@ -42,12 +42,12 @@ class AtomicAgent:
         Fills missing context for given agent.
 
         If other is also an atomic agents, this methods gives them both the same states
-         according to the given atomic_signature.
+        according to the given atomic_signature.
         Otherwise, context is filled independently and other part is None.
         Finally, if both agents have defined states, they are returned untouched.
 
         Note: it is assumed this method is used only for well formed rules, which means
-         given atomics have the same name AND either both do or do not have specified state.
+        given atomics have the same name AND either both do or do not have specified state.
 
         :param other: possibly an atomic agent, -1 if context is empty on left, 1 for right
         :param atomic_signature: given mapping of atomic name to possible states

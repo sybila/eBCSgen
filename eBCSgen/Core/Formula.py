@@ -60,8 +60,8 @@ class Formula:
         """
         Creates label for each unique Complex from Formula.
         This covers two cases - ground and abstract Complexes.
-        For the abstract ones, a PRISM formula needs to be constructed as a sum
-            of all compatible complexes.
+        For the abstract ones, a PRISM formula needs to be constructed
+        as a sum of all compatible complexes.
 
         :param ordering: given complex ordering of TS
         :return: unique label for each Complex and list of PRISM formulas for abstract Complexes
