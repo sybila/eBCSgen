@@ -1,7 +1,7 @@
 import itertools
 from copy import deepcopy
 
-from Core.Atomic import AtomicAgent
+from eBCSgen.Core.Atomic import AtomicAgent
 
 
 class StructureAgent:

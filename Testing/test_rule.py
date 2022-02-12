@@ -1,14 +1,13 @@
 import unittest
-import collections
 
-from Core.Rate import Rate
-from Core.Structure import StructureAgent
-from Core.Atomic import AtomicAgent
-from Core.Complex import Complex
-from Core.Rule import Rule
-from Core.Side import Side
-from Core.Reaction import Reaction
-from Parsing.ParseBCSL import Parser
+from eBCSgen.Core.Rate import Rate
+from eBCSgen.Core.Structure import StructureAgent
+from eBCSgen.Core.Atomic import AtomicAgent
+from eBCSgen.Core.Complex import Complex
+from eBCSgen.Core.Rule import Rule
+from eBCSgen.Core.Side import Side
+from eBCSgen.Core.Reaction import Reaction
+from eBCSgen.Parsing.ParseBCSL import Parser
 
 
 class TestRule(unittest.TestCase):

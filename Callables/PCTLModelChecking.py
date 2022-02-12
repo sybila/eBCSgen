@@ -4,11 +4,11 @@ import argparse
 # this add to path eBCSgen home dir, so it can be called from anywhere
 sys.path.append(os.path.split(sys.path[0])[0])
 
-from Analysis.PCTL import PCTL
-from Parsing.ParseBCSL import load_TS_from_json
-import Parsing.ParsePCTLformula
-from Errors.FormulaParsingError import FormulaParsingError
-from Errors.InvalidInputError import InvalidInputError
+from eBCSgen.Analysis.PCTL import PCTL
+from eBCSgen.Parsing.ParseBCSL import load_TS_from_json
+from eBCSgen.Errors.FormulaParsingError import FormulaParsingError
+from eBCSgen.Errors.InvalidInputError import InvalidInputError
+from eBCSgen.Parsing.ParsePCTLformula import PCTLparser
 
 """
 usage: PCTLModelChecking.py [-h] --transition_file TRANSITION_FILE 
@@ -51,7 +51,7 @@ ts = load_TS_from_json(args.transition_file)
 if len(ts.params) != 0:
     raise InvalidInputError("Provided transition system is parametrised - model checking cannot be executed.")
 
-formula = Parsing.ParsePCTLformula.PCTLparser().parse(args.formula)
+formula = PCTLparser().parse(args.formula)
 if formula.success:
     result = PCTL.model_checking(ts, formula, storm_local=local_storm)
     f = open(args.output, "w")

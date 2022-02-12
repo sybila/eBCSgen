@@ -4,11 +4,11 @@ import argparse
 # this add to path eBCSgen home dir, so it can be called from anywhere
 sys.path.append(os.path.split(sys.path[0])[0])
 
-from Parsing.ParseBCSL import Parser
-from Errors.ModelParsingError import ModelParsingError
-from Errors.UnspecifiedParsingError import UnspecifiedParsingError
-from Errors.InvalidInputError import InvalidInputError
-from Errors.RatesNotSpecifiedError import RatesNotSpecifiedError
+from eBCSgen.Parsing.ParseBCSL import Parser
+from eBCSgen.Errors.ModelParsingError import ModelParsingError
+from eBCSgen.Errors import UnspecifiedParsingError
+from eBCSgen.Errors.InvalidInputError import InvalidInputError
+from eBCSgen.Errors.RatesNotSpecifiedError import RatesNotSpecifiedError
 
 """
 usage: Simulation.py [-h] --model MODEL --output OUTPUT --deterministic

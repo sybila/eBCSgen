@@ -7,9 +7,9 @@ import pandas as pd
 import random
 from sortedcontainers import SortedList
 
-from TS.State import State, Memory
-from TS.TSworker import TSworker
-from TS.TransitionSystem import TransitionSystem
+from eBCSgen.TS.State import State, Memory
+from eBCSgen.TS.TSworker import TSworker
+from eBCSgen.TS.TransitionSystem import TransitionSystem
 
 AVOGADRO = 6.022 * 10 ** 23
 

@@ -1,6 +1,6 @@
 import regex
 
-from Regulations.Base import BaseRegulation
+from eBCSgen.Regulations.Base import BaseRegulation
 
 
 class Regular(BaseRegulation):

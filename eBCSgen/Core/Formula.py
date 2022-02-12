@@ -1,7 +1,7 @@
 from lark import Transformer, Tree
 
-from Errors.ComplexOutOfScope import ComplexOutOfScope
-import Core.Rate
+from eBCSgen.Errors.ComplexOutOfScope import ComplexOutOfScope
+from eBCSgen.Core.Rate import tree_to_string
 
 
 class Formula:
@@ -13,7 +13,7 @@ class Formula:
         self.data = data
 
     def __str__(self):
-        return "".join(Core.Rate.tree_to_string(self.data))
+        return "".join(tree_to_string(self.data))
 
     def get_complexes(self) -> list:
         """

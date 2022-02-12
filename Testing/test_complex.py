@@ -1,10 +1,10 @@
 import collections
 import unittest
 
-import Parsing.ParseBCSL
-from Core.Structure import StructureAgent
-from Core.Atomic import AtomicAgent
-from Core.Complex import Complex, align_agents
+from eBCSgen.Core.Structure import StructureAgent
+from eBCSgen.Core.Atomic import AtomicAgent
+from eBCSgen.Core.Complex import Complex, align_agents
+from eBCSgen.Parsing.ParseBCSL import Parser
 
 
 class TestComplex(unittest.TestCase):
@@ -60,7 +60,7 @@ class TestComplex(unittest.TestCase):
         atomic_signature = {"S": {"a", "i"}, "T": {"u", "p"}}
         structure_signature = {"KaiC": {"S"}}
 
-        complex_parser = Parsing.ParseBCSL.Parser("rate_complex")
+        complex_parser = Parser("rate_complex")
 
         complex1 = complex_parser.parse("KaiC(S{a}).T{u}::cyt").data.children[0]
         complex2 = complex_parser.parse("KaiC(S{a}).T{p}::cyt").data.children[0]
@@ -105,7 +105,7 @@ class TestComplex(unittest.TestCase):
         agent = "X(T{s}).A(S{i},U{a}).A(S{i},U{b})::cyt"
         pattern = "A().A(S{i}).X()::cyt"
 
-        complex_parser = Parsing.ParseBCSL.Parser("rate_complex")
+        complex_parser = Parser("rate_complex")
 
         complex = complex_parser.parse(agent).data.children[0]
         pattern = complex_parser.parse(pattern).data.children[0]

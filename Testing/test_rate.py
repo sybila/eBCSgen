@@ -1,14 +1,13 @@
-import copy
 import unittest
 import numpy as np
 import sympy
 
-from Core.Atomic import AtomicAgent
-from Core.Complex import Complex
-import Core.Rate
-from Core.Structure import StructureAgent
-from Parsing.ParseBCSL import Parser
-from TS.State import Vector, State, Memory
+from eBCSgen.Core.Atomic import AtomicAgent
+from eBCSgen.Core.Complex import Complex
+from eBCSgen.Core.Structure import StructureAgent
+from eBCSgen.Parsing.ParseBCSL import Parser
+from eBCSgen.TS.State import Vector, State, Memory
+from eBCSgen.Core.Rate import Rate
 
 
 CORRECT_MATHML = """
@@ -46,15 +45,15 @@ class TestRate(unittest.TestCase):
         self.parser = Parser("rate")
         rate_expr = "3.0*[K()::cyt]/2.0*v_1"
 
-        self.rate_1 = Core.Rate.Rate(self.parser.parse(rate_expr).data)
+        self.rate_1 = Rate(self.parser.parse(rate_expr).data)
 
         rate_expr = "3.0*[K(T{i}).X()::cyt] + [K()::cyt]"
 
-        self.rate_2 = Core.Rate.Rate(self.parser.parse(rate_expr).data)
+        self.rate_2 = Rate(self.parser.parse(rate_expr).data)
 
         rate_expr = "(3.0*[K()::cyt])/(2.0*v_1)"
 
-        self.rate_3 = Core.Rate.Rate(self.parser.parse(rate_expr).data)
+        self.rate_3 = Rate(self.parser.parse(rate_expr).data)
 
         # states
 
@@ -97,7 +96,7 @@ class TestRate(unittest.TestCase):
 
     def test_reduce_context(self):
         rate_expr = "3.0*[K(S{i})::cyt]/2.0*v_1"
-        rate = Core.Rate.Rate(self.parser.parse(rate_expr).data)
+        rate = Rate(self.parser.parse(rate_expr).data)
 
         self.assertEqual(rate.reduce_context(), self.rate_1)
 
@@ -108,7 +107,7 @@ class TestRate(unittest.TestCase):
 
     def test_mathML(self):
         rate_expr = "(3.0*[K(T{i}).X()::cyt])/([K()::cyt]**2.0+4.0*p)"
-        rate = Core.Rate.Rate(self.parser.parse(rate_expr).data)
+        rate = Rate(self.parser.parse(rate_expr).data)
         expression = rate.to_mathML()
         agents, params = rate.get_params_and_agents()
         str_to_code = {"[" + str(agent) + "]": agent.to_SBML_species_code() for agent in agents}

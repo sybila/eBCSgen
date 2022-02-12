@@ -2,8 +2,8 @@ import collections
 import numpy as np
 from sortedcontainers import SortedList
 
-from Core.Complex import Complex
-from TS.State import State, Memory, Vector
+from eBCSgen.Core.Complex import Complex
+from eBCSgen.TS.State import State, Memory, Vector
 
 
 class Side:

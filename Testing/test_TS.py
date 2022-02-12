@@ -1,11 +1,11 @@
 import unittest
 import numpy as np
 
-from Core.Complex import Complex
-from Core.Structure import StructureAgent
-from TS.Edge import Edge
-from TS.State import State, Vector, Memory
-from TS.TransitionSystem import TransitionSystem
+from eBCSgen.Core.Complex import Complex
+from eBCSgen.Core.Structure import StructureAgent
+from eBCSgen.TS.Edge import Edge
+from eBCSgen.TS.State import State, Vector, Memory
+from eBCSgen.TS.TransitionSystem import TransitionSystem
 
 
 class TestTransitionSystem(unittest.TestCase):

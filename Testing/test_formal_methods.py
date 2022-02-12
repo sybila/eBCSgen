@@ -1,16 +1,16 @@
 import unittest
 
-import Parsing.ParsePCTLformula
-import Parsing.ParseCTLformula
-from Analysis.PCTL import PCTL
-from Analysis.CTL import CTL
-from Errors.ComplexOutOfScope import ComplexOutOfScope
-from Parsing.ParseBCSL import Parser, load_TS_from_json
+from eBCSgen.Analysis.PCTL import PCTL
+from eBCSgen.Analysis.CTL import CTL
+from eBCSgen.Errors.ComplexOutOfScope import ComplexOutOfScope
+from eBCSgen.Parsing.ParseBCSL import Parser, load_TS_from_json
+from eBCSgen.Parsing.ParsePCTLformula import PCTLparser
+from eBCSgen.Parsing.ParseCTLformula import CTLparser
 
 
 class TestFormalMethods(unittest.TestCase):
     def setUp(self):
-        self.parser = Parsing.ParsePCTLformula.PCTLparser()
+        self.parser = PCTLparser()
         self.model_parser = Parser("model")
         self.model = """
             #! rules
@@ -69,22 +69,22 @@ class TestFormalMethods(unittest.TestCase):
         ts.save_to_json('/tmp/ts.json')
         ts = load_TS_from_json('/tmp/ts.json')
 
-        formula = Parsing.ParsePCTLformula.PCTLparser().parse("P=? [F T(P{m})::x>2 & T(P{i})::x>=0 & T(P{i})::x<2]")
+        formula = self.parser.parse("P=? [F T(P{m})::x>2 & T(P{i})::x>=0 & T(P{i})::x<2]")
         result = PCTL.model_checking(ts, formula)
         self.assertTrue("Result" in str(result))
 
-        formula = Parsing.ParsePCTLformula.PCTLparser().parse("P > 0.5 [F T(P{m})::x>2]")
+        formula = self.parser.parse("P > 0.5 [F T(P{m})::x>2]")
         result = PCTL.model_checking(ts, formula)
         self.assertTrue("Result" in str(result))
 
     def test_tumor_modelchecking_wrong_formula(self):
-        formula = Parsing.ParsePCTLformula.PCTLparser().parse("P > 0.5 [F T(P{m}):x>2]")
+        formula = self.parser.parse("P > 0.5 [F T(P{m}):x>2]")
         error_message = {'line': 1, 'column': 19, 'unexpected': ':', 'expected': {'::', '.'}}
         self.assertEqual(formula.data, error_message)
 
     def test_parameter_synthesis(self):
         model_parsed = self.model_parser.parse(self.tumor_parametric).data
-        formula = Parsing.ParsePCTLformula.PCTLparser().parse("P=? [F T(P{m})::x>2]")
+        formula = self.parser.parse("P=? [F T(P{m})::x>2]")
         ts = model_parsed.generate_direct_transition_system()
         ts.change_to_vector_backend()
         ts.save_to_json('/tmp/ts.json', params=['d2'])
@@ -99,11 +99,11 @@ class TestFormalMethods(unittest.TestCase):
         ts.save_to_json('/tmp/ts.json', params=['q'])
         ts = load_TS_from_json('/tmp/ts.json')
 
-        formula = Parsing.ParsePCTLformula.PCTLparser().parse("P<=0.3 [F X().Y{_}::rep >= 1]")
+        formula = self.parser.parse("P<=0.3 [F X().Y{_}::rep >= 1]")
         result = PCTL.parameter_synthesis(ts, formula, region='0<=q<=1')
         self.assertTrue("Result (initial states)" in str(result))
 
-        formula = Parsing.ParsePCTLformula.PCTLparser().parse("P=? [F X().Y{_}::rep >= 1]")
+        formula = self.parser.parse("P=? [F X().Y{_}::rep >= 1]")
         result = PCTL.parameter_synthesis(ts, formula, region=None)
         self.assertTrue("Result (initial states)" in str(result))
 
@@ -122,7 +122,7 @@ class TestFormalMethods(unittest.TestCase):
         k2 = 5
         """
         model = self.model_parser.parse(model_str).data
-        formula = Parsing.ParsePCTLformula.PCTLparser().parse('P <= 0.5[F X()::out = 1]')
+        formula = self.parser.parse('P <= 0.5[F X()::out = 1]')
         ts = model.generate_direct_transition_system()
         ts.change_to_vector_backend()
         ts.save_to_json('/tmp/ts.json', params=['k1'])
@@ -149,11 +149,11 @@ class TestFormalMethods(unittest.TestCase):
         ts.save_to_json('/tmp/ts.json', params=['k1'])
         ts = load_TS_from_json('/tmp/ts.json')
 
-        formula = Parsing.ParsePCTLformula.PCTLparser().parse('P <= 0.5[F X()::rep = 1]')
+        formula = self.parser.parse('P <= 0.5[F X()::rep = 1]')
         output = PCTL.parameter_synthesis(ts, formula, region='0<=k1<=1')
         self.assertTrue("Region results" in str(output))
 
-        formula = Parsing.ParsePCTLformula.PCTLparser().parse('P=? [F X()::rep = 1]')
+        formula = self.parser.parse('P=? [F X()::rep = 1]')
         output = PCTL.parameter_synthesis(ts, formula, region=None)
         self.assertTrue("Result (initial states)" in str(output))
 
@@ -178,11 +178,11 @@ class TestFormalMethods(unittest.TestCase):
         ts.save_to_json('/tmp/ts.json', params=['k1'])
         ts = load_TS_from_json('/tmp/ts.json')
 
-        formula = Parsing.ParsePCTLformula.PCTLparser().parse('P <= 0.5[F X()::rep = 1]')
+        formula = self.parser.parse('P <= 0.5[F X()::rep = 1]')
         output = PCTL.parameter_synthesis(ts, formula, region='0<=k1<=1')
         self.assertTrue("Region results" in str(output))
 
-        formula = Parsing.ParsePCTLformula.PCTLparser().parse('P=? [F X()::rep = 1]')
+        formula = self.parser.parse('P=? [F X()::rep = 1]')
         output = PCTL.parameter_synthesis(ts, formula, region=None)
         self.assertTrue("Result (initial states)" in str(output))
 
@@ -207,11 +207,11 @@ class TestFormalMethods(unittest.TestCase):
         ts.save_to_json('/tmp/ts.json')
         ts = load_TS_from_json('/tmp/ts.json')
 
-        formula = Parsing.ParsePCTLformula.PCTLparser().parse('P <= 0.5[F X()::rep=1]')
+        formula = self.parser.parse('P <= 0.5[F X()::rep=1]')
         output = PCTL.model_checking(ts, formula)
         self.assertTrue("Result (for initial states)" in str(output))
 
-        formula = Parsing.ParsePCTLformula.PCTLparser().parse('P=? [F X()::rep = 1]')
+        formula = self.parser.parse('P=? [F X()::rep = 1]')
         output = PCTL.model_checking(ts, formula)
         self.assertTrue("Result (for initial states)" in str(output))
 
@@ -237,11 +237,11 @@ class TestFormalMethods(unittest.TestCase):
         ts.save_to_json('/tmp/ts.json')
         ts = load_TS_from_json('/tmp/ts.json')
 
-        formula = Parsing.ParsePCTLformula.PCTLparser().parse('P >= 0.5[F X()::rep=1]')
+        formula = self.parser.parse('P >= 0.5[F X()::rep=1]')
         output = PCTL.model_checking(ts, formula)
         self.assertTrue("Result (for initial states)" in str(output))
 
-        formula = Parsing.ParsePCTLformula.PCTLparser().parse('P=? [F X()::rep = 1]')
+        formula = self.parser.parse('P=? [F X()::rep = 1]')
         output = PCTL.model_checking(ts, formula)
         self.assertTrue("Result (for initial states)" in str(output))
 
@@ -264,10 +264,10 @@ class TestFormalMethods(unittest.TestCase):
         ts = model.generate_direct_transition_system()
         ts.change_to_vector_backend()
 
-        formula = Parsing.ParseCTLformula.CTLparser().parse('E(F([Y()::rep > 1]))')
+        formula = CTLparser().parse('E(F([Y()::rep > 1]))')
         result, states = CTL.model_checking(ts, formula)
         self.assertTrue(result)
 
-        formula = Parsing.ParseCTLformula.CTLparser().parse('E(F([Z()::rep > 1]))')
+        formula = CTLparser().parse('E(F([Z()::rep > 1]))')
         result, states = CTL.model_checking(ts, formula)
         self.assertFalse(result)

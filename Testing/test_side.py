@@ -2,12 +2,12 @@ import unittest
 import collections
 import numpy as np
 
-from Core.Structure import StructureAgent
-from Core.Atomic import AtomicAgent
-from Core.Complex import Complex
-from Core.Side import Side
-from TS.State import State, Memory, Vector
-import Parsing.ParseBCSL
+from eBCSgen.Core.Structure import StructureAgent
+from eBCSgen.Core.Atomic import AtomicAgent
+from eBCSgen.Core.Complex import Complex
+from eBCSgen.Core.Side import Side
+from eBCSgen.TS.State import State, Memory, Vector
+from eBCSgen.Parsing.ParseBCSL import Parser
 
 
 class TestSide(unittest.TestCase):
@@ -63,8 +63,8 @@ class TestSide(unittest.TestCase):
         self.assertFalse(self.side1.exists_compatible_agent(self.c3))
 
     def test_create_all_compatible(self):
-        complex_parser = Parsing.ParseBCSL.Parser("rate_complex")
-        side_parser = Parsing.ParseBCSL.Parser("side")
+        complex_parser = Parser("rate_complex")
+        side_parser = Parser("side")
 
         atomic_signature = {"A": {"+", "-"}, "B": {"HA", "HE"}, "S": {"a", "i"}, "T": {"u", "p"}}
         structure_signature = {"KaiB": {"A", "B"}, "KaiC": {"S", "T"}}

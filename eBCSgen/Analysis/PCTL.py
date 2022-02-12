@@ -1,8 +1,8 @@
 import subprocess
 
-from TS.TransitionSystem import TransitionSystem
-from Core import Formula
-from Errors.StormNotAvailable import StormNotAvailable
+from eBCSgen.TS.TransitionSystem import TransitionSystem
+from eBCSgen.Core import Formula
+from eBCSgen.Errors.StormNotAvailable import StormNotAvailable
 
 
 class PCTL:

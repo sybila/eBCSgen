@@ -4,12 +4,11 @@ import argparse
 # this add to path eBCSgen home dir, so it can be called from anywhere
 sys.path.append(os.path.split(sys.path[0])[0])
 
-from Analysis.PCTL import PCTL
-from Parsing.ParseBCSL import load_TS_from_json
-import Parsing.ParsePCTLformula
-
-from Errors.FormulaParsingError import FormulaParsingError
-from Errors.InvalidInputError import InvalidInputError
+from eBCSgen.Analysis.PCTL import PCTL
+from eBCSgen.Parsing.ParseBCSL import load_TS_from_json
+from eBCSgen.Errors.FormulaParsingError import FormulaParsingError
+from eBCSgen.Errors.InvalidInputError import InvalidInputError
+from eBCSgen.Parsing.ParsePCTLformula import PCTLparser
 
 """
 usage: PCTLParameterSynthesis.py [-h] --transition_file TRANSITION_FILE 
@@ -70,7 +69,7 @@ if "?" not in args.formula:
     if undefined:
         raise InvalidInputError("Intervals undefined for parameters: {}.".format(", ".join(undefined)))
 
-formula = Parsing.ParsePCTLformula.PCTLparser().parse(args.formula)
+formula = PCTLparser().parse(args.formula)
 if formula.success:
     result = PCTL().parameter_synthesis(ts, formula, region, local_storm)
     f = open(args.output, "w")

@@ -1,16 +1,14 @@
-import os
-import subprocess
 import unittest
 import re
 
 from sympy.printing.tests.test_numpy import np
 
-from TS.Edge import Edge
-from TS.TransitionSystem import TransitionSystem
-from Core.Structure import StructureAgent
-from Core.Complex import Complex
-from Parsing.ParseBCSL import Parser
-from TS.State import Vector, State, Memory
+from eBCSgen.TS.Edge import Edge
+from eBCSgen.TS.TransitionSystem import TransitionSystem
+from eBCSgen.Core.Structure import StructureAgent
+from eBCSgen.Core.Complex import Complex
+from eBCSgen.Parsing.ParseBCSL import Parser
+from eBCSgen.TS.State import Vector, State, Memory
 
 
 def get_storm_result(cmd: str):

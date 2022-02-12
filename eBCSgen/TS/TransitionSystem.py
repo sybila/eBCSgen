@@ -5,7 +5,7 @@ import numpy as np
 from sortedcontainers import SortedList
 from pyModelChecking import Kripke
 
-from TS.State import State, Memory, Vector
+from eBCSgen.TS.State import State, Memory, Vector
 
 
 class TransitionSystem:

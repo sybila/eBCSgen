@@ -4,15 +4,17 @@ import argparse
 # this add to path eBCSgen home dir, so it can be called from anywhere
 sys.path.append(os.path.split(sys.path[0])[0])
 
-from Parsing.ParseBCSL import Parser
-from Errors.ModelParsingError import ModelParsingError
-from Errors.ComplexParsingError import ComplexParsingError
-from Errors.UnspecifiedParsingError import UnspecifiedParsingError
+from eBCSgen.Parsing.ParseBCSL import Parser
+from eBCSgen.Errors.ModelParsingError import ModelParsingError
+from eBCSgen.Errors.ComplexParsingError import ComplexParsingError
+from eBCSgen.Errors.UnspecifiedParsingError import UnspecifiedParsingError
+
 
 def save_model(model, filename):
     f = open(filename, "w")
     f.write(repr(model))
     f.close()
+
 
 """
 usage: StaticAnalysis.py [-h] --model MODEL --output OUTPUT --method METHOD

@@ -1,4 +1,4 @@
-from Regulations.Base import BaseRegulation
+from eBCSgen.Regulations.Base import BaseRegulation
 
 
 class Conditional(BaseRegulation):

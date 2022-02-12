@@ -1,5 +1,5 @@
-from Core.Rate import Rate
-from TS.State import State
+from eBCSgen.Core.Rate import Rate
+from eBCSgen.TS.State import State
 
 
 class VectorReaction:

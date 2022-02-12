@@ -1,5 +1,5 @@
 import unittest
-from Core.Atomic import AtomicAgent
+from eBCSgen.Core.Atomic import AtomicAgent
 
 
 class TestAtomic(unittest.TestCase):
