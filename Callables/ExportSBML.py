@@ -1,10 +1,5 @@
-import sys
-import os
 import argparse
 import libsbml
-
-# this add to path eBCSgen home dir, so it can be called from anywhere
-sys.path.append(os.path.split(sys.path[0])[0])
 
 from eBCSgen.Parsing.ParseBCSL import Parser
 from eBCSgen.Errors.ModelParsingError import ModelParsingError
