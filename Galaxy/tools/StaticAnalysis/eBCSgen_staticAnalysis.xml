@@ -1,7 +1,7 @@
 <tool id="StaticAnalysis" name="Static Analysis" version="1.0.0">
   <description>- several static analysis techniques</description>
 	<options sanitize="False"/>
-    <command>python3 /home/xtrojak/eBCSgen/Callables/StaticAnalysis.py
+    <command>python3 ${__tool_directory__}/StaticAnalysis.py
       --model '$model'
       --output '$output'
       --method '${Method.method}'

@@ -1,7 +1,7 @@
 <tool id="SBMLexport" name="SBML export" version="1.1.0">
   <description>- export given model to SBML with multi package</description>
 	<options sanitize="False"/>
-    <command>python3 /home/xtrojak/eBCSgen/Callables/ExportSBML.py
+    <command>python3 ${__tool_directory__}/ExportSBML.py
       --model '$model'
       --output '$output'
 	</command>

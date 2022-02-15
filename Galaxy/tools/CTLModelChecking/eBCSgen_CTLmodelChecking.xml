@@ -1,7 +1,7 @@
 <tool id="CTLModelChecking" name="CTL Model Checking" version="1.1.0">
   <description> - explicit CTL model checking of given model</description>
     <options sanitize="False"/>
-    <command>python3 /home/xtrojak/eBCSgen/Callables/CTLModelChecking.py
+    <command>python3 ${__tool_directory__}/CTLModelChecking.py
       --transition_file '$transition_file'
       --output '$output'
       --formula '$formula'

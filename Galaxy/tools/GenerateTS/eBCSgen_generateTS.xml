@@ -1,6 +1,6 @@
 <tool id="TransitionSystemGenerator" name="Transition System generator" version="1.0.0">
   <description>- generate transition system of the given model</description>
-  <command>python3 /home/xtrojak/eBCSgen/Callables/GenerateTS.py
+  <command>python3 ${__tool_directory__}/GenerateTS.py
       --model '$model'
       --output '$output'
       #if $bound != "":
