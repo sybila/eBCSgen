@@ -1,0 +1,25 @@
+<tool id="SBMLexport" name="SBML export" version="@TOOL_VERSION@_galaxy0">
+    <description>- export given model to SBML with multi package</description>
+    <macros>
+        <import>../macros.xml</import>
+    </macros>
+    <expand macro="creator"/>
+    <requirements>
+        <requirement type="package" version="@TOOL_VERSION@">eBCSgen</requirement>
+    </requirements>
+
+    <options sanitize="False"/>
+    <command>python3 ${__tool_directory__}/ExportSBML.py
+        --model '$model'
+        --output '$output'
+    </command>
+
+    <inputs>
+        <param format="bcs" name="model" type="data" label="Model file" help="Provide a .bcs file"/>
+    </inputs>
+
+    <outputs>
+        <data format="xml" name="output"/>
+    </outputs>
+
+</tool>

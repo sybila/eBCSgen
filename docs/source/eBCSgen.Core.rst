@@ -1,72 +1,72 @@
-eBCSgen.Core package
-====================
+Core
+====
 
-eBCSgen.Core.Atomic module
---------------------------
+Atomic
+------
 
 .. automodule:: eBCSgen.Core.Atomic
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Core.Complex module
----------------------------
+Complex
+-------
 
 .. automodule:: eBCSgen.Core.Complex
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Core.Formula module
----------------------------
+Formula
+-------
 
 .. automodule:: eBCSgen.Core.Formula
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Core.Model module
--------------------------
+Model
+-----
 
 .. automodule:: eBCSgen.Core.Model
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Core.Rate module
-------------------------
+Rate
+----
 
 .. automodule:: eBCSgen.Core.Rate
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Core.Reaction module
-----------------------------
+Reaction
+--------
 
 .. automodule:: eBCSgen.Core.Reaction
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Core.Rule module
-------------------------
+Rule
+----
 
 .. automodule:: eBCSgen.Core.Rule
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Core.Side module
-------------------------
+Side
+----
 
 .. automodule:: eBCSgen.Core.Side
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Core.Structure module
------------------------------
+Structure
+---------
 
 .. automodule:: eBCSgen.Core.Structure
    :members:

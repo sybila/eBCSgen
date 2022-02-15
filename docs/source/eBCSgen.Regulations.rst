@@ -1,48 +1,48 @@
-eBCSgen.Regulations package
-===========================
+Regulations
+===========
 
-eBCSgen.Regulations.Base module
--------------------------------
+Base
+----
 
 .. automodule:: eBCSgen.Regulations.Base
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Regulations.ConcurrentFree module
------------------------------------------
+ConcurrentFree
+--------------
 
 .. automodule:: eBCSgen.Regulations.ConcurrentFree
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Regulations.Conditional module
---------------------------------------
+Conditional
+-----------
 
 .. automodule:: eBCSgen.Regulations.Conditional
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Regulations.Ordered module
-----------------------------------
+Ordered
+-------
 
 .. automodule:: eBCSgen.Regulations.Ordered
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Regulations.Programmed module
--------------------------------------
+Programmed
+----------
 
 .. automodule:: eBCSgen.Regulations.Programmed
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Regulations.Regular module
-----------------------------------
+Regular
+-------
 
 .. automodule:: eBCSgen.Regulations.Regular
    :members:

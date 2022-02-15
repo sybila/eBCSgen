@@ -1,9 +1,5 @@
-import sys, os
 import argparse
 import numpy as np
-
-# this add to path eBCSgen home dir, so it can be called from anywhere
-sys.path.append(os.path.split(sys.path[0])[0])
 
 from eBCSgen.Parsing.ParseBCSL import Parser, load_TS_from_json
 from eBCSgen.Errors.ModelParsingError import ModelParsingError

@@ -1,0 +1,56 @@
+<tool id="ParameterSynthesis" name="PCTL Parameter Synthesis" version="@TOOL_VERSION@_galaxy0">
+    <description>- PCTL parameter synthesis of given model</description>
+    <macros>
+        <import>../macros.xml</import>
+    </macros>
+    <expand macro="creator"/>
+    <requirements>
+        <requirement type="package" version="@TOOL_VERSION@">eBCSgen</requirement>
+    </requirements>
+
+    <options sanitize="False"/>
+    <command>python3 ${__tool_directory__}/PCTLParameterSynthesis.py
+        --transition_file '$transition_file'
+        #if len($regions) > 0:
+        --output '$output_regions'
+        #else:
+        --output '$output_sample'
+        #end if
+        --formula '$formula'
+
+        #set parameters = ",".join([str($s.from) + "=" + str($s.param) + "=" + str($s.to) for $s in $regions])
+        #if $parameters:
+        --region '$parameters'
+        #end if
+    </command>
+
+    <inputs>
+        <param format="bcs.ts" name="transition_file" type="data" label="Computed Transition system"/>
+        <param name="formula" type="text" label="PCTL formula">
+            <validator type="empty_field"/>
+        </param>
+
+        <repeat name="regions" title="Intervals">
+            <param name="param" value="" type="text" label="Parameter:">
+                <validator type="empty_field"/>
+            </param>
+            <param name="from" type="float" value="" label="Interval start:"/>
+            <param name="to" type="float" value="" label="Interval end:"/>
+        </repeat>
+    </inputs>
+
+    <outputs>
+        <data format="storm.regions" name="output_regions">
+            <filter>"?" not in formula</filter>
+        </data>
+        <data format="storm.sample" name="output_sample">
+            <filter>"?" in formula</filter>
+        </data>
+    </outputs>
+
+    <tests>
+        <test>
+        </test>
+    </tests>
+
+</tool>

@@ -8,6 +8,16 @@ from eBCSgen.TS.TransitionSystem import TransitionSystem
 class CTL:
     @staticmethod
     def model_checking(ts: TransitionSystem, CTL_formula: Formula):
+        """
+        Model checking of given CTL formula.
+
+        First, a Kripe structure is generated from given transition system and then
+        pyModelChecking model checker is called and results are returned.
+
+        :param ts: given transition system
+        :param CTL_formula: given CTL formula
+        :return: output of the model checker
+        """
         APs = CTL_formula.get_APs()
 
         state_labels, AP_labels = ts.create_AP_labels(APs, include_init=False)

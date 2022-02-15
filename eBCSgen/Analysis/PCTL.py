@@ -1,7 +1,7 @@
 import subprocess
 
 from eBCSgen.TS.TransitionSystem import TransitionSystem
-from eBCSgen.Core import Formula
+from eBCSgen.Core.Formula import Formula
 from eBCSgen.Errors.StormNotAvailable import StormNotAvailable
 
 
@@ -11,8 +11,8 @@ class PCTL:
         """
         Model checking of given PCTL formula.
 
-        First transition system is generated, then Storm explicit file is generated and
-        appropriate PCTL formula issues resolved are (e.g. naming of agents). Finally,
+        First, Storm explicit file is generated from given transition system and
+        appropriate PCTL formula issues are resolved (e.g. naming of agents). Finally,
         Storm model checker is called and results are returned.
 
         :param ts: given transition system
@@ -39,9 +39,9 @@ class PCTL:
         """
         Parameter synthesis of given PCTL formula in given region.
 
-        First transition system is generated, PRISM file with encoded explicit TS is generated
-        and appropriate PCTL formula issues are resolved (e.g. naming of agents). Finally,
-        Storm model checker is called and results are returned.
+        First, Storm explicit file is generated from given transition system
+        and appropriate PCTL formula issues are resolved (e.g. naming of agents).
+        Finally, Storm model checker is called and results are returned.
 
         :param ts: given transition system
         :param PCTL_formula: given PCTL formula

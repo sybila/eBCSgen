@@ -19,7 +19,7 @@ class Rate:
         return str(self)
 
     def __str__(self):
-        return self.expression if type(self.expression) == str else "".join(tree_to_string(self.expression))
+        return self.expression if type(self.expression) == str else "".join(self.get_formula_in_list())
 
     def __hash__(self):
         return hash(str(self))
@@ -94,7 +94,8 @@ class Rate:
     
     def evaluate_direct(self, values, params) -> float:
         """
-        Evaluates
+        Evaluates all agents (Complex objects) and params (strings) used in the rate
+        expression in the case of direct approach.
 
         If the result is nan, None is returned instead.
 
@@ -113,11 +114,21 @@ class Rate:
             return None
           
     def to_mathML(self):
+        """
+        Create mathML representation of the formula.
+
+        :return: mathML representation
+        """
         transformer = MathMLtransformer()
         expression = transformer.transform(self.expression)
         return "".join(tree_to_string(expression))
 
     def get_formula_in_list(self):
+        """
+        Create list representation of the formula.
+
+        :return: list of formula components
+        """
         return tree_to_string(self.expression)
 
 
@@ -243,6 +254,12 @@ class MathMLtransformer(Transformer):
 
 
 def tree_to_string(tree):
+    """
+    Recursively constructs a list form given lark tree.
+
+    :param tree: given lark tree
+    :return: list of components
+    """
     if type(tree) == Tree:
         return sum(list(map(tree_to_string, tree.children)), [])
     else:

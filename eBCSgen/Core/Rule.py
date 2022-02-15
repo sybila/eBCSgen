@@ -3,7 +3,7 @@ import itertools
 import random
 from copy import copy, deepcopy
 
-from eBCSgen.Core import Rate
+from eBCSgen.Core.Rate import Rate
 from eBCSgen.Core.Complex import Complex
 from eBCSgen.Core.Side import Side
 from eBCSgen.Core.Reaction import Reaction
@@ -63,23 +63,16 @@ class Rule:
         return hash(str(self))
 
     def get_unique_complexes_from_rule(self) -> dict:
-        """Creates complexes from rule and returns them in dict
-            Keys: are Complex agents
-            Values: are sets of all found isomorphisms in SBML code.
-            :return: dict of {Complexes:{SBML codes of all isomorphisms in set}}
+        """
+        Creates complexes from rule and returns them in dict.
+        Keys are Complex agents, values are sets of all found isomorphisms in SBML code.
+
+        :return: dict of {Complexes:{SBML codes of all isomorphisms in set}}
         """
         unique_complexes_from_rule = dict()
         for (f, t) in self.complexes:
             c = Complex(self.agents[f:t + 1], self.compartments[f])
-            # saving both complex and its unique name is useful so we can work with Complex agent
-            #that has different ordering of inner agents and not lose information about the differenc
-            #when comparing it with eq function -> SBML_species_code() distinguishes them
             double =  (c, c.to_SBML_species_code())
-
-            #if new complex is not among complexes names
-            #create new key with this complex name
-            #and add its value as new set with SBML_code
-            #that represents this given complex
             unique_complexes_from_rule[c] = unique_complexes_from_rule.get(c, set()) | {double}
         return unique_complexes_from_rule
 
@@ -118,7 +111,7 @@ class Rule:
     def create_reactions(self, atomic_signature: dict, structure_signature: dict) -> set:
         """
         Adds context to all agents and generated all possible combinations.
-         Then, new rules with these enhances agents are generated and converted to Reactions.
+        Then, new rules with these enhances agents are generated and converted to Reactions.
 
         :param atomic_signature: given mapping of atomic name to possible states
         :param structure_signature: given mapping of structure name to possible atomics
@@ -200,9 +193,9 @@ class Rule:
         """
         Evaluate rate based on current state and parameter values.
 
-        @param state: given state
-        @param params: mapping of params to its value
-        @return: a real number of the rate
+        :param state: given state
+        :param params: mapping of params to its value
+        :return: a real number of the rate
         """
         values = dict()
         for (state_complex, count) in state.content.value.items():
@@ -215,9 +208,9 @@ class Rule:
         """
         Find all possible matches of the rule to given state.
 
-        @param state: given state
-        @param all: bool to indicate if choose one matching randomly or return all of them
-        @return: random match/all matches
+        :param state: given state
+        :param all: bool to indicate if choose one matching randomly or return all of them
+        :return: random match/all matches
         """
         state = deepcopy(state.content.value)
         matches = find_all_matches(self.lhs.agents, state)
@@ -234,7 +227,8 @@ class Rule:
         Apply rule to chosen match.
         Match contains agents which satisfy LHS of the rule an can be safely replaced based on RHS
 
-        @param aligned_match: complexes fitting LHS of the rule
+        :param aligned_match: complexes fitting LHS of the rule
+        :return: multiset replaced according to the match
         """
         # replace respective agents
         resulting_rhs = []
@@ -255,7 +249,8 @@ class Rule:
         """
         Create complexes from agents matched to the LHS
 
-        @param match: value of
+        :param match: value of
+        :return: multiset of constructed agents
         """
         output_complexes = []
         for (f, t) in list(filter(lambda item: item[1] < self.mid, self.complexes)):
@@ -270,7 +265,7 @@ class Rule:
 
         TODO: allow two rates
 
-        @return: reversed Rule
+        :return: reversed Rule
         """
         agents = self.agents[self.mid:] + self.agents[:self.mid]
         mid = len(self.agents) - self.mid
@@ -297,9 +292,9 @@ def find_all_matches(lhs_agents, state):
     """
     Finds all possible matches which actually can be used for given state.
 
-    @param lhs_agents: given LHS of a rule
-    @param state: state to be applied to
-    @return: candidates for match
+    :param lhs_agents: given LHS of a rule
+    :param state: state to be applied to
+    :return: candidates for match
     """
     choices = []
     if len(lhs_agents) == 0:
