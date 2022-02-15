@@ -1,8 +1,8 @@
-eBCSgen.Export package
-======================
+Export
+======
 
-eBCSgen.Export.ModelSBML module
--------------------------------
+ModelSBML
+---------
 
 .. automodule:: eBCSgen.Export.ModelSBML
    :members:

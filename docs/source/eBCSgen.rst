@@ -1,8 +1,5 @@
-eBCSgen package
-===============
-
-Subpackages
------------
+eBCSgen
+=======
 
 .. toctree::
    :maxdepth: 4

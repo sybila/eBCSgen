@@ -21,6 +21,12 @@ class AtomicAgent:
         return hash(str(self))
 
     def compatible(self, other: 'AtomicAgent') -> bool:
+        """
+        Check if two Atomic agents are compatible.
+
+        :param other: given AtomicAgent
+        :return: True if compatible
+        """
         if type(self) != type(other):
             return False
         return (self == other) or (self.name == other.name and self.state == "_")
@@ -90,8 +96,8 @@ class AtomicAgent:
         """
         Replace agent based on a pattern.
 
-        @param agent: given agent to be changed
-        @return: changed agent
+        :param agent: given agent to be changed
+        :return: changed agent
         """
         if self.state == "_":
             return AtomicAgent(self.name, agent.state)

@@ -18,6 +18,7 @@ class Formula:
     def get_complexes(self) -> list:
         """
         Extracts all used Complexes from the Tree.
+
         :return: list of extracted Complexes
         """
         APs = self.get_APs()

@@ -50,30 +50,31 @@ class Complex:
         """
         return [agent.name for agent in self.agents]
 
-    def to_SBML_speciesTypes_code(self):
+    def to_SBML_speciesTypes_code(self) -> str:
         """
-        :return: <str> id of SBML - speciesType of this complex agent
+        :return: ID of SBML - speciesType of this complex agent
 
         """
         agents = "_".join(sorted(self.get_agent_names()))
         return "st_{}_{}".format(agents, self.compartment)
 
-    def to_SBML_species_code(self):
+    def to_SBML_species_code(self) -> str:
         """
         Compute a unique SBML ID for complex.
         Uses modified hash which takes into account the ordering of agents
         (compared to self.__hash__() which treats them as a multiset).
 
-        :return: <str> ID of SBML species of this complex agent"""
+        :return: ID of SBML species of this complex agent"""
         code = str(hash((tuple(self.agents), self.compartment)))
         return "sp_" + code[1:] if code[0] == "-" else "sp_" + code
 
-    def is_composed(self):
-
+    def is_composed(self) -> bool:
         """
         Determines if this complex agent is composed out of more
         atomic/structure agents or single agent.
-        :return: <bool>"""
+
+        :return: True if holds
+        """
         return len(self.agents) > 1
 
     def extend_signature(self, atomic_signature: dict, structure_signature: dict):
@@ -153,8 +154,8 @@ class Complex:
         Align self.agents based on given order.
         An alignment must exist (because respective complex is compatible)
 
-        @param complex: given reference (from lhs) complex
-        @return: aligned self.agents
+        :param complex: given reference (from lhs) complex
+        :return: aligned self.agents
         """
         return align_agents(complex.agents, collections.Counter(self.agents))
 
@@ -163,9 +164,9 @@ def align_agents(ordered, to_align):
     """
     Recursively align two lists of agents based on compatibility.
 
-    @param ordered: reference list of agents
-    @param to_align: target counter of agents
-    @return: all possible alignments
+    :param ordered: reference list of agents
+    :param to_align: target counter of agents
+    :return: all possible alignments
     """
     choices = []
     if len(ordered) == 0:

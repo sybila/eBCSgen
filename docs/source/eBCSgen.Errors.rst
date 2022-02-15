@@ -1,64 +1,64 @@
-eBCSgen.Errors package
-======================
+Errors
+======
 
-eBCSgen.Errors.ComplexOutOfScope module
----------------------------------------
+ComplexOutOfScope
+-----------------
 
 .. automodule:: eBCSgen.Errors.ComplexOutOfScope
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Errors.ComplexParsingError module
------------------------------------------
+ComplexParsingError
+-------------------
 
 .. automodule:: eBCSgen.Errors.ComplexParsingError
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Errors.FormulaParsingError module
------------------------------------------
+FormulaParsingError
+-------------------
 
 .. automodule:: eBCSgen.Errors.FormulaParsingError
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Errors.InvalidInputError module
----------------------------------------
+InvalidInputError
+-----------------
 
 .. automodule:: eBCSgen.Errors.InvalidInputError
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Errors.ModelParsingError module
----------------------------------------
+ModelParsingError
+-----------------
 
 .. automodule:: eBCSgen.Errors.ModelParsingError
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Errors.RatesNotSpecifiedError module
---------------------------------------------
+RatesNotSpecifiedError
+----------------------
 
 .. automodule:: eBCSgen.Errors.RatesNotSpecifiedError
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Errors.StormNotAvailable module
----------------------------------------
+StormNotAvailable
+-----------------
 
 .. automodule:: eBCSgen.Errors.StormNotAvailable
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Errors.UnspecifiedParsingError module
----------------------------------------------
+UnspecifiedParsingError
+-----------------------
 
 .. automodule:: eBCSgen.Errors.UnspecifiedParsingError
    :members:

@@ -1,24 +1,24 @@
-eBCSgen.Parsing package
-=======================
+Parsing
+=======
 
-eBCSgen.Parsing.ParseBCSL module
---------------------------------
+ParseBCSL
+---------
 
 .. automodule:: eBCSgen.Parsing.ParseBCSL
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Parsing.ParseCTLformula module
---------------------------------------
+ParseCTLformula
+---------------
 
 .. automodule:: eBCSgen.Parsing.ParseCTLformula
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Parsing.ParsePCTLformula module
----------------------------------------
+ParsePCTLformula
+----------------
 
 .. automodule:: eBCSgen.Parsing.ParsePCTLformula
    :members:

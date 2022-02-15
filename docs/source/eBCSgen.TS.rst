@@ -1,48 +1,48 @@
-eBCSgen.TS package
-==================
+TS
+==
 
-eBCSgen.TS.Edge module
-----------------------
+Edge
+----
 
 .. automodule:: eBCSgen.TS.Edge
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.TS.State module
------------------------
+State
+-----
 
 .. automodule:: eBCSgen.TS.State
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.TS.TSworker module
---------------------------
+TSworker
+--------
 
 .. automodule:: eBCSgen.TS.TSworker
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.TS.TransitionSystem module
-----------------------------------
+TransitionSystem
+----------------
 
 .. automodule:: eBCSgen.TS.TransitionSystem
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.TS.VectorModel module
------------------------------
+VectorModel
+-----------
 
 .. automodule:: eBCSgen.TS.VectorModel
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.TS.VectorReaction module
---------------------------------
+VectorReaction
+--------------
 
 .. automodule:: eBCSgen.TS.VectorReaction
    :members:

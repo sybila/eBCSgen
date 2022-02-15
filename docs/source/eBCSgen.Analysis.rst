@@ -1,26 +1,18 @@
-eBCSgen.Analysis package
-========================
+Analysis
+========
 
-eBCSgen.Analysis.CTL module
----------------------------
+CTL
+---
 
 .. automodule:: eBCSgen.Analysis.CTL
    :members:
    :undoc-members:
    :show-inheritance:
 
-eBCSgen.Analysis.PCTL module
-----------------------------
+PCTL
+----
 
 .. automodule:: eBCSgen.Analysis.PCTL
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-eBCSgen.Analysis.Static module
-------------------------------
-
-.. automodule:: eBCSgen.Analysis.Static
    :members:
    :undoc-members:
    :show-inheritance:

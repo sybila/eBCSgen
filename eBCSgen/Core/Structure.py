@@ -70,8 +70,8 @@ class StructureAgent:
         Fills missing context for given agent.
 
         Note: it is assumed this method is used only for well formed rules, which means
-         given structure agents have specified the same atomic agents and miss the same
-         atomic agents.
+        given structure agents have specified the same atomic agents and miss the same
+        atomic agents.
 
         Moreover, agents which are not specified are completely omitted. TBD: this could be
         somehow hacked.
@@ -131,8 +131,8 @@ class StructureAgent:
         """
         Replace agent based on a pattern.
 
-        @param agent: given agent to be changed
-        @return: changed agent
+        :param agent: given agent to be changed
+        :return: changed agent
         """
         result = set()
         for other_atomic in agent.composition:

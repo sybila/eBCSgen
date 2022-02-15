@@ -17,11 +17,12 @@ class TSworker(threading.Thread):
     def run(self):
         """
         Method takes a state from pool of states to be states and:
-        1. iteratively applies all rules on it
-        2. checks whether newly created states (if any) were already states (present in self.ts.states_encoding)
-        2.1 if not, it is added to self.states_to_process
-        3. creates Edge from the source state to created ones (since ts.edges is a set, we don't care about its presence)
-        4. all outgoing Edges from the state are normalised to probability
+
+        - iteratively applies all rules on it
+        - checks whether newly created states (if any) were already states (present in self.ts.states_encoding);
+          if not, they are added to self.states_to_process
+        - creates Edge from the source state to created ones (since ts.edges is a set, we don't care about its presence)
+        - all outgoing Edges from the state are normalised to probability
         """
         while not self.stop_request.isSet():
             self.work.wait()

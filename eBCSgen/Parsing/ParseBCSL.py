@@ -609,8 +609,8 @@ class Parser:
     def syntax_check(self, expression: str) -> Result:
         """
         Main method for parsing, calls Lark.parse method and creates Result containing parsed
-         object (according to designed 'start' in grammar) or dict with specified error in case
-         the given expression cannot be parsed.
+        object (according to designed 'start' in grammar) or dict with specified error in case
+        the given expression cannot be parsed.
 
         :param expression: given string expression
         :return: Result containing parsed object or error specification

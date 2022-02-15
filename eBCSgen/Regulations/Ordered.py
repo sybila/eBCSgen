@@ -23,8 +23,8 @@ class Ordered(BaseRegulation):
 
         TODO: needs to be optimised
 
-        @param closure: given regulation
-        @return: computed closure
+        :param closure: given regulation
+        :return: computed closure
         """
         while True:
             new_relations = set((x, w) for x, y in closure for q, w in closure if q == y)

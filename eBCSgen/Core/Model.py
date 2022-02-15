@@ -46,10 +46,12 @@ class Model:
                "\n\n#! inits\n" + "\n".join([str(self.init[a]) + " " + str(a) for a in self.init]) + \
                "\n\n#! definitions\n" + "\n".join([str(p) + " = " + str(self.definitions[p]) for p in self.definitions])
 
-    def check_rates(self):
+    def check_rates(self) -> bool:
         """
         Checks if all rates are defined.
         If not, attribute all_rates is set to False and default value is assigned to the rate
+
+        :return: True if rates are defined
         """
         all_rates = True
         for rule in self.rules:
