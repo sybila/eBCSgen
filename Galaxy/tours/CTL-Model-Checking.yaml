@@ -1,0 +1,39 @@
+id: CTL-ModelChecking
+name: CTL Model Checking
+description: This is a tour created to describe CTL Model Checking tool
+title_default: CTL Model Checking
+steps:
+  - title: Step 1 - Begin
+    element: >-
+      #left .unified-panel .unified-panel-body .toolMenuContainer .toolMenu
+      .toolSectionTitle.tool-menu-section-default a[href$="javascript:void(0)"]
+      .name
+    content: "Click here to list available tools."
+    placement: bottom
+  - title: Step 2 - Select tool
+    element: >-
+      #left > div.unified-panel > div.unified-panel-body > div > div.toolMenu >
+      div:nth-child(4) > div > div > div:nth-child(2) > div:nth-child(3) > a >
+      span.description
+    content: "Click on CTL Model Checking tool."
+    placement: bottom
+  - title: Step 3 - Computed Transition system
+    element: 'div[tour_id="transition_file"]'
+    content:
+      "You can choose a precomputed Transition System file. <br>
+      This tool supports only .bcs.ts files stored in your history."
+    placement: auto
+  - title: Step 4 - CTL Formula
+    element: 'div[tour_id="formula"]'
+    content: "Enter PCTL formula."
+    placement: auto
+  - title: Step 5 - Execute
+    element: '#execute'
+    content: "Click the button Execute <br>to start model checking."
+    placement: auto
+  - title: Step 6 - Results
+    element: .list-items
+    content:
+      "Wait until the model checking is finished<br>
+       and results stored in the History."
+    placement: left
