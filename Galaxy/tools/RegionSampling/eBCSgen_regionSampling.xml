@@ -1,5 +1,9 @@
 <tool id="ProbabilitySampling" name="Probability Sampling" version="@TOOL_VERSION@_galaxy0">
     <description>- sample given result of Storm parameter synthesis</description>
+    <macros>
+        <import>../macros.xml</import>
+    </macros>
+    <expand macro="creator"/>
     <command>python3 /home/xtrojak/RegionSampling/run.py
         --storm_file '$storm_file'
         --output '$output'
