@@ -1,55 +1,68 @@
-<tool id="TransitionSystemGenerator" name="Transition System generator" version="1.0.0">
-  <description>- generate transition system of the given model</description>
-  <command>python3 ${__tool_directory__}/GenerateTS.py
-      --model '$model'
-      --output '$output'
-      #if $bound != "":
-          --bound '$bound'
-      #end if
-      --direct '$method.network_free_choice'
-      #if $method.adv.transition_file != "":
-          --transition_file '$method.adv.transition_file'
-      #end if
-      #if $method.adv.max_time != "":
-          --max_time '$method.adv.max_time'
-      #end if
-      #if $method.adv.max_size != "":
-          --max_size '$method.adv.max_size'
-      #end if
-  </command>
+<tool id="TransitionSystemGenerator" name="Transition System generator" version="@TOOL_VERSION@_galaxy0">
+    <description>- generate transition system of the given model</description>
+    <macros>
+        <import>../macros.xml</import>
+    </macros>
+    <requirements>
+        <requirement type="package" version="@TOOL_VERSION@">eBCSgen</requirement>
+    </requirements>
 
-  <inputs>
-    <param format="txt" name="model" type="data" label="Model file" help="Provide a .bcs file"/>
-    <param name="bound" min="0" type="integer" value="" label="Bound [optional]" optional="true"/>
-    <conditional name="method">
-        <param name="network_free_choice" type="select" label="Choose network-free approach:">
-            <option value="False" selected="true">Indirect</option>
-            <option value="True">Direct</option>
-        </param>
-      <when value="False">
-          <section name="adv" title="Advanced Options" expanded="false">
-              <param name="max_time" min="0" type="float" value="" label="Maximal computation time (in seconds) [optional]" optional="true"/>
-              <param name="max_size" min="1" type="integer" value="" label="Maximal TS size [optional]" optional="true"/>
-              <param format="bcs.ts" name="transition_file" type="data" label="Precomputed TS file [optional]" optional="true"/>
-          </section>
-      </when>
-      <when value="True">
-          <section name="adv" title="Advanced Options" expanded="false">
-              <param name="max_time" min="0" type="float" value="" label="Maximal computation time (in seconds) [optional]" optional="true"/>
-              <param name="max_size" min="1" type="integer" value="" label="Maximal TS size [optional]" optional="true"/>
-              <param format="bcs.ts" name="transition_file" type="data" label="Precomputed TS file [optional]" optional="true" hidden="true"/>
-          </section>
-      </when>
-    </conditional>
-  </inputs>
+    <command>python3 ${__tool_directory__}/GenerateTS.py
+        --model '$model'
+        --output '$output'
+        #if $bound != "":
+        --bound '$bound'
+        #end if
+        --direct '$method.network_free_choice'
+        #if $method.adv.transition_file != "":
+        --transition_file '$method.adv.transition_file'
+        #end if
+        #if $method.adv.max_time != "":
+        --max_time '$method.adv.max_time'
+        #end if
+        #if $method.adv.max_size != "":
+        --max_size '$method.adv.max_size'
+        #end if
+    </command>
 
-  <outputs>
-    <data format="bcs.ts" name="output" />
-  </outputs>
+    <inputs>
+        <param format="txt" name="model" type="data" label="Model file" help="Provide a .bcs file"/>
+        <param name="bound" min="0" type="integer" value="" label="Bound [optional]" optional="true"/>
+        <conditional name="method">
+            <param name="network_free_choice" type="select" label="Choose network-free approach:">
+                <option value="False" selected="true">Indirect</option>
+                <option value="True">Direct</option>
+            </param>
+            <when value="False">
+                <section name="adv" title="Advanced Options" expanded="false">
+                    <param name="max_time" min="0" type="float" value=""
+                           label="Maximal computation time (in seconds) [optional]" optional="true"/>
+                    <param name="max_size" min="1" type="integer" value="" label="Maximal TS size [optional]"
+                           optional="true"/>
+                    <param format="bcs.ts" name="transition_file" type="data" label="Precomputed TS file [optional]"
+                           optional="true"/>
+                </section>
+            </when>
+            <when value="True">
+                <section name="adv" title="Advanced Options" expanded="false">
+                    <param name="max_time" min="0" type="float" value=""
+                           label="Maximal computation time (in seconds) [optional]" optional="true"/>
+                    <param name="max_size" min="1" type="integer" value="" label="Maximal TS size [optional]"
+                           optional="true"/>
+                    <param format="bcs.ts" name="transition_file" type="data" label="Precomputed TS file [optional]"
+                           optional="true" hidden="true"/>
+                </section>
+            </when>
+        </conditional>
+    </inputs>
 
-  <tests>
-    <test>
-    </test>
-  </tests>
+    <outputs>
+        <data format="bcs.ts" name="output"/>
+    </outputs>
+
+    <tests>
+        <test>
+        </test>
+    </tests>
 
 </tool>

@@ -1,34 +1,34 @@
-<tool id="ProbabilitySampling" name="Probability Sampling" version="1.0.0">
-  <description>- sample given result of Storm parameter synthesis</description>
-  <command>python3 /home/xtrojak/RegionSampling/run.py
-      --storm_file '$storm_file'
-      --output '$output'
+<tool id="ProbabilitySampling" name="Probability Sampling" version="@TOOL_VERSION@_galaxy0">
+    <description>- sample given result of Storm parameter synthesis</description>
+    <command>python3 /home/xtrojak/RegionSampling/run.py
+        --storm_file '$storm_file'
+        --output '$output'
 
-      #set parameters = str({str($s.param): [float($s.from), float($s.to), int($s.number)] for $s in $regions})
-      --params "$parameters"
-  </command>
+        #set parameters = str({str($s.param): [float($s.from), float($s.to), int($s.number)] for $s in $regions})
+        --params "$parameters"
+    </command>
 
-  <inputs>
-    <param format="storm.sample" name="storm_file" type="data" label="Storm results file"/>
+    <inputs>
+        <param format="storm.sample" name="storm_file" type="data" label="Storm results file"/>
 
-    <repeat name="regions" title="Intervals" min="1">
-        <param name="param" value="" type="text" label="Parameter:">
-           <validator type="empty_field"/>
-        </param>
-        <param name="from" type="float" value="" label="Interval start:"/>
-        <param name="to" type="float" value="" label="Interval end:"/>
-        <param name="number" min="1" type="integer" value="" label="Number of samples:"/>
-    </repeat>
+        <repeat name="regions" title="Intervals" min="1">
+            <param name="param" value="" type="text" label="Parameter:">
+                <validator type="empty_field"/>
+            </param>
+            <param name="from" type="float" value="" label="Interval start:"/>
+            <param name="to" type="float" value="" label="Interval end:"/>
+            <param name="number" min="1" type="integer" value="" label="Number of samples:"/>
+        </repeat>
 
-  </inputs>
+    </inputs>
 
-  <outputs>
-    <data format="html" name="output" />
-  </outputs>
+    <outputs>
+        <data format="html" name="output"/>
+    </outputs>
 
-  <tests>
-    <test>
-    </test>
-  </tests>
+    <tests>
+        <test>
+        </test>
+    </tests>
 
 </tool>
