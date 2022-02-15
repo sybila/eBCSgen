@@ -26,7 +26,7 @@
     </command>
 
     <inputs>
-        <param format="txt" name="model" type="data" label="Model file" help="Provide a .bcs file"/>
+        <param format="bcs" name="model" type="data" label="Model file" help="Provide a .bcs file"/>
         <param name="bound" min="0" type="integer" value="" label="Bound [optional]" optional="true"/>
         <conditional name="method">
             <param name="network_free_choice" type="select" label="Choose network-free approach:">
