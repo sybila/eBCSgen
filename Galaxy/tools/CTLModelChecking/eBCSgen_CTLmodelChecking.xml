@@ -17,7 +17,7 @@
 
     <inputs>
         <param format="bcs.ts" name="transition_file" type="data" label="Computed Transition system"/>
-        <param name="formula" type="text" label="PCTL formula">
+        <param name="formula" type="text" label="CTL formula">
             <validator type="empty_field"/>
         </param>
     </inputs>
