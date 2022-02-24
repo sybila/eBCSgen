@@ -75,7 +75,7 @@ class ModelSBML:
             new_instance.setSpeciesType("st_{}".format(subcomponent))
             agent = sorted(comp_agent.agents)[num]
             if isinstance(agent, eBCSgen.Core.Structure.StructureAgent):
-                for atomic_name in structure_signature[subcomponent]: # HERE THE LOOP SHOULD BE OVER SIGNATURE NOT JUST GIVEN AGENT
+                for atomic_name in structure_signature[subcomponent]:
                     comp_index = new_species_type.createSpeciesTypeComponentIndex()
                     comp_index.setId("{}_{}_{}".format(subcomponent, str(num), atomic_name))
                     comp_index.setComponent(atomic_name)
