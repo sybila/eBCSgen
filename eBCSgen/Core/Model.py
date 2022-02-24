@@ -311,7 +311,12 @@ class Model:
         unique_complexes, unique_params = self.create_unique_complexes_and_params()
 
         test_model.create_basic_species_types(self.atomic_signature, self.structure_signature)
-        test_model.create_all_species_compartments_and_complex_species_types(unique_complexes)
+       # print(self.structure_signature)
+      #  print(type(self.structure_signature))
+     #   for s in self.structure_signature:
+     #       print(s)
+     #       print(type(s))
+        test_model.create_all_species_compartments_and_complex_species_types(unique_complexes, self.structure_signature)
         test_model.create_all_reactions(self.rules)
         test_model.create_reaction_for_isomorphisms(unique_complexes)
         test_model.create_parameters(self.definitions, unique_params)

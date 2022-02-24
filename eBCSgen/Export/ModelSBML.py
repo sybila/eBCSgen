@@ -59,7 +59,7 @@ class ModelSBML:
                 new_instance.setId(subcomponent)
                 new_instance.setSpeciesType("st_{}".format(subcomponent))
 
-    def create_species_type_from_complex(self, comp_agent: eBCSgen.Core.Complex.Complex):
+    def create_species_type_from_complex(self, comp_agent: eBCSgen.Core.Complex.Complex, structure_signature: dict):
         """
         All complex agents are translated to SpeciesTypes Here
 
@@ -75,10 +75,10 @@ class ModelSBML:
             new_instance.setSpeciesType("st_{}".format(subcomponent))
             agent = sorted(comp_agent.agents)[num]
             if isinstance(agent, eBCSgen.Core.Structure.StructureAgent):
-                for atomic in agent.composition:
+                for atomic_name in structure_signature[subcomponent]: # HERE THE LOOP SHOULD BE OVER SIGNATURE NOT JUST GIVEN AGENT
                     comp_index = new_species_type.createSpeciesTypeComponentIndex()
-                    comp_index.setId("{}_{}_{}".format(subcomponent, str(num), atomic.name))
-                    comp_index.setComponent(atomic.name)
+                    comp_index.setId("{}_{}_{}".format(subcomponent, str(num), atomic_name))
+                    comp_index.setComponent(atomic_name)
                     comp_index.setIdentifyingParent("{}_{}".format(subcomponent, str(num)))
 
     def create_basic_species_types(self, atomics: dict, structs: dict):
@@ -163,7 +163,7 @@ class ModelSBML:
         new_species.setId(comp_agent.to_SBML_species_code())
         new_species.setName(str(comp_agent))
 
-    def create_all_species_compartments_and_complex_species_types(self, unique_complexes: dict):
+    def create_all_species_compartments_and_complex_species_types(self, unique_complexes: dict, structure_signature:dict):
         """
         Creates all compartments
 
@@ -179,7 +179,7 @@ class ModelSBML:
             # firstly as structs from signature and secondly as complex here
             # create species type from complex agent if it does not exist.
             if comp_agent.to_SBML_speciesTypes_code() not in self.finishedComplexTypes:
-                self.create_species_type_from_complex(comp_agent)
+                self.create_species_type_from_complex(comp_agent, structure_signature)
                 self.finishedComplexTypes.append(comp_agent.to_SBML_speciesTypes_code())
 
             for agent in unique_complexes[comp_agent]:
