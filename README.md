@@ -1,5 +1,5 @@
 [![Python Package using Conda](https://github.com/sybila/eBCSgen/actions/workflows/python-package-conda.yml/badge.svg)](https://github.com/sybila/eBCSgen/actions/workflows/python-package-conda.yml)
-[![Install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](hhttp://bioconda.github.io/recipes/ebcsgen/README.html)
+[![Install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/ebcsgen/README.html)
 [![docs](https://readthedocs.org/projects/ebcsgen/badge/?version=latest)](https://ebcsgen.readthedocs.io/en/latest/)
 
 # eBCSgen
