@@ -110,12 +110,54 @@ class Rule:
 
     def create_reactions(self, atomic_signature: dict, structure_signature: dict) -> set:
         """
+        Create all possible reactions.
+        Decide if rule is of replication type and call corresponding lower level method.
+
+        :param atomic_signature: given mapping of atomic name to possible states
+        :param structure_signature: given mapping of structure name to possible atomics
+        :return: set of created reactions
+        """
+        unique_lhs_indices = set(column(self.pairs, 0))
+        if len(self.pairs) > 1 and len(unique_lhs_indices) == 1 and None not in unique_lhs_indices:
+            # should be the replication rule
+            return self.create_replication_reactions(atomic_signature, structure_signature)
+        else:
+            return self.create_normal_reactions(atomic_signature, structure_signature)
+
+    def create_replication_reactions(self, atomic_signature: dict, structure_signature: dict) -> set:
+        """
+        Create reaction from rule of special form for replication (A -> 2 A)
+
+        :param atomic_signature:  given mapping of atomic name to possible states
+        :param structure_signature: given mapping of structure name to possible atomics
+        :return: set of created reactions
+        """
+        # create only for first pair
+        l, r = self.pairs[0]
+        left = self.agents[l]
+        right = self.agents[r]
+        results = left.add_context(right, atomic_signature, structure_signature)
+
+        reactions = set()
+        for result in results:
+            new_agents = list(result)
+            # replicate RHS agent n times
+            for _ in range(len(self.pairs)):
+                new_agents.append(deepcopy(new_agents[-1]))
+            new_rule = Rule(tuple(new_agents), self.mid, self.compartments,
+                            self.complexes, self.pairs, self.rate, self.label)
+            reactions.add(new_rule.to_reaction())
+
+        return reactions
+
+    def create_normal_reactions(self, atomic_signature: dict, structure_signature: dict) -> set:
+        """
         Adds context to all agents and generated all possible combinations.
         Then, new rules with these enhances agents are generated and converted to Reactions.
 
         :param atomic_signature: given mapping of atomic name to possible states
         :param structure_signature: given mapping of structure name to possible atomics
-        :return:
+        :return: set of created reactions
         """
         results = []
         for (l, r) in self.pairs:
@@ -129,11 +171,13 @@ class Rule:
                 left = self.agents[l]
                 right = self.agents[r]
             results.append(left.add_context(right, atomic_signature, structure_signature))
+
         reactions = set()
         for result in itertools.product(*results):
             new_agents = tuple(filter(None, column(result, 0) + column(result, 1)))
             new_rule = Rule(new_agents, self.mid, self.compartments, self.complexes, self.pairs, self.rate, self.label)
             reactions.add(new_rule.to_reaction())
+
         return reactions
 
     def compatible(self, other: 'Rule') -> bool:
