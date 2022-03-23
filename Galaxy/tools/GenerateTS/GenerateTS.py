@@ -1,6 +1,10 @@
 import argparse
 import numpy as np
 
+import sys, os
+# this add to path eBCSgen home dir, so it can be called from anywhere
+sys.path.append('/home/xtrojak/Documents/GITs/eBCSgen/')
+
 from eBCSgen.Parsing.ParseBCSL import Parser, load_TS_from_json
 from eBCSgen.Errors.ModelParsingError import ModelParsingError
 from eBCSgen.Errors.UnspecifiedParsingError import UnspecifiedParsingError
@@ -53,6 +57,7 @@ model = model_parser.parse(model_str)
 if model.success:
     if eval(args.direct):
         ts = model.data.generate_direct_transition_system(args.max_time, args.max_size, args.bound)
+        ts.change_to_vector_backend()
     else:
         vm = model.data.to_vector_model(args.bound)
         ts = vm.generate_transition_system(ts, args.max_time, args.max_size)
