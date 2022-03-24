@@ -14,7 +14,7 @@ steps:
     element: >-
       #left > div.unified-panel > div.unified-panel-body > div > div.toolMenu >
       div:nth-child(4) > div > div > div:nth-child(2) > div:nth-child(8) > a
-    content: "Click on Probability Sampling tool."
+    content: "Click on SBML export tool."
     placement: bottom
   - title: Step 3 - Model file
     element: 'div[tour_id="model"]'
