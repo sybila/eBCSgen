@@ -35,5 +35,5 @@ steps:
     element: .list-items
     content:
       "Wait until the model checking is finished<br>
-       and results stored in the History."
+       and results are stored in the History."
     placement: left

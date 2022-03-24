@@ -56,5 +56,5 @@ steps:
     element: .list-items
     content:
       "Wait until the parameter synthesis is <br>
-       finished and results stored in the History."
+       finished and results are stored in the History."
     placement: left

@@ -53,6 +53,6 @@ steps:
   - title: Step 11 - Results
     element: .list-items
     content:
-      "Wait until the parameter sampling is <br>
-       finished and results stored in the History."
+      "Wait until the parameter sampling is finished<br>
+       and results are stored in the History."
     placement: left

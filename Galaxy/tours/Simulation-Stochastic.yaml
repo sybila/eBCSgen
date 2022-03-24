@@ -41,7 +41,7 @@ steps:
     placement: auto
   - title: Step 8 - Results
     element: .list-items
-    content: >-
+    content:
       "Wait until the simulation is finished<br>
-       and results stored in the History."
+       and results are stored in the History."
     placement: left
