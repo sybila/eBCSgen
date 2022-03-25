@@ -341,17 +341,13 @@ class Model:
 
             for agent in agents:
                 double_agent = (agent, agent.to_SBML_species_code())
-                unique_complexes[agent] = unique_complexes.get(agent, set() | {double_agent})
+                unique_complexes[agent] = unique_complexes.get(agent, set()) | {double_agent}
 
             unique_params_from_rate = unique_params_from_rate.union(params)
 
         for agent in initialization_complexes:
             double_agent = (agent, agent.to_SBML_species_code())
-
-            if agent not in unique_complexes:
-                unique_complexes[agent] = {double_agent}
-            else:
-                unique_complexes[agent] = unique_complexes[agent].union({double_agent})
+            unique_complexes[agent] = unique_complexes.get(agent, set()) | {double_agent}
 
         for comp in unique_complexes:
             unique_complexes[comp] = list(unique_complexes[comp])
