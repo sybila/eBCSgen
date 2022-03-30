@@ -1,10 +1,6 @@
 import argparse
 import numpy as np
 
-import sys, os
-# this add to path eBCSgen home dir, so it can be called from anywhere
-sys.path.append('/home/xtrojak/Documents/GITs/eBCSgen/')
-
 from eBCSgen.Parsing.ParseBCSL import Parser, load_TS_from_json
 from eBCSgen.Errors.ModelParsingError import ModelParsingError
 from eBCSgen.Errors.UnspecifiedParsingError import UnspecifiedParsingError
