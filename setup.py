@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='eBCSgen',
-      version='2.0',
+      version='2.0.3',
       description='eBSCgen is a tool for development and analysis of models written in Biochemical Space Language',
       url='https://github.com/sybila/eBCSgen',
       author='Mate Trojak',
