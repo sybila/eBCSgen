@@ -20,7 +20,11 @@ class ModelSBML:
 
     def create_species_feature_type(self, new_species_type, atomic: str, atomics: dict):
         """
-        Function creates species feature inside Atomic agent
+        Function creates species feature Type inside Atomic agent. adds all possible feature
+        values to ListOfPossibleFeatureValues of given speciesFeatureType.
+        If feature value os _, do not add it.
+        Later in creating of SpeciesFeature in model, we will not add _ but instead omit features specified.
+        Result will be do not care state
 
         :param new_species_type: libsbml object of new speciesType
         :param atomic: name of given atomic agent
@@ -30,8 +34,9 @@ class ModelSBML:
         new_feature_type.setId("{}_feature_type".format(atomic))
         new_feature_type.setOccur(1)
         for feature_value in atomics:
-            new_feature_type.createPossibleSpeciesFeatureValue() \
-                .setId("{}_{}".format(atomic, feature_value))
+            if feature_value != "_":
+                new_feature_type.createPossibleSpeciesFeatureValue() \
+                    .setId("{}_{}".format(atomic, feature_value))
 
     def create_species_types_from_atomic(self, atomics: dict):
         """
@@ -111,7 +116,11 @@ class ModelSBML:
         Creates and sets up species feature
 
         If there are 2 or more agents in complex with the same name, reference can
-        distinguish between them by mentioning their parent structure agent too
+        distinguish between them by mentioning their parent structure agent too.
+
+        If SpeciesFeature should be '_' program does not add this value. Semantics of this is
+        'do not care' state in SBML-multi. For the refference see above method
+        create_species_feature_type().
 
         :param agent: agent of given feature
         :param plugin: multi plugin to manipulate with species features
@@ -123,8 +132,9 @@ class ModelSBML:
         if is_component:
             sf.setComponent(component_ref)
         sf.setOccur(1)
-        sfv = sf.createSpeciesFeatureValue()
-        sfv.setValue("{}_{}".format(agent.name, agent.state))
+        if agent.state != '_':
+            sfv = sf.createSpeciesFeatureValue()
+            sfv.setValue("{}_{}".format(agent.name, agent.state))
         plugin.addSpeciesFeature(sf)
 
     def create_species_features(self, comp_agent: eBCSgen.Core.Complex.Complex, new_species_multi_plugin):
