@@ -20,11 +20,10 @@ class ModelSBML:
 
     def create_species_feature_type(self, new_species_type, atomic: str, atomics: dict):
         """
-        Function creates species feature Type inside Atomic agent. adds all possible feature
-        values to ListOfPossibleFeatureValues of given speciesFeatureType.
-        If feature value os _, do not add it.
-        Later in creating of SpeciesFeature in model, we will not add _ but instead omit features specified.
-        Result will be do not care state
+        Function creates species feature Type inside Atomic agent.
+
+        Add all possible feature values to ListOfPossibleFeatureValues of given speciesFeatureType.
+        If feature value is '_', ignore itte
 
         :param new_species_type: libsbml object of new speciesType
         :param atomic: name of given atomic agent
@@ -118,9 +117,7 @@ class ModelSBML:
         If there are 2 or more agents in complex with the same name, reference can
         distinguish between them by mentioning their parent structure agent too.
 
-        If SpeciesFeature should be '_' program does not add this value. Semantics of this is
-        'do not care' state in SBML-multi. For the refference see above method
-        create_species_feature_type().
+        If SpeciesFeature should be '_', ignore it. This corresponds to any value.
 
         :param agent: agent of given feature
         :param plugin: multi plugin to manipulate with species features
