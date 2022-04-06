@@ -311,7 +311,7 @@ class Model:
         unique_complexes, unique_params = self.create_unique_complexes_and_params()
 
         test_model.create_basic_species_types(self.atomic_signature, self.structure_signature)
-        test_model.create_all_species_compartments_and_complex_species_types(unique_complexes)
+        test_model.create_all_species_compartments_and_complex_species_types(unique_complexes, self.structure_signature)
         test_model.create_all_reactions(self.rules)
         test_model.create_reaction_for_isomorphisms(unique_complexes)
         test_model.create_parameters(self.definitions, unique_params)
@@ -341,13 +341,15 @@ class Model:
 
             for agent in agents:
                 double_agent = (agent, agent.to_SBML_species_code())
-                unique_complexes[agent] = unique_complexes.get(agent, set() | {double_agent})
+                unique_complexes[agent] = unique_complexes.get(agent, set()) | {double_agent}
 
             unique_params_from_rate = unique_params_from_rate.union(params)
+
         for agent in initialization_complexes:
             double_agent = (agent, agent.to_SBML_species_code())
-            unique_complexes[agent] = unique_complexes.get(agent, set() | {double_agent})
+            unique_complexes[agent] = unique_complexes.get(agent, set()) | {double_agent}
 
         for comp in unique_complexes:
             unique_complexes[comp] = list(unique_complexes[comp])
+
         return unique_complexes, unique_params_from_rate

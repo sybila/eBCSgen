@@ -20,7 +20,10 @@ class ModelSBML:
 
     def create_species_feature_type(self, new_species_type, atomic: str, atomics: dict):
         """
-        Function creates species feature inside Atomic agent
+        Function creates species feature Type inside Atomic agent.
+
+        Add all possible feature values to ListOfPossibleFeatureValues of given speciesFeatureType.
+        If feature value is '_', ignore itte
 
         :param new_species_type: libsbml object of new speciesType
         :param atomic: name of given atomic agent
@@ -30,8 +33,9 @@ class ModelSBML:
         new_feature_type.setId("{}_feature_type".format(atomic))
         new_feature_type.setOccur(1)
         for feature_value in atomics:
-            new_feature_type.createPossibleSpeciesFeatureValue() \
-                .setId("{}_{}".format(atomic, feature_value))
+            if feature_value != "_":
+                new_feature_type.createPossibleSpeciesFeatureValue() \
+                    .setId("{}_{}".format(atomic, feature_value))
 
     def create_species_types_from_atomic(self, atomics: dict):
         """
@@ -59,7 +63,7 @@ class ModelSBML:
                 new_instance.setId(subcomponent)
                 new_instance.setSpeciesType("st_{}".format(subcomponent))
 
-    def create_species_type_from_complex(self, comp_agent: eBCSgen.Core.Complex.Complex):
+    def create_species_type_from_complex(self, comp_agent: eBCSgen.Core.Complex.Complex, structure_signature: dict):
         """
         All complex agents are translated to SpeciesTypes Here
 
@@ -75,10 +79,10 @@ class ModelSBML:
             new_instance.setSpeciesType("st_{}".format(subcomponent))
             agent = sorted(comp_agent.agents)[num]
             if isinstance(agent, eBCSgen.Core.Structure.StructureAgent):
-                for atomic in agent.composition:
+                for atomic_name in structure_signature[subcomponent]:
                     comp_index = new_species_type.createSpeciesTypeComponentIndex()
-                    comp_index.setId("{}_{}_{}".format(subcomponent, str(num), atomic.name))
-                    comp_index.setComponent(atomic.name)
+                    comp_index.setId("{}_{}_{}".format(subcomponent, str(num), atomic_name))
+                    comp_index.setComponent(atomic_name)
                     comp_index.setIdentifyingParent("{}_{}".format(subcomponent, str(num)))
 
     def create_basic_species_types(self, atomics: dict, structs: dict):
@@ -111,7 +115,9 @@ class ModelSBML:
         Creates and sets up species feature
 
         If there are 2 or more agents in complex with the same name, reference can
-        distinguish between them by mentioning their parent structure agent too
+        distinguish between them by mentioning their parent structure agent too.
+
+        If SpeciesFeature should be '_', ignore it. This corresponds to any value.
 
         :param agent: agent of given feature
         :param plugin: multi plugin to manipulate with species features
@@ -123,8 +129,9 @@ class ModelSBML:
         if is_component:
             sf.setComponent(component_ref)
         sf.setOccur(1)
-        sfv = sf.createSpeciesFeatureValue()
-        sfv.setValue("{}_{}".format(agent.name, agent.state))
+        if agent.state != '_':
+            sfv = sf.createSpeciesFeatureValue()
+            sfv.setValue("{}_{}".format(agent.name, agent.state))
         plugin.addSpeciesFeature(sf)
 
     def create_species_features(self, comp_agent: eBCSgen.Core.Complex.Complex, new_species_multi_plugin):
@@ -163,7 +170,7 @@ class ModelSBML:
         new_species.setId(comp_agent.to_SBML_species_code())
         new_species.setName(str(comp_agent))
 
-    def create_all_species_compartments_and_complex_species_types(self, unique_complexes: dict):
+    def create_all_species_compartments_and_complex_species_types(self, unique_complexes: dict, structure_signature:dict):
         """
         Creates all compartments
 
@@ -179,7 +186,7 @@ class ModelSBML:
             # firstly as structs from signature and secondly as complex here
             # create species type from complex agent if it does not exist.
             if comp_agent.to_SBML_speciesTypes_code() not in self.finishedComplexTypes:
-                self.create_species_type_from_complex(comp_agent)
+                self.create_species_type_from_complex(comp_agent, structure_signature)
                 self.finishedComplexTypes.append(comp_agent.to_SBML_speciesTypes_code())
 
             for agent in unique_complexes[comp_agent]:
