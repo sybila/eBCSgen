@@ -593,18 +593,18 @@ class Parser:
         :param tree: given parsed Tree
         :return: Result containing constructed BCSL object
         """
-        # try:
-        complexer = ExtractComplexNames()
-        tree = complexer.transform(tree)
-        complexer.complex_defns = remove_nested_complex_aliases(complexer.complex_defns)
-        de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
-        tree = de_abstracter.transform(tree)
-        tree = TreeToComplex().transform(tree)
-        tree = TransformRegulations().transform(tree)
-        tree = TreeToObjects().transform(tree)
-        return Result(True, tree.children[0])
-        # except Exception as u:
-        #     return Result(False, {"error": str(u)})
+        try:
+            complexer = ExtractComplexNames()
+            tree = complexer.transform(tree)
+            complexer.complex_defns = remove_nested_complex_aliases(complexer.complex_defns)
+            de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
+            tree = de_abstracter.transform(tree)
+            tree = TreeToComplex().transform(tree)
+            tree = TransformRegulations().transform(tree)
+            tree = TreeToObjects().transform(tree)
+            return Result(True, tree.children[0])
+        except Exception as u:
+            return Result(False, {"error": str(u)})
 
     def syntax_check(self, expression: str) -> Result:
         """

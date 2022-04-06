@@ -53,6 +53,7 @@ model = model_parser.parse(model_str)
 if model.success:
     if eval(args.direct):
         ts = model.data.generate_direct_transition_system(args.max_time, args.max_size, args.bound)
+        ts.change_to_vector_backend()
     else:
         vm = model.data.to_vector_model(args.bound)
         ts = vm.generate_transition_system(ts, args.max_time, args.max_size)

@@ -1,0 +1,34 @@
+id: SBMLexport
+name: SBML export
+description: This is a tour created to describe SBML export tool.
+title_default: Galaxy Tour
+steps:
+  - title: Step 1 - Begin
+    element: >-
+      #left .unified-panel .unified-panel-body .toolMenuContainer .toolMenu
+      .toolSectionTitle.tool-menu-section-default a[href$="javascript:void(0)"]
+      .name
+    content: Click here to list available tools.
+    placement: bottom
+  - title: Step 2 - Select tool
+    element: >-
+      #left > div.unified-panel > div.unified-panel-body > div > div.toolMenu >
+      div:nth-child(4) > div > div > div:nth-child(2) > div:nth-child(8) > a
+    content: "Click on SBML export tool."
+    placement: bottom
+  - title: Step 3 - Model file
+    element: 'div[tour_id="model"]'
+    content:
+      "Choose BCSL model file. <br>
+      This tool supports only .bcs files stored in your history."
+    placement: bottom
+  - title: Step 4 - Execute
+    element: '#execute'
+    content: "Click the button Execute <br>to start SBML export."
+    placement: auto
+  - title: Step 5 - Results
+    element: .list-items
+    content:
+      "Wait until the SBML export is finished<br>
+       and are results stored in the History."
+    placement: left

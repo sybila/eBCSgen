@@ -36,5 +36,5 @@ steps:
     element: .list-items
     content:
       "Wait until the analysis is finished<br>
-       and results stored in the History."
+       and results are stored in the History."
     placement: left
