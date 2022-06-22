@@ -2,8 +2,9 @@
 import sys, os
 import itertools
 import numpy as np
+from pathlib import Path
 
-sys.path.append('/home/xtrojak/eBCSgen/Visualisations/SynthesisVis/templates')
+sys.path.append('/home/xtrojak/eBCSgen/Galaxy/Visualisations/SynthesisVis/templates')
 
 import libs
 %>
