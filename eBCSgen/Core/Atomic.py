@@ -49,7 +49,7 @@ class AtomicAgent:
 
         If other is also an atomic agents, this methods gives them both the same states
         according to the given atomic_signature.
-        Otherwise, context is filled independently and other part is None.
+        Otherwise, context is filled independently and other part is None, unless it's a StructureAgent.
         Finally, if both agents have defined states, they are returned untouched.
 
         Note: it is assumed this method is used only for well formed rules, which means
@@ -76,12 +76,14 @@ class AtomicAgent:
                     result.add((None, AtomicAgent(str(self.name), state)))
             else:
                 result = {(None, self)}
-        else:
+        elif other == 1:
             if self.state == "_":
                 for state in atomic_signature[self.name]:
                     result.add((AtomicAgent(str(self.name), state), None))
             else:
                 result = {(self, None)}
+        else:
+            return {(self, other)}
         return result
 
     def reduce_context(self):
