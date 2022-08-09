@@ -113,11 +113,18 @@ class StructureAgent:
                     new_agent.composition.add(left)
                 if other == -1:
                     agents.add((None, new_agent))
-                else:
+                elif other == 1:
                     agents.add((new_agent, None))
+                else:
+                    return {(self, other)}
             return agents
         else:
-            return {(None, self)} if other == -1 else {(self, None)}
+            if other == -1:
+                return {(None, self)}
+            elif other == 1:
+                return {(self, None)}
+            else:
+                return {(self, other)}
 
     def reduce_context(self):
         """
