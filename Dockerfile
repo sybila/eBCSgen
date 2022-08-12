@@ -3,34 +3,26 @@
 FROM movesrwth/storm-basesystem:latest
 MAINTAINER Matej Trojak <xtrojak@fi.muni.cz>
 
-# Install base utilities
-RUN apt-get update && \
-    apt-get install -y build-essentials  && \
-    apt-get install -y wget &&
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
 ARG no_threads=1
 
-# Build Carl
-############
+# Install base utilities
+########################
+RUN apt-get install -y wget
 WORKDIR /opt/
+
+# Configure and Build Carl library
 RUN git clone -b master14 https://github.com/ths-rwth/carl.git
 RUN mkdir -p /opt/carl/build
 WORKDIR /opt/carl/build
-
-# Configure and Build Carl library
 RUN cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_CLN_NUMBERS=ON -DUSE_GINAC=ON -DTHREAD_SAFE=ON
 RUN make lib_carl -j $no_threads
 
-# Build Storm
-#############
-RUN mkdir /opt/storm
-WORKDIR /opt/storm
+# Install Storm
+###############
+WORKDIR /opt/
 
 # Copy the content of the current local Storm repository into the Docker image
 RUN git clone -b stable https://github.com/moves-rwth/storm.git
-COPY storm/ .
 
 # Switch to build directory
 RUN mkdir -p /opt/storm/build
@@ -57,4 +49,4 @@ ENV PATH=$CONDA_DIR/bin:$PATH
 
 # Install eBCSgen
 #################
-conda install --channel bioconda --channel conda-forge eBCSgen
+RUN conda install --channel bioconda --channel conda-forge eBCSgen
