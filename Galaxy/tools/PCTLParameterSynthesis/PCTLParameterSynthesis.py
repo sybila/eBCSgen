@@ -10,8 +10,7 @@ from eBCSgen.Parsing.ParsePCTLformula import PCTLparser
 usage: PCTLParameterSynthesis.py [-h] --transition_file TRANSITION_FILE 
                                       --output OUTPUT 
                                       --formula FORMULA
-                                      [--region REGION] 
-                                      [--local_storm]                        
+                                      [--region REGION]               
 
 Parameter synthesis
 
@@ -22,7 +21,6 @@ required arguments:
 
 optional arguments:
   --region REGION
-  --local_storm
 """
 
 args_parser = argparse.ArgumentParser(description='Parameter synthesis')
@@ -34,7 +32,6 @@ optional = args_parser.add_argument_group('optional arguments')
 required.add_argument('--transition_file', required=True)
 required.add_argument('--output', type=str, required=True)
 required.add_argument('--formula', type=str, required=True)
-optional.add_argument('--local_storm', nargs="?", const=True)
 optional.add_argument('--region', type=str)
 
 args = args_parser.parse_args()
@@ -43,11 +40,6 @@ if args.region:
     region = args.region.replace("=", "<=")
 else:
     region = None
-
-if args.local_storm:
-    local_storm = True
-else:
-    local_storm = False
 
 ts = load_TS_from_json(args.transition_file)
 # TODO for presence of rates
@@ -67,7 +59,7 @@ if "?" not in args.formula:
 
 formula = PCTLparser().parse(args.formula)
 if formula.success:
-    result = PCTL().parameter_synthesis(ts, formula, region, local_storm)
+    result = PCTL().parameter_synthesis(ts, formula, region)
     f = open(args.output, "w")
     f.write(result.decode("utf-8"))
     f.close()

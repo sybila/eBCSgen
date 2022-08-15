@@ -7,7 +7,7 @@ from eBCSgen.Errors.StormNotAvailable import StormNotAvailable
 
 class PCTL:
     @staticmethod
-    def model_checking(ts: TransitionSystem, PCTL_formula: Formula, storm_local: bool = True):
+    def model_checking(ts: TransitionSystem, PCTL_formula: Formula):
         """
         Model checking of given PCTL formula.
 
@@ -17,7 +17,6 @@ class PCTL:
 
         :param ts: given transition system
         :param PCTL_formula: given PCTL formula
-        :param storm_local: use local Storm installation
         :return: output of Storm model checker
         """
         path = "/tmp/"
@@ -30,12 +29,11 @@ class PCTL:
         ts.save_to_STORM_explicit(transitions_file, labels_file, state_labels, AP_labels)
 
         command = "storm --explicit {0} {1} --prop '{2}'"
-        result = call_storm(command.format(transitions_file, labels_file, formula),
-                            [transitions_file, labels_file], storm_local)
+        result = call_storm(command.format(transitions_file, labels_file, formula))
         return result
 
     @staticmethod
-    def parameter_synthesis(ts: TransitionSystem, PCTL_formula: Formula, region: str, storm_local: bool = True):
+    def parameter_synthesis(ts: TransitionSystem, PCTL_formula: Formula, region: str):
         """
         Parameter synthesis of given PCTL formula in given region.
 
@@ -46,7 +44,6 @@ class PCTL:
         :param ts: given transition system
         :param PCTL_formula: given PCTL formula
         :param region: string representation of region which will be checked by Storm
-        :param storm_local: use local Storm installation
         :return: output of Storm model checker
         """
         path = "/tmp/"
@@ -62,50 +59,13 @@ class PCTL:
         command_no_region = "storm-pars --prism {0} --prop '{1}'"
 
         if region:
-            result = call_storm(command_region.format(prism_file, formula, region), [prism_file], storm_local)
+            result = call_storm(command_region.format(prism_file, formula, region))
         else:
-            result = call_storm(command_no_region.format(prism_file, formula), [prism_file], storm_local)
+            result = call_storm(command_no_region.format(prism_file, formula))
         return result
 
 
-def call_storm(command: str, files: list, storm_local: bool):
-    """
-    Calls Storm model checker either locally or on the remote server.
-
-    :param command: given command to be executed
-    :param files: files to be transferred to remote device
-    :param storm_local: use local Storm installation
-    :return: result of Storm execution
-    """
-    if storm_local:
-        return call_local_storm(command)
-    else:
-        import paramiko, scp
-        ssh = paramiko.SSHClient()
-        ssh.load_system_host_keys()
-        try:
-            ssh.connect("psyche07.fi.muni.cz", username="biodivine")
-        except Exception:
-            return call_local_storm(command)
-
-        with scp.SCPClient(ssh.get_transport()) as tunnel:
-            for file in files:
-                tunnel.put(file, file)
-
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
-        output = ssh_stdout.read()
-        stderr = ssh_stderr.read()
-        ssh.close()
-        del ssh, ssh_stdin, ssh_stdout, ssh_stderr
-
-        # if error output is empty, command was executed successfully, call local Storm otherwise
-        if stderr:
-            return call_local_storm(command)
-        else:
-            return output
-
-
-def call_local_storm(command: str):
+def call_storm(command: str):
     """
     Calls Storm model checker locally.
 
