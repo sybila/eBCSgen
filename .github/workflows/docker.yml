@@ -13,14 +13,14 @@ jobs:
       uses: actions/checkout@v2
     - name: Setup conda
       uses: conda-incubator/setup-miniconda@v2
-    - name: Look up latest conda eBCSgen release
-      run: echo "::set-output name=latest::$(conda search --channel bioconda eBCSgen | tail -n1 | awk {'print "v"$2'})"
-      id: conda_version
     - name: Get latest release tag
       id: release_version
       uses: pozetroninc/github-action-get-latest-release@master
       with:
         repository: ${{ github.repository }}
+    - name: Look up latest conda eBCSgen release
+      run: echo "::set-output name=latest::$(conda search --channel bioconda eBCSgen | tail -n1 | awk {'print "v"$2'})"
+      id: conda_version
     - name: Look up docker image
       id: docker_lookup
       if: ${{ steps.conda_version.outputs.latest == steps.release_version.outputs.release }}
@@ -31,7 +31,7 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
     - name: Build Docker image
-      if: ${{ steps.docker_lookup.outputs.exists }} == 0
+      if: ${{ steps.docker_lookup.outputs.exists }} != 0
       run: |
         docker build \
         --tag ${DOCKER_IMAGE}:latest \
@@ -39,6 +39,6 @@ jobs:
         .
     - name: Publish Docker image
       # Only deploy if using master on original repo (and not for pull requests or forks)
-      if: ${{ steps.docker_lookup.outputs.exists }} == 0 && github.repository_owner == 'sybila' && github.ref == 'refs/heads/master'
+      if: ${{ steps.docker_lookup.outputs.exists }} != 0 && github.repository_owner == 'sybila' && github.ref == 'refs/heads/master'
       run: |
         docker push --all-tags ${DOCKER_IMAGE}
