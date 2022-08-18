@@ -1,4 +1,5 @@
 import subprocess
+from pandas import DataFrame
 
 from eBCSgen.TS.TransitionSystem import TransitionSystem
 from eBCSgen.Core.Formula import Formula
@@ -62,7 +63,34 @@ class PCTL:
             result = call_storm(command_region.format(prism_file, formula, region))
         else:
             result = call_storm(command_no_region.format(prism_file, formula))
-        return result
+        return self.process_output(result)
+
+    @staticmethod
+    def process_output(result):
+        columns = []
+        rows = []
+        param_lines = False
+        for line in result.read().splitlines():
+            if "Analyzing parameter region" in line:
+                splitted = line.split()[3].split(",")
+                for param in splitted:
+                    param_name = param.split("<=")[1]
+                    columns += ["from_" + param_name, "to_" + param_name]
+                columns += ["value"]
+            if "Region results:" in line:
+                param_lines = True
+            if "Region refinement" in line:
+                param_lines = False
+            if param_lines:
+                # read param line 1567/5120<=param_block<=793/2560,1501/2560<=param_sig<=753/1280;: 	Unknown
+                parts = line.split("<=")
+                # 0, 2, 3, 5, 6, 8
+
+                rows.append([])
+
+        return DataFrame(rows, columns=columns)
+
+
 
 
 def call_storm(command: str):

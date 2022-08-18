@@ -1,4 +1,5 @@
 import unittest
+import pandas as pd
 
 from eBCSgen.Analysis.PCTL import PCTL
 from eBCSgen.Analysis.CTL import CTL
@@ -271,3 +272,9 @@ class TestFormalMethods(unittest.TestCase):
         formula = CTLparser().parse('E(F([Z()::rep > 1]))')
         result, states = CTL.model_checking(ts, formula)
         self.assertFalse(result)
+
+    def test_parse_storm_regions_output(self):
+        with open("Testing/synthesis_example.storm.regions", "r") as storm_output:
+            # df_expected = pd.read_csv('Testing/synthesis_example.csv')
+            df_actual = PCTL.process_output(storm_output)
+            assert df_actual == df_expected
