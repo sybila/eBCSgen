@@ -59,9 +59,8 @@ if "?" not in args.formula:
 
 formula = PCTLparser().parse(args.formula)
 if formula.success:
-    result = PCTL().parameter_synthesis(ts, formula, region)
-    f = open(args.output, "w")
-    f.write(result.decode("utf-8"))
-    f.close()
+    result = PCTL.parameter_synthesis(ts, formula, region)
+    df = PCTL.process_output(result)
+    df.to_csv(args.output, index=False)
 else:
     raise FormulaParsingError(formula.data, args.formula)
