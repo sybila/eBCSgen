@@ -63,7 +63,7 @@ class PCTL:
             result = call_storm(command_region.format(prism_file, formula, region))
         else:
             result = call_storm(command_no_region.format(prism_file, formula))
-        return self.process_output(result)
+        return result
 
     @staticmethod
     def process_output(result):
@@ -77,20 +77,19 @@ class PCTL:
                     param_name = param.split("<=")[1]
                     columns += ["from_" + param_name, "to_" + param_name]
                 columns += ["value"]
-            if "Region results:" in line:
-                param_lines = True
             if "Region refinement" in line:
                 param_lines = False
-            if param_lines:
-                # read param line 1567/5120<=param_block<=793/2560,1501/2560<=param_sig<=753/1280;: 	Unknown
-                parts = line.split("<=")
-                # 0, 2, 3, 5, 6, 8
-
-                rows.append([])
-
+            if param_lines and line:
+                parts = line.split(";: \t")
+                value = parts[1]
+                parts = parts[0].replace(",", "<=").split("<=")
+                row = []
+                for i in [i*3 for i in range(len(columns) // 2)]:
+                    row += [parts[i], parts[i+2]]
+                rows.append(row + [value])
+            if "Region results:" in line:
+                param_lines = True
         return DataFrame(rows, columns=columns)
-
-
 
 
 def call_storm(command: str):
