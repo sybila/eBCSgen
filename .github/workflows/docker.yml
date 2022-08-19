@@ -39,6 +39,6 @@ jobs:
         .
     - name: Publish Docker image
       # Only deploy if using master on original repo (and not for pull requests or forks)
-      if: ${{ steps.docker_lookup.outputs.exists != 0 }} && github.repository_owner == 'sybila' && github.ref == 'refs/heads/master'
+      if: ${{ steps.docker_lookup.outputs.exists != 0 && github.repository_owner == 'sybila' && github.ref == 'refs/heads/master' }}
       run: |
         docker push --all-tags ${DOCKER_IMAGE}
