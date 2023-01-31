@@ -32,6 +32,10 @@ conda install --channel bioconda --channel conda-forge eBCSgen
 
 You can also use prebuild [docker image](https://hub.docker.com/r/sybila/ebcsgen).
 
+### Galaxy
+
+`eBCSgen` is also available as a series of Galaxy tools available in the main [toolshed](https://toolshed.g2.bx.psu.edu/).
+
 ## Developer Documentation
 
 ### Setup
