@@ -26,7 +26,8 @@ def test_insert_atomic_to_complex_correct_input(string_atomic, string_value, str
 
 @pytest.mark.parametrize('string_atomic, string_value', [
     ["A{i}", "B(S{p}).A{a}.A{d}"],
-    ["A{_}", "B(S{p}).A{d}.A{a}"]
+    ["A{_}", "B(S{p}).A{d}.A{a}"],
+    ["A{i}", "B(S{p}).D{d}"]
 ])
 def test_insert_atomic_to_complex_incorrect_input(string_atomic, string_value):
     parser_atomic = Parser("atomic")
