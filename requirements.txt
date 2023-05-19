@@ -1,0 +1,13 @@
+numpy
+pandas
+pyparsing
+regex
+requests
+scipy
+sortedcontainers
+sympy
+python-libsbml
+lark
+lark-parser
+pytest
+pymodelchecking
