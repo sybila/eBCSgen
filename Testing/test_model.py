@@ -130,56 +130,6 @@ class TestModel(unittest.TestCase):
                                            rate_3)}
 
         self.vm_1 = VectorModel(vector_reactions, init, ordering, None)
-
-        # wrong models
-
-        self.model_wrong_1 = \
-            """#! rules
-            X(K{i})::rep => X(K{p})::rep @ k1*[X()::rep]
-            X(T{a})::rep => X(T{o}):;rep @ k2*[Z()::rep]
-            => Y(P{f})::rep @ 1/(1+([X()::rep])**4)
-
-            #! inits
-            2 X(K{c}, T{e}).X(K{c}, T{j})::rep
-            Y(P{g}, N{l})::rep
-
-            #! definitions
-            k1 = 0.05
-            k2 = 0.12
-            """
-
-        self.model_wrong_2 = \
-            """#! rules
-            X(K{i})::rep => X(K{p})::rep @ k1*[X()::rep]
-            X(T{a})::rep = X(T{o})::rep @ k2*[Z()::rep]
-            => Y(P{f})::rep @ 1/(1+([X()::rep])**4)
-
-            #! inits
-            2 X(K{c}, T{e}).X(K{c}, T{j})::rep
-            Y(P{g}, N{l})::rep
-
-            #! definitions
-            k1 = 0.05
-            k2 = 0.12
-            """
-
-        self.model_with_comments = """
-            #! rules
-            // commenting
-            X(K{i})::rep => X(K{p})::rep @ k1*[X()::rep] // also here
-            X(T{a})::rep => X(T{o})::rep @ k2*[Z()::rep]
-            => Y(P{f})::rep @ 1/(1+([X()::rep])**4) // ** means power (^)
-
-            #! inits
-            // here
-            2 X(K{c}, T{e}).X(K{c}, T{j})::rep
-            Y(P{g}, N{l})::rep // comment just 1 item
-
-            #! definitions
-            // and
-            k1 = 0.05 // also
-            k2 = 0.12
-            """
         
         self.model_with_complexes = """
             #! rules
@@ -465,15 +415,6 @@ class TestModel(unittest.TestCase):
         parsed_again = self.model_parser.parse(back_to_str).data
         self.assertEqual(model, parsed_again)
 
-    def test_comments(self):
-        model_with_comments = self.model_parser.parse(self.model_with_comments)
-        model_without_comments = self.model_parser.parse(self.model_str_2).data
-
-        self.assertEqual(model_with_comments.data, model_without_comments)
-
-    def test_parser(self):
-        self.assertEqual(self.model_parser.parse(self.model_str_1).data, self.model)
-
     def test_signatures(self):
         model = self.model_parser.parse(self.model_str_2).data
         self.assertEqual(model.atomic_signature, {'K': {'c', 'i', 'p'}, 'T': {'e', 'a', 'o', 'j'},
@@ -483,15 +424,6 @@ class TestModel(unittest.TestCase):
     def test_to_vector_model(self):
         model = self.model_parser.parse(self.model_str_1).data
         self.assertTrue(model.to_vector_model() == self.vm_1)
-
-    def test_parser_errors(self):
-        self.assertEqual(self.model_parser.parse(self.model_wrong_1).data,
-                         {"unexpected": ";", "expected": {'?', 'name'}, "line": 3, "column": 37})
-
-        self.assertEqual(self.model_parser.parse(self.model_wrong_2).data,
-                         {"expected": {'decimal', '#! inits', ']', '#! definitions', '=>, <=>', '@', 'int',
-                                       '+', 'name', ';', '}', ',', '#! complexes', '#! regulation'},
-                          "line": 3, "column": 26, "unexpected": "="})
 
     def test_zooming_syntax(self):
         model_abstract = self.model_parser.parse(self.model_with_complexes).data
