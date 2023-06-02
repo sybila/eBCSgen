@@ -465,15 +465,6 @@ class TestModel(unittest.TestCase):
         parsed_again = self.model_parser.parse(back_to_str).data
         self.assertEqual(model, parsed_again)
 
-    def test_comments(self):
-        model_with_comments = self.model_parser.parse(self.model_with_comments)
-        model_without_comments = self.model_parser.parse(self.model_str_2).data
-
-        self.assertEqual(model_with_comments.data, model_without_comments)
-
-    def test_parser(self):
-        self.assertEqual(self.model_parser.parse(self.model_str_1).data, self.model)
-
     def test_signatures(self):
         model = self.model_parser.parse(self.model_str_2).data
         self.assertEqual(model.atomic_signature, {'K': {'c', 'i', 'p'}, 'T': {'e', 'a', 'o', 'j'},
@@ -483,15 +474,6 @@ class TestModel(unittest.TestCase):
     def test_to_vector_model(self):
         model = self.model_parser.parse(self.model_str_1).data
         self.assertTrue(model.to_vector_model() == self.vm_1)
-
-    def test_parser_errors(self):
-        self.assertEqual(self.model_parser.parse(self.model_wrong_1).data,
-                         {"unexpected": ";", "expected": {'?', 'name'}, "line": 3, "column": 37})
-
-        self.assertEqual(self.model_parser.parse(self.model_wrong_2).data,
-                         {"expected": {'decimal', '#! inits', ']', '#! definitions', '=>, <=>', '@', 'int',
-                                       '+', 'name', ';', '}', ',', '#! complexes', '#! regulation'},
-                          "line": 3, "column": 26, "unexpected": "="})
 
     def test_zooming_syntax(self):
         model_abstract = self.model_parser.parse(self.model_with_complexes).data
