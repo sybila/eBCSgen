@@ -1,7 +1,7 @@
 from eBCSgen.Core.Atomic import AtomicAgent
 from eBCSgen.Core.Structure import StructureAgent
 from eBCSgen.Core.Complex import Complex
-from eBCSgen.Core.Complex import Complex
+from eBCSgen.Core.Side import Side
 
 # atomic
 a1 = AtomicAgent("T", "s")
@@ -29,3 +29,10 @@ c4 = Complex([s1, a1], "cyt")
 c5 = Complex([s2] * 3 + [s4] * 3, "cell")
 c6 = Complex([s6] * 2 + [a6], "cyt")
 c7 = Complex([a7, a4], "cell")
+
+# side
+side1 = Side([c1])
+side2 = Side([c4, c5])
+side3 = Side([c1, c2, c2])
+side4 = Side([c7, c6, c5])
+side5 = Side([])
