@@ -13,3 +13,10 @@ def test_parser():
     assert parser.parse("S{_}").data == objects.a5
     assert parser.parse("T{p}").data == objects.a6
     assert parser.parse("T{u}").data == objects.a7
+
+    assert not parser.parse("T{s").success
+    assert not parser.parse("T{}").success
+    assert not parser.parse("Ts}").success
+    assert not parser.parse("{s}").success
+    assert not parser.parse("x").success
+    assert not parser.parse("").success
