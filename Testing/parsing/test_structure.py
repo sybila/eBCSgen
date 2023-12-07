@@ -13,3 +13,12 @@ def test_parser():
     assert parser.parse("D(S{_},T{p})").data == objects.s5
     assert parser.parse("K()").data == objects.s6
     assert parser.parse("K(S{a},T{_})").data == objects.s7
+
+    assert not parser.parse("B(T{})").success
+    assert not parser.parse("(T{s})").success
+    assert not parser.parse("BT{s})").success
+    assert not parser.parse("B(T{s}").success
+    assert not parser.parse("(B(T{s}))").success
+    assert not parser.parse("[B(T{s})]").success
+    assert not parser.parse("").success
+    assert not parser.parse("B({s})").success

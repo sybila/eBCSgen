@@ -32,3 +32,18 @@ def test_parser():
     ret = parser.parse("")
     assert ret.success
     assert ret.data.to_side() == objects.side5
+
+    ret = parser.parse("(T{s})::cell")
+    assert not ret.success
+
+    ret = parser.parse("BT{s})::cell")
+    assert not ret.success
+
+    ret = parser.parse("B(T{s}::cell")
+    assert not ret.success
+
+    ret = parser.parse("B(T{s})::")
+    assert not ret.success
+
+    ret = parser.parse("B(T{s}")
+    assert not ret.success
