@@ -29,10 +29,6 @@ def test_parser():
     )
     assert ret.success
 
-    # why is this expression incorrect, it passes separated into expr1 snd expr2
-    # ret = parser.parse(
-    #     "((([B(T{s})::cell] + [B(T{s})::cyt]) / ([B(T{_}.C())::cell] + [B()::cell])) / (([B(T{s}).T{s}::cyt] - [T{_}::cell]) / ([T{u}.T{_}::cell] - [B(T{s})::cell])))"
-    # )
     expr1 = "([B(T{s})::cell] + [B(T{s})::cyt]) / ([B(T{_}).C()::cell] + [B()::cell])"
     expr2 = (
         "([B(T{s}).T{s}::cyt] - [T{_}::cell]) / ([T{u}.T{_}::cell] - [B(T{s})::cell])"
@@ -41,8 +37,10 @@ def test_parser():
     assert ret.success
     ret = parser.parse(expr2)
     assert ret.success
-    # ret = parser.parse(f"({expr1}/{expr2})")
-    # assert ret.success
+    
+    # currently does not pass
+    ret = parser.parse(f"({expr1}/{expr2})")
+    assert ret.success
 
     ret = parser.parse("0,5")
     assert not ret.success
