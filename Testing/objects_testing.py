@@ -7,7 +7,17 @@ from eBCSgen.Core.Side import Side
 from eBCSgen.Core.Rate import Rate
 from eBCSgen.TS.State import Vector, State, Memory
 
-import Testing.objects_testing.parsers as parsers
+from eBCSgen.Parsing.ParseBCSL import Parser
+
+rate_parser = Parser("rate")
+atomic_parser = Parser("atomic")
+structure_parser = Parser("structure")
+complex_parser = Parser("complex")
+state_parser = Parser("state")
+side_parser = Parser("side")
+rate_complex_parser = Parser("rate_complex")
+rule_parser = Parser("rule")
+model_parser = Parser("model")
 
 # atomic
 a1 = AtomicAgent("T", "s")
@@ -127,9 +137,9 @@ side4 = Side([c7, c6, c5])
 side5 = Side([])
 
 # rates
-rate1 = Rate(parsers.rate_parser.parse("3.0*[K()::cyt]/2.0*v_1").data)
-rate2 = Rate(parsers.rate_parser.parse("3.0*[K(T{i}).X()::cyt] + [K()::cyt]").data)
-rate3 = Rate(parsers.rate_parser.parse("(3.0*[K()::cyt])/(2.0*v_1)").data)
+rate1 = Rate(rate_parser.parse("3.0*[K()::cyt]/2.0*v_1").data)
+rate2 = Rate(rate_parser.parse("3.0*[K(T{i}).X()::cyt] + [K()::cyt]").data)
+rate3 = Rate(rate_parser.parse("(3.0*[K()::cyt])/(2.0*v_1)").data)
 
 # states
 state1 = State(Vector(np.array([2, 3])), Memory(0))
