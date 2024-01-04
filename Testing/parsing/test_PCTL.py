@@ -1,7 +1,6 @@
 import pytest
 
 from eBCSgen.Parsing.ParsePCTLformula import PCTLparser
-from eBCSgen.Parsing.ParseBCSL import Parser
 
 parser = PCTLparser()
 

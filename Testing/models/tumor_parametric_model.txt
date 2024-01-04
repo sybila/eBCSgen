@@ -1,0 +1,14 @@
+#! rules
+T(P{i})::x => T(P{m})::x @ a1*[T(P{i})::x]
+T(P{m})::x => T(P{i})::x + T(P{i})::x @ a2*[T(P{m})::x]
+T(P{i})::x => @ d1*[T(P{i})::x]
+T(P{m})::x => @ d2*[T(P{m})::x]
+
+#! inits
+2 T(P{m})::x
+1 T(P{i})::x
+
+#! definitions
+a1 = 1.2
+a2 = 2
+d1 = 0.8

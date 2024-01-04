@@ -1,0 +1,3 @@
+#! regulation
+type conditional
+r2: {A(S{a},T{i})::cell}

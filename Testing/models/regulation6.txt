@@ -1,0 +1,4 @@
+#! regulation
+type programmed
+r1_S: {r1_T, r2}
+r1_T: {r1_S}

@@ -1,0 +1,12 @@
+#! rules
+Y{i}::rep => Y{a}::rep @ p*[Y{i}::rep]
+Y{i}::rep => Y{-}::rep @ (1-p)*[Y{i}::rep]
+X()::rep + Y{a}::rep => X().Y{a}::rep @ q*[X()::rep]*[Y{a}::rep]
+X(K{i}).Y{_}::rep => X(K{p}).Y{_}::rep @ p*[X(K{i}).Y{_}::rep] // also here
+
+#! inits
+2 X(K{i})::rep
+1 Y{i}::rep
+
+#! definitions
+p = 0.3
