@@ -13,18 +13,13 @@ from eBCSgen.TS.TransitionSystem import TransitionSystem
 from eBCSgen.TS.VectorModel import VectorModel
 from eBCSgen.TS.VectorReaction import VectorReaction
 
+import Testing.objects_testing as objects
+
 
 class TestVectorModel(unittest.TestCase):
     def setUp(self):
-        self.s1 = StructureAgent("X", set())
-        self.s2 = StructureAgent("Y", set())
-        self.s3 = StructureAgent("Z", set())
 
-        self.c1 = Complex([self.s1], "rep")
-        self.c2 = Complex([self.s2], "rep")
-        self.c3 = Complex([self.s3], "rep")
-
-        ordering = (self.c1, self.c2, self.c3)
+        ordering = (objects.c27, objects.c28, objects.c29)
         params = {"k1": 0.05, "k2": 0.1}
 
         self.rate_parser = Parser("rate")

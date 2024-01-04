@@ -7,22 +7,14 @@ from eBCSgen.TS.Edge import Edge
 from eBCSgen.TS.State import State, Vector, Memory
 from eBCSgen.TS.TransitionSystem import TransitionSystem
 
+import Testing.objects_testing as objects
+
 
 class TestTransitionSystem(unittest.TestCase):
     def setUp(self):
-        self.str1 = StructureAgent("X", set())
-        self.str2 = StructureAgent("Y", set())
-        self.str3 = StructureAgent("Z", set())
-        self.str4 = StructureAgent("W", set())
-
-        self.c1 = Complex([self.str1], "rep")
-        self.c2 = Complex([self.str2], "rep")
-        self.c3 = Complex([self.str3], "rep")
-        self.c4 = Complex([self.str4], "rep")
-
-        ordering = (self.c1, self.c2, self.c3)
-        ordering_wrong = (self.c1, self.c2, self.c3, self.c4),
-        ordering_reordered = (self.c3, self.c1, self.c2)
+        ordering = (objects.c27, objects.c28, objects.c29)
+        ordering_wrong = (objects.c27, objects.c28, objects.c29, objects.c30),
+        ordering_reordered = (objects.c29, objects.c27, objects.c28)
 
         self.s1 = State(Vector(np.array((1, 2, 3))), Memory(0))
         self.s2 = State(Vector(np.array((1, 2, 4))), Memory(0))
@@ -69,7 +61,7 @@ class TestTransitionSystem(unittest.TestCase):
 
         # test bigger TS
 
-        ordering = (self.c1, self.c2, self.c3, self.c4)
+        ordering = (objects.c27, objects.c28, objects.c29, objects.c30)
 
         self.ts_bigger = TransitionSystem(ordering, 5)
         self.ts_bigger.states_encoding = {1: self.s1, 2: self.s2, 0: self.s3, 3: self.s4}
@@ -106,7 +98,7 @@ class TestTransitionSystem(unittest.TestCase):
         self.assertEqual(sorted(edges), edges_sorted)
 
     def test_change_hell(self):
-        ordering = (self.c1, self.c2, self.c3, self.c4)
+        ordering = (objects.c27, objects.c28, objects.c29, objects.c30)
         ts = TransitionSystem(ordering, 4)
         ts.states_encoding = {1: self.s1, 2: self.s2, 0: self.s3, 3: self.hell}
         ts.change_hell()

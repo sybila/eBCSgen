@@ -1,44 +1,41 @@
 import unittest
-from eBCSgen.Core.Atomic import AtomicAgent
+import Testing.objects_testing as objects
 
 
 class TestAtomic(unittest.TestCase):
-    def setUp(self):
-        self.a1 = AtomicAgent("T", "s")
-        self.a2 = AtomicAgent("S", "a")
-        self.a3 = AtomicAgent("T", "s")
-        self.a4 = AtomicAgent("T", "_")
-        self.a5 = AtomicAgent("T", "_")
-        self.a6 = AtomicAgent("T", "p")
-        self.a7 = AtomicAgent("T", "u")
-
     def test_eq(self):
-        self.assertEqual(self.a1, self.a3)
-        self.assertNotEqual(self.a1, self.a2)
-        self.assertNotEqual(self.a1, self.a4)
+        self.assertEqual(objects.a1, objects.a8)
+        self.assertNotEqual(objects.a1, objects.a2)
+        self.assertNotEqual(objects.a1, objects.a4)
 
     def test_print(self):
-        self.assertEqual(str(self.a1), "T{s}")
-        self.assertEqual(str(self.a4), "T{_}")
+        self.assertEqual(str(objects.a1), "T{s}")
+        self.assertEqual(str(objects.a4), "T{_}")
 
     def test_compatibility(self):
-        self.assertTrue(self.a4.compatible(self.a1))
-        self.assertFalse(self.a2.compatible(self.a1))
-        self.assertFalse(self.a1.compatible(self.a4))
+        self.assertTrue(objects.a4.compatible(objects.a1))
+        self.assertFalse(objects.a2.compatible(objects.a1))
+        self.assertFalse(objects.a1.compatible(objects.a4))
 
     def test_add_context(self):
         atomic_signature = {"T": {"u", "p"}}
         structure_signature = dict()
-        self.assertEqual(self.a4.add_context(self.a5, atomic_signature, structure_signature),
-                         {(self.a6, self.a6), (self.a7, self.a7)})
-        self.assertEqual(self.a6.add_context(self.a6, atomic_signature, structure_signature),
-                         {(self.a6, self.a6)})
-        self.assertEqual(self.a4.add_context(-1, atomic_signature, structure_signature),
-                         {(None, self.a6), (None, self.a7)})
+        self.assertEqual(
+            objects.a4.add_context(objects.a4, atomic_signature, structure_signature),
+            {(objects.a6, objects.a6), (objects.a7, objects.a7)},
+        )
+        self.assertEqual(
+            objects.a6.add_context(objects.a6, atomic_signature, structure_signature),
+            {(objects.a6, objects.a6)},
+        )
+        self.assertEqual(
+            objects.a4.add_context(-1, atomic_signature, structure_signature),
+            {(None, objects.a6), (None, objects.a7)},
+        )
 
     def test_reduce_context(self):
-        self.assertEqual(self.a3.reduce_context(), self.a4)
+        self.assertEqual(objects.a8.reduce_context(), objects.a4)
 
     def test_replace(self):
-        self.assertEqual(self.a4.replace(self.a6), self.a6)
-        self.assertEqual(self.a6.replace(self.a7), self.a6)
+        self.assertEqual(objects.a4.replace(objects.a6), objects.a6)
+        self.assertEqual(objects.a6.replace(objects.a7), objects.a6)

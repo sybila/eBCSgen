@@ -10,9 +10,7 @@ def test_parser():
     assert objects.structure_parser.parse("K()").data == objects.s6
     assert objects.structure_parser.parse("K(S{a},T{_})").data == objects.s7
 
-    ret = objects.structure_parser.parse("B(T{})")
-    assert not ret.success
-    assert ret.data == ""
+    assert not objects.structure_parser.parse("B(T{})").success
     assert not objects.structure_parser.parse("(T{s})").success
     assert not objects.structure_parser.parse("BT{s})").success
     assert not objects.structure_parser.parse("B(T{s}").success

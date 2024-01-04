@@ -5,10 +5,8 @@ from sympy.printing.tests.test_numpy import np
 
 from eBCSgen.TS.Edge import Edge
 from eBCSgen.TS.TransitionSystem import TransitionSystem
-from eBCSgen.Core.Structure import StructureAgent
-from eBCSgen.Core.Complex import Complex
-from eBCSgen.Parsing.ParseBCSL import Parser
-from eBCSgen.TS.State import Vector, State, Memory
+
+import Testing.objects_testing as objects
 
 
 def get_storm_result(cmd: str):
@@ -24,40 +22,19 @@ path = "Testing/test_die/"
 
 class TestFormalMethods(unittest.TestCase):
     def setUp(self):
-        self.model_parser = Parser("model")
 
         """
         Model 1 - Transition system of die model
         Analysis of a PRISM example model from the Knuth-Yao
         source: storm website
         """
-        self.str1 = StructureAgent("S", set())
-        self.str2 = StructureAgent("D", set())
-
-        self.c1 = Complex([self.str1], "rep")
-        self.c2 = Complex([self.str2], "rep")
-
-        ordering = (self.c1, self.c2)
-
-        self.s1 = State(Vector(np.array((0, 0))), Memory(0))
-        self.s2 = State(Vector(np.array((1, 0))), Memory(0))
-        self.s3 = State(Vector(np.array((2, 0))), Memory(0))
-        self.s4 = State(Vector(np.array((3, 0))), Memory(0))
-        self.s5 = State(Vector(np.array((4, 0))), Memory(0))
-        self.s6 = State(Vector(np.array((5, 0))), Memory(0))
-        self.s7 = State(Vector(np.array((6, 0))), Memory(0))
-        self.s8 = State(Vector(np.array((7, 1))), Memory(0))
-        self.s9 = State(Vector(np.array((7, 2))), Memory(0))
-        self.s10 = State(Vector(np.array((7, 3))), Memory(0))
-        self.s11 = State(Vector(np.array((7, 4))), Memory(0))
-        self.s12 = State(Vector(np.array((7, 5))), Memory(0))
-        self.s13 = State(Vector(np.array((7, 6))), Memory(0))
+        ordering = (objects.c21, objects.c22)
 
         self.die_ts = TransitionSystem(ordering, 6)
         self.die_ts.init = 0
-        self.die_ts.states_encoding = {0: self.s1, 1: self.s2, 2: self.s3, 3: self.s4, 4: self.s5,
-                                       5: self.s6, 6: self.s7, 7: self.s8, 8: self.s9, 9: self.s10,
-                                       10: self.s11, 11: self.s12, 12: self.s13}
+        self.die_ts.states_encoding = {0: objects.state3, 1: objects.state4, 2: objects.state5, 3: objects.state6, 4: objects.state7,
+                                       5: objects.state8, 6: objects.state9, 7: objects.state10, 8: objects.state11, 9: objects.state12,
+                                       10: objects.state13, 11: objects.state14, 12: objects.state15}
         self.die_ts.edges = {Edge(0, 1, 0.5), Edge(0, 2, 0.5), Edge(1, 3, 0.5), Edge(1, 4, 0.5), Edge(2, 5, 0.5),
                              Edge(2, 6, 0.5), Edge(3, 1, 0.5), Edge(3, 7, 0.5), Edge(4, 8, 0.5), Edge(4, 9, 0.5),
                              Edge(5, 10, 0.5), Edge(5, 11, 0.5), Edge(6, 2, 0.5), Edge(6, 12, 0.5), Edge(7, 7, 1),
@@ -66,9 +43,9 @@ class TestFormalMethods(unittest.TestCase):
         # die parametric TS
         self.die_ts_parametric = TransitionSystem(ordering, 6)
         self.die_ts_parametric.init = 0
-        self.die_ts_parametric.states_encoding = {0: self.s1, 1: self.s2, 2: self.s3, 3: self.s4, 4: self.s5,
-                                                  5: self.s6, 6: self.s7, 7: self.s8, 8: self.s9, 9: self.s10,
-                                                  10: self.s11, 11: self.s12, 12: self.s13}
+        self.die_ts_parametric.states_encoding = {0: objects.state3, 1: objects.state4, 2: objects.state5, 3: objects.state6, 4: objects.state7,
+                                                  5: objects.state8, 6: objects.state9, 7: objects.state10, 8: objects.state11, 9: objects.state12,
+                                                  10: objects.state13, 11: objects.state14, 12: objects.state15}
         self.die_ts_parametric.edges = {Edge(0, 1, "p"), Edge(0, 2, "(1-p)"), Edge(1, 3, "p"), Edge(1, 4, "(1-p)"),
                                         Edge(2, 5, "p"),
                                         Edge(2, 6, "(1-p)"), Edge(3, 1, "p"), Edge(3, 7, "(1-p)"), Edge(4, 8, "p"),

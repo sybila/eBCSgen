@@ -1,11 +1,14 @@
 import numpy as np
+import collections
 
 from eBCSgen.Core.Atomic import AtomicAgent
+from eBCSgen.Core.Rule import Rule
 from eBCSgen.Core.Structure import StructureAgent
 from eBCSgen.Core.Complex import Complex
 from eBCSgen.Core.Side import Side
 from eBCSgen.Core.Rate import Rate
 from eBCSgen.TS.State import Vector, State, Memory
+from eBCSgen.Core.Reaction import Reaction
 
 from eBCSgen.Parsing.ParseBCSL import Parser
 
@@ -35,11 +38,21 @@ a11 = AtomicAgent("U", "a")
 a12 = AtomicAgent("U", "_")
 a13 = AtomicAgent("U", "b")
 a14 = AtomicAgent("T", "a")
+
 a15 = AtomicAgent("S", "u")
 a16 = AtomicAgent("S", "p")
 a17 = AtomicAgent("B", "_")
 a18 = AtomicAgent("B", "-")
 a19 = AtomicAgent("B", "+")
+
+t_i = AtomicAgent("T", "i")
+t_a = AtomicAgent("T", "a")
+
+a4_p = AtomicAgent("C", "p")
+a4_u = AtomicAgent("C", "u")
+
+u2_c1_p = AtomicAgent("U", "p")
+u2_c1_u = AtomicAgent("U", "u")
 
 
 # structure
@@ -89,9 +102,23 @@ s38 = StructureAgent("D", {a17})
 s39 = StructureAgent("K", {a18})
 s40 = StructureAgent("K", {a19})
 
-s1_s = StructureAgent("X", set())
-s2_s = StructureAgent("Y", set())
-s3_s = StructureAgent("Z", set())
+s41 = StructureAgent("Y", set())
+s42 = StructureAgent("Z", set())
+s43 = StructureAgent("W", set())
+s44 = StructureAgent("D", {a4})
+s45 = StructureAgent("B", {a14, a16})
+
+s6_c1_p = StructureAgent("D", {a4_p})
+s6_c1_u = StructureAgent("D", {a4_u})
+
+s2_c1_p = StructureAgent("B", {u2_c1_p})
+s2_c1_u = StructureAgent("B", {u2_c1_u})
+
+s1_c1_a = StructureAgent("K", {a15, t_a})
+s1_c1_i = StructureAgent("K", {a15, t_i})
+
+s3_c1_a = StructureAgent("K", {a16, t_a})
+s3_c1_i = StructureAgent("K", {a16, t_i})
 
 # complex
 c1 = Complex([s1], "cell")
@@ -127,7 +154,31 @@ c22 = Complex([s33], "rep")
 c23 = Complex([s34, s35], "cyt")
 c24 = Complex([s36], "cyt")
 c25 = Complex([s35], "cyt")
-c26 = Complex([s38], "cyt")
+c26 = Complex([s38], "cell")
+
+c27 = Complex([s31], "rep")
+c28 = Complex([s41], "rep")
+c29 = Complex([s42], "rep")
+c30 = Complex([s43], "rep")
+
+c1_c1 = Complex([s2_c1_u], "cyt")  # B(U{u})::cyt
+c1_c2 = Complex([s2_c1_p], "cyt")  # B(U{p})::cyt
+c1_c3 = Complex([s1_c1_a], "cyt")  # K(S{u},T{a})::cyt
+c1_c4 = Complex([s1_c1_i], "cyt")  # K(S{u},T{i})::cyt
+c1_c5 = Complex([s3_c1_a, s2_c1_u], "cyt")  # K(S{p},T{a}).B(U{u})::c
+c1_c6 = Complex([s3_c1_i, s2_c1_u], "cyt")  # K(S{p},T{i}).B(U{u})::c
+c1_c7 = Complex([s3_c1_i, s2_c1_p], "cyt")  # K(S{p},T{i}).B(U{p})::c
+c1_c8 = Complex([s3_c1_a, s2_c1_p], "cyt")  # K(S{p},T{a}).B(U{p})::c
+c1_c9 = Complex([s6_c1_p], "cyt")  # D(C{p})::cyt
+c1_c10 = Complex([s6_c1_u], "cyt")  # D(C{u})::cyt
+sequence_no_change = (s1_c1_a, s2_c1_u, s3_c1_a, s2_c1_u, s6_c1_p)
+
+counter_c1 = Complex(collections.Counter({s35: 2}), "cyt")
+counter_c2 = Complex(collections.Counter({s36: 1}), "cyt")
+counter_c3 = Complex(collections.Counter({s35: 1}), "cyt")
+counter_c4 = Complex(collections.Counter({s44: 1}), "cell")
+counter_c5 = Complex(collections.Counter({s37: 1}), "cell")
+counter_c6 = Complex(collections.Counter({s45: 1}), "cell")
 
 # side
 side1 = Side([c1])
@@ -135,6 +186,17 @@ side2 = Side([c4, c5])
 side3 = Side([c1, c2, c2])
 side4 = Side([c7, c6, c5])
 side5 = Side([])
+
+lhs = Side([c23])
+rhs = Side([c24, c25, c26])
+
+side6 = Side([counter_c1, counter_c2, counter_c4])
+side7 = Side([counter_c2, counter_c3, counter_c4])
+side8 = Side([counter_c3, counter_c4, counter_c2])
+side9 = Side([counter_c6, counter_c1])
+side10 = Side([counter_c5, counter_c1])
+side11 = Side([counter_c5, counter_c1, counter_c2])
+side12 = Side([counter_c6, counter_c1, counter_c3, counter_c4])
 
 # rates
 rate1 = Rate(rate_parser.parse("3.0*[K()::cyt]/2.0*v_1").data)
@@ -157,3 +219,126 @@ state12 = State(Vector(np.array((7, 3))), Memory(0))
 state13 = State(Vector(np.array((7, 4))), Memory(0))
 state14 = State(Vector(np.array((7, 5))), Memory(0))
 state15 = State(Vector(np.array((7, 6))), Memory(0))
+
+# rules
+
+sequence_1 = (s31,)
+mid_1 = 1
+compartments_1 = ["rep"]
+complexes_1 = [(0, 0)]
+pairs_1 = [(0, None)]
+rate_1 = Rate("k1*[X()::rep]")
+
+r1 = Rule(sequence_1, mid_1, compartments_1, complexes_1, pairs_1, rate_1)
+
+sequence_2 = (s42, s31)
+mid_2 = 1
+compartments_2 = ["rep"] * 2
+complexes_2 = [(0, 0), (1, 1)]
+pairs_2 = [(0, 1)]
+
+r2 = Rule(sequence_2, mid_2, compartments_2, complexes_2, pairs_2, None)
+
+sequence_3 = (s41,)
+mid_3 = 0
+compartments_3 = ["rep"]
+complexes_3 = [(0, 0)]
+pairs_3 = [(None, 0)]
+rate_3 = Rate("1.0/(1.0+([X()::rep])**4.0)")
+
+r3 = Rule(sequence_3, mid_3, compartments_3, complexes_3, pairs_3, rate_3)
+
+sequence_4 = (s34, s35, s36, s37)
+mid_4 = 2
+compartments_4 = ["cyt"] * 4
+complexes_4 = [(0, 1), (2, 2), (3, 3)]
+pairs_4 = [(0, 2), (1, 3)]
+rate_4 = Rate("3.0*[K()::cyt]/2.0*v_1")
+
+r4 = Rule(sequence_4, mid_4, compartments_4, complexes_4, pairs_4, rate_4)
+
+sequence_5 = (s34, s35, s36, s37, s38)
+mid_5 = 2
+compartments_5 = ["cyt"] * 4 + ["cell"]
+complexes_5 = [(0, 1), (2, 2), (3, 3), (4, 4)]
+pairs_5 = [(0, 2), (1, 3), (None, 4)]
+rate_5 = Rate("3.0*[K()::cyt]/2.0*v_1")
+
+r5 = Rule(sequence_5, mid_5, compartments_5, complexes_5, pairs_2, rate_5)
+
+sequence_6 = (s39, s35, s38, s40, s37)
+mid_6 = 3
+compartments_6 = ["cyt"] * 2 + ["cell"] + ["cyt"] * 2
+complexes_6 = [(0, 1), (2, 2), (3, 3), (4, 4)]
+pairs_6 = [(0, 3), (1, 4), (2, None)]
+rate_6 = Rate("3.0*[K(T{3+})::cyt]/2.0*v_1")
+
+r6 = Rule(sequence_6, mid_6, compartments_6, complexes_6, pairs_6, rate_6)
+rule_no_rate = Rule(sequence_4, mid_4, compartments_4, complexes_4, pairs_4, None)
+
+sequence_c1 = (s34, s35, s36, s37, s33)
+mid_c1 = 2
+compartments_c1 = ["cyt"] * 5
+complexes_c1 = [(0, 0), (1, 1), (2, 3), (4, 4)]
+pairs_c1 = [(0, 2), (1, 3), (None, 4)]
+rate_c1 = Rate("3*[K()::cyt]/2*v_1")
+
+rule_c1 = Rule(sequence_c1, mid_c1, compartments_c1, complexes_c1, pairs_c1, rate_c1)
+
+rule_no_change = Rule(sequence_no_change, mid_c1, compartments_c1, complexes_c1, pairs_c1, rate_c1)
+
+# reactions
+
+reaction1 = Reaction(lhs, rhs, rate_5)
+
+reaction_c1_1 = Reaction(
+    Side([c1_c1, c1_c3]),
+    Side([c1_c5, c1_c9]),
+    rate_c1,
+)
+reaction_c1_2 = Reaction(
+    Side([c1_c1, c1_c3]),
+    Side([c1_c5, c1_c10]),
+    rate_c1,
+)
+reaction_c1_3 = Reaction(
+    Side([c1_c2, c1_c4]),
+    Side([c1_c7, c1_c10]),
+    rate_c1,
+)
+reaction_c1_4 = Reaction(
+    Side([c1_c1, c1_c4]),
+    Side([c1_c6, c1_c9]),
+    rate_c1,
+)
+reaction_c1_5 = Reaction(
+    Side([c1_c2, c1_c3]),
+    Side([c1_c8, c1_c9]),
+    rate_c1,
+)
+reaction_c1_6 = Reaction(
+    Side([c1_c2, c1_c3]),
+    Side([c1_c8, c1_c10]),
+    rate_c1,
+)
+reaction_c1_7 = Reaction(
+    Side([c1_c1, c1_c4]),
+    Side([c1_c6, c1_c10]),
+    rate_c1,
+)
+reaction_c1_8 = Reaction(
+    Side([c1_c2, c1_c4]),
+    Side([c1_c7, c1_c9]),
+    rate_c1,
+)
+
+reactions_c1 = {
+    reaction_c1_1,
+    reaction_c1_2,
+    reaction_c1_3,
+    reaction_c1_4,
+    reaction_c1_5,
+    reaction_c1_6,
+    reaction_c1_7,
+    reaction_c1_8,
+}
