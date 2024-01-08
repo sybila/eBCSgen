@@ -45,6 +45,8 @@ a17 = AtomicAgent("B", "_")
 a18 = AtomicAgent("B", "-")
 a19 = AtomicAgent("B", "+")
 
+a20 = AtomicAgent("B", "a")
+
 t_i = AtomicAgent("T", "i")
 t_a = AtomicAgent("T", "a")
 
@@ -107,6 +109,9 @@ s42 = StructureAgent("Z", set())
 s43 = StructureAgent("W", set())
 s44 = StructureAgent("D", {a4})
 s45 = StructureAgent("B", {a14, a16})
+
+s46 = StructureAgent("K", {a16, a9})
+s47 = StructureAgent("K", {a15, a9})
 
 s6_c1_p = StructureAgent("D", {a4_p})
 s6_c1_u = StructureAgent("D", {a4_u})
@@ -179,6 +184,12 @@ counter_c3 = Complex(collections.Counter({s35: 1}), "cyt")
 counter_c4 = Complex(collections.Counter({s44: 1}), "cell")
 counter_c5 = Complex(collections.Counter({s37: 1}), "cell")
 counter_c6 = Complex(collections.Counter({s45: 1}), "cell")
+
+cx1 = Complex([a20], "cyt")
+cx2 = Complex([s46], "cyt")
+cx3 = Complex([s47], "cyt")
+cx4 = Complex([s46, a20], "cyt")
+cx5 = Complex([s47, a20], "cyt")
 
 # side
 side1 = Side([c1])

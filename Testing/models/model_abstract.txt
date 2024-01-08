@@ -1,0 +1,10 @@
+#! rules
+=> X()::rep @ k2*[T{_}::rep]
+T{a}::rep => T{i}::rep @ k1*[T{_}::rep]
+
+#! inits
+10 T{a}::rep
+
+#! definitions
+k1 = 0.05
+k2 = 0.12
