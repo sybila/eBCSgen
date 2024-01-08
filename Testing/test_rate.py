@@ -2,8 +2,13 @@ import unittest
 import numpy as np
 import sympy
 
-from eBCSgen.TS.State import Vector
+from eBCSgen.Core.Atomic import AtomicAgent
+from eBCSgen.Core.Complex import Complex
+from eBCSgen.Core.Structure import StructureAgent
+from eBCSgen.Parsing.ParseBCSL import Parser
+from eBCSgen.TS.State import Vector, State, Memory
 from eBCSgen.Core.Rate import Rate
+
 import Testing.objects_testing as objects
 
 
@@ -14,61 +19,52 @@ CORRECT_MATHML = """
 
 
 class TestRate(unittest.TestCase):
+    def setUp(self):
+        # rates
+
+        self.parser = Parser("rate")
+        rate_expr = "3.0*[K()::cyt]/2.0*v_1"
+
+        self.rate_1 = Rate(objects.rate_parser.parse(rate_expr).data)
+
+        rate_expr = "3.0*[K(T{i}).X()::cyt] + [K()::cyt]"
+
+        self.rate_2 = Rate(objects.rate_parser.parse(rate_expr).data)
+
+        rate_expr = "(3.0*[K()::cyt])/(2.0*v_1)"
+
+        self.rate_3 = Rate(objects.rate_parser.parse(rate_expr).data)
+
     def test_to_str(self):
-        self.assertEqual(str(objects.rate1), "3.0*[K()::cyt]/2.0*v_1")
+        self.assertEqual(str(self.rate_1), "3.0*[K()::cyt]/2.0*v_1")
 
     def test_eq(self):
-        self.assertEqual(objects.rate2, objects.rate2)
-        self.assertNotEqual(objects.rate1, objects.rate2)
+        self.assertEqual(self.rate_2, self.rate_2)
+        self.assertNotEqual(self.rate_1, self.rate_2)
 
     def test_vectorize(self):
         ordering = (objects.c15, objects.c16)
-        self.assertEqual(
-            objects.rate1.vectorize(ordering, dict()), [Vector(np.array([1, 1]))]
-        )
-        ordering = (
-            objects.c15,
-            objects.c16,
-            objects.c17,
-            objects.c18,
-            objects.c19,
-            objects.c20,
-        )
-        self.assertEqual(
-            objects.rate2.vectorize(ordering, dict()),
-            [
-                Vector(np.array([0, 0, 1, 1, 0, 0])),
-                Vector(np.array([1, 1, 0, 0, 0, 0])),
-            ],
-        )
+        self.assertEqual(self.rate_1.vectorize(ordering, dict()), [Vector(np.array([1, 1]))])
+        ordering = (objects.c15, objects.c16, objects.c17, objects.c18, objects.c19, objects.c20)
+        self.assertEqual(self.rate_2.vectorize(ordering, dict()),
+                         [Vector(np.array([0, 0, 1, 1, 0, 0])), Vector(np.array([1, 1, 0, 0, 0, 0]))])
 
     def test_evaluate(self):
         ordering = (objects.c15, objects.c16)
-        objects.rate1.vectorize(ordering, {"v_1": 5})
-        self.assertEqual(
-            objects.rate1.evaluate(objects.state1), sympy.sympify("3*5.0/2*5")
-        )
+        self.rate_1.vectorize(ordering, {"v_1": 5})
+        self.assertEqual(self.rate_1.evaluate(objects.state1), sympy.sympify("3*5.0/2*5"))
 
-        ordering = (
-            objects.c15,
-            objects.c16,
-            objects.c17,
-            objects.c18,
-            objects.c19,
-            objects.c20,
-        )
-        objects.rate2.vectorize(ordering, dict())
-        self.assertEqual(
-            objects.rate2.evaluate(objects.state2), sympy.sympify("3*4.0 + 2")
-        )
+        ordering = (objects.c15, objects.c16, objects.c17, objects.c18, objects.c19, objects.c20)
+        self.rate_2.vectorize(ordering, dict())
+        self.assertEqual(self.rate_2.evaluate(objects.state2), sympy.sympify("3*4.0 + 2"))
 
     def test_to_symbolic(self):
         ordering = (objects.c15, objects.c16)
-        objects.rate1.vectorize(ordering, dict())
-        objects.rate1.to_symbolic()
-        self.assertEqual(str(objects.rate1), "3.0*(y[0] + y[1])/2.0*v_1")
+        self.rate_1.vectorize(ordering, dict())
+        self.rate_1.to_symbolic()
+        self.assertEqual(str(self.rate_1), "3.0*(y[0] + y[1])/2.0*v_1")
 
-        ordering = (self.c2, self.c3, self.c4, self.c5, self.c6, self.c7)
+        ordering = (objects.c15, objects.c16, objects.c17, objects.c18, objects.c19, objects.c20)
         self.rate_2.vectorize(ordering, dict())
         self.rate_2.to_symbolic()
         self.assertEqual(str(self.rate_2), "3.0*(y[2] + y[3])+(y[0] + y[1])")
@@ -77,12 +73,12 @@ class TestRate(unittest.TestCase):
         rate_expr = "3.0*[K(S{i})::cyt]/2.0*v_1"
         rate = Rate(objects.rate_parser.parse(rate_expr).data)
 
-        self.assertEqual(rate.reduce_context(), objects.rate1)
+        self.assertEqual(rate.reduce_context(), self.rate_1)
 
     def test_evaluate_direct(self):
         values = {objects.c14: 3}
         params = {"v_1": 5}
-        self.assertEqual(objects.rate3.evaluate_direct(values, params), 9 / 10)
+        self.assertEqual(self.rate_3.evaluate_direct(values, params), 9/10)
 
     def test_mathML(self):
         rate_expr = "(3.0*[K(T{i}).X()::cyt])/([K()::cyt]**2.0+4.0*p)"
@@ -98,3 +94,4 @@ class TestRate(unittest.TestCase):
             rate_expr = rate_expr.replace(op, operators[op])
 
         self.assertEqual(expression, rate_expr)
+ 

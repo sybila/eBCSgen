@@ -198,11 +198,6 @@ side10 = Side([counter_c5, counter_c1])
 side11 = Side([counter_c5, counter_c1, counter_c2])
 side12 = Side([counter_c6, counter_c1, counter_c3, counter_c4])
 
-# rates
-rate1 = Rate(rate_parser.parse("3.0*[K()::cyt]/2.0*v_1").data)
-rate2 = Rate(rate_parser.parse("3.0*[K(T{i}).X()::cyt] + [K()::cyt]").data)
-rate3 = Rate(rate_parser.parse("(3.0*[K()::cyt])/(2.0*v_1)").data)
-
 # states
 state1 = State(Vector(np.array([2, 3])), Memory(0))
 state2 = State(Vector(np.array([2, 0, 3, 1, 6, 2])), Memory(0))
