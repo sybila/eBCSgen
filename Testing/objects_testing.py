@@ -47,9 +47,6 @@ a19 = AtomicAgent("B", "+")
 
 a20 = AtomicAgent("B", "a")
 
-t_i = AtomicAgent("T", "i")
-t_a = AtomicAgent("T", "a")
-
 a4_p = AtomicAgent("C", "p")
 a4_u = AtomicAgent("C", "u")
 
@@ -76,12 +73,10 @@ s14 = StructureAgent("A", {a10, a13})
 
 s15 = StructureAgent("strA", {a1, a2})
 s16 = StructureAgent("strA", {a2, a4})
-s17 = StructureAgent("strA", {a2, a4})
 s18 = StructureAgent("strD", set())
 s19 = StructureAgent("strA", {a2, a1})
 s20 = StructureAgent("strA", {a1})
 s21 = StructureAgent("strA", {a6})
-s22 = StructureAgent("strA", {a1, a2})
 s23 = StructureAgent("strA", {a6, a2})
 s24 = StructureAgent("strA", {a1, a10})
 s25 = StructureAgent("strA", {a6, a10})
@@ -94,7 +89,6 @@ s30 = StructureAgent("K", {a9})
 s31 = StructureAgent("X", set())
 
 s32 = StructureAgent("S", set())
-s33 = StructureAgent("D", set())
 
 s34 = StructureAgent("K", {a15})
 s35 = StructureAgent("B", set())
@@ -119,11 +113,9 @@ s6_c1_u = StructureAgent("D", {a4_u})
 s2_c1_p = StructureAgent("B", {u2_c1_p})
 s2_c1_u = StructureAgent("B", {u2_c1_u})
 
-s1_c1_a = StructureAgent("K", {a15, t_a})
-s1_c1_i = StructureAgent("K", {a15, t_i})
+s1_c1_a = StructureAgent("K", {a15, a14})
 
-s3_c1_a = StructureAgent("K", {a16, t_a})
-s3_c1_i = StructureAgent("K", {a16, t_i})
+s3_c1_a = StructureAgent("K", {a16, a14})
 
 # complex
 c1 = Complex([s1], "cell")
@@ -154,7 +146,7 @@ c19 = Complex([s29, s27], "cyt")  # K(T{a}).X(S{a})::cyt
 c20 = Complex([s29, s28], "cyt")  # K(T{a}).X(S{i})::cyt
 
 c21 = Complex([s32], "rep")
-c22 = Complex([s33], "rep")
+c22 = Complex([s2], "rep")
 
 c23 = Complex([s34, s35], "cyt")
 c24 = Complex([s36], "cyt")
@@ -169,10 +161,9 @@ c30 = Complex([s43], "rep")
 c1_c1 = Complex([s2_c1_u], "cyt")  # B(U{u})::cyt
 c1_c2 = Complex([s2_c1_p], "cyt")  # B(U{p})::cyt
 c1_c3 = Complex([s1_c1_a], "cyt")  # K(S{u},T{a})::cyt
-c1_c4 = Complex([s1_c1_i], "cyt")  # K(S{u},T{i})::cyt
 c1_c5 = Complex([s3_c1_a, s2_c1_u], "cyt")  # K(S{p},T{a}).B(U{u})::c
-c1_c6 = Complex([s3_c1_i, s2_c1_u], "cyt")  # K(S{p},T{i}).B(U{u})::c
-c1_c7 = Complex([s3_c1_i, s2_c1_p], "cyt")  # K(S{p},T{i}).B(U{p})::c
+c1_c6 = Complex([s46, s2_c1_u], "cyt")  # K(S{p},T{i}).B(U{u})::c
+c1_c7 = Complex([s46, s2_c1_p], "cyt")  # K(S{p},T{i}).B(U{p})::c
 c1_c8 = Complex([s3_c1_a, s2_c1_p], "cyt")  # K(S{p},T{a}).B(U{p})::c
 c1_c9 = Complex([s6_c1_p], "cyt")  # D(C{p})::cyt
 c1_c10 = Complex([s6_c1_u], "cyt")  # D(C{u})::cyt
@@ -187,7 +178,7 @@ counter_c6 = Complex(collections.Counter({s45: 1}), "cell")
 
 cx1 = Complex([a20], "cyt")
 cx2 = Complex([s46], "cyt")
-cx3 = Complex([s47], "cyt")
+cx3 = Complex([s47], "cyt") # K(S{u},T{i})::cyt
 cx4 = Complex([s46, a20], "cyt")
 cx5 = Complex([s47, a20], "cyt")
 
@@ -282,7 +273,7 @@ rate_6 = Rate("3.0*[K(T{3+})::cyt]/2.0*v_1")
 r6 = Rule(sequence_6, mid_6, compartments_6, complexes_6, pairs_6, rate_6)
 rule_no_rate = Rule(sequence_4, mid_4, compartments_4, complexes_4, pairs_4, None)
 
-sequence_c1 = (s34, s35, s36, s37, s33)
+sequence_c1 = (s34, s35, s36, s37, s2)
 mid_c1 = 2
 compartments_c1 = ["cyt"] * 5
 complexes_c1 = [(0, 0), (1, 1), (2, 3), (4, 4)]
@@ -291,7 +282,9 @@ rate_c1 = Rate("3*[K()::cyt]/2*v_1")
 
 rule_c1 = Rule(sequence_c1, mid_c1, compartments_c1, complexes_c1, pairs_c1, rate_c1)
 
-rule_no_change = Rule(sequence_no_change, mid_c1, compartments_c1, complexes_c1, pairs_c1, rate_c1)
+rule_no_change = Rule(
+    sequence_no_change, mid_c1, compartments_c1, complexes_c1, pairs_c1, rate_c1
+)
 
 # reactions
 
@@ -308,12 +301,12 @@ reaction_c1_2 = Reaction(
     rate_c1,
 )
 reaction_c1_3 = Reaction(
-    Side([c1_c2, c1_c4]),
+    Side([c1_c2, cx3]),
     Side([c1_c7, c1_c10]),
     rate_c1,
 )
 reaction_c1_4 = Reaction(
-    Side([c1_c1, c1_c4]),
+    Side([c1_c1, cx3]),
     Side([c1_c6, c1_c9]),
     rate_c1,
 )
@@ -328,12 +321,12 @@ reaction_c1_6 = Reaction(
     rate_c1,
 )
 reaction_c1_7 = Reaction(
-    Side([c1_c1, c1_c4]),
+    Side([c1_c1, cx3]),
     Side([c1_c6, c1_c10]),
     rate_c1,
 )
 reaction_c1_8 = Reaction(
-    Side([c1_c2, c1_c4]),
+    Side([c1_c2, cx3]),
     Side([c1_c7, c1_c9]),
     rate_c1,
 )
