@@ -1,0 +1,15 @@
+#! rules
+// commenting
+X(T{a}).X()::rep => X(T{o}).X()::rep @ k2*[X().X()::rep]
+X(K{i}).Y().Z()::rep => X(K{p}).Y().Z()::rep @ k1*[X().Y().Z()::rep] // also here
+=> X().P{f}::rep @ 1/(1+([X().P{_}::rep])**4) // ** means power (^)
+
+#! inits
+// here
+2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+Y(P{g}, N{l})::rep // comment just 1 item
+
+#! definitions
+// and
+k1 = 0.05 // also
+k2 = 0.12

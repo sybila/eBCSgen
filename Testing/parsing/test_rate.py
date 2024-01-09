@@ -1,30 +1,26 @@
-from eBCSgen.Parsing.ParseBCSL import Parser
-import Testing.parsing.objects_testing as objects
-from eBCSgen.Core.Complex import Complex
-
-parser = Parser("rate")
+import Testing.objects_testing as objects
 
 
 def test_parser():
-    ret = parser.parse("1")
+    ret = objects.rate_parser.parse("1")
     assert ret.success
 
-    ret = parser.parse("0.5")
+    ret = objects.rate_parser.parse("0.5")
     assert ret.success
 
-    ret = parser.parse("2*3")
+    ret = objects.rate_parser.parse("2*3")
     assert ret.success
 
-    ret = parser.parse("2**3")
+    ret = objects.rate_parser.parse("2**3")
     assert ret.success
 
-    ret = parser.parse("2*[K()::cyt]")
+    ret = objects.rate_parser.parse("2*[K()::cyt]")
     assert ret.success
 
-    ret = parser.parse("[K()::cyt]**2")
+    ret = objects.rate_parser.parse("[K()::cyt]**2")
     assert ret.success
 
-    ret = parser.parse(
+    ret = objects.rate_parser.parse(
         "(2 * [K()::cyt] + 3 * [B(T{s})::cell]) / (4 * [T{u}.T{_}::cell] - 2 * [B(T{s})::cyt])"
     )
     assert ret.success
@@ -33,38 +29,38 @@ def test_parser():
     expr2 = (
         "([B(T{s}).T{s}::cyt] - [T{_}::cell]) / ([T{u}.T{_}::cell] - [B(T{s})::cell])"
     )
-    ret = parser.parse(expr1)
+    ret = objects.rate_parser.parse(expr1)
     assert ret.success
-    ret = parser.parse(expr2)
-    assert ret.success
-    
-    # currently does not pass
-    ret = parser.parse(f"({expr1}/{expr2})")
+    ret = objects.rate_parser.parse(expr2)
     assert ret.success
 
-    ret = parser.parse("0,5")
+    # currently does not pass
+    ret = objects.rate_parser.parse(f"({expr1}/{expr2})")
+    assert ret.success
+
+    ret = objects.rate_parser.parse("0,5")
     assert not ret.success
 
     # missing []
-    ret = parser.parse("2*K()::cyt")
+    ret = objects.rate_parser.parse("2*K()::cyt")
     assert not ret.success
 
     # invalid syntax
-    ret = parser.parse("2 +")
+    ret = objects.rate_parser.parse("2 +")
     assert not ret.success
 
     # unsupported operators
-    ret = parser.parse("2 & 3")
+    ret = objects.rate_parser.parse("2 & 3")
     assert not ret.success
 
     # mismatched parentheses
-    ret = parser.parse("(2 * 3")
+    ret = objects.rate_parser.parse("(2 * 3")
     assert not ret.success
 
     # incorrect format
-    ret = parser.parse("2,,3")
+    ret = objects.rate_parser.parse("2,,3")
     assert not ret.success
 
     # nested complexes
-    ret = parser.parse("[K([L()::cell])::cyt]")
+    ret = objects.rate_parser.parse("[K([L()::cell])::cyt]")
     assert not ret.success

@@ -1,0 +1,12 @@
+#! rules
+K(S{u})::cyt => K(S{p})::cyt @ alpha*[K(S{u})::cyt]
+K(S{p})::cyt + B{a}::cyt => K(S{p}).B{a}::cyt @ beta*[K(S{p})::cyt]*[B{a}::cyt]
+B{a}::cyt => B{i}::cyt @ alpha*[B{_}::cyt]
+
+#! inits
+1 B{a}::cyt
+1 K(S{u})::cyt
+
+#! definitions
+alpha = 10
+beta = 5

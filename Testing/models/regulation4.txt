@@ -1,0 +1,3 @@
+#! regulation
+type concurrent-free
+(r1_S, r2), (r1_T, r2)

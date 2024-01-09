@@ -1,0 +1,10 @@
+#! rules
+K().B()::cyt => K()::cyt + B()::cyt + D(A{_})::cell @ 3*[K().B()::cyt]/2*v_1
+K().K()::cyt => K()::cyt + K()::cyt
+
+#! inits
+2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+
+#! definitions
+v_1 = 0.05
+k2 = 0.12

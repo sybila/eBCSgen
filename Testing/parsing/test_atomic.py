@@ -1,22 +1,18 @@
-from eBCSgen.Parsing.ParseBCSL import Parser
-import Testing.parsing.objects_testing as objects
-
-
-parser = Parser("atomic")
+import Testing.objects_testing as objects
 
 
 def test_parser():
-    assert parser.parse("T{s}").data == objects.a1
-    assert parser.parse("S{a}").data == objects.a2
-    assert parser.parse("S{s}").data == objects.a3
-    assert parser.parse("T{_}").data == objects.a4
-    assert parser.parse("S{_}").data == objects.a5
-    assert parser.parse("T{p}").data == objects.a6
-    assert parser.parse("T{u}").data == objects.a7
+    assert objects.atomic_parser.parse("T{s}").data == objects.a1
+    assert objects.atomic_parser.parse("S{a}").data == objects.a2
+    assert objects.atomic_parser.parse("S{s}").data == objects.a3
+    assert objects.atomic_parser.parse("T{_}").data == objects.a4
+    assert objects.atomic_parser.parse("S{_}").data == objects.a5
+    assert objects.atomic_parser.parse("T{p}").data == objects.a6
+    assert objects.atomic_parser.parse("T{u}").data == objects.a7
 
-    assert not parser.parse("T{s").success
-    assert not parser.parse("T{}").success
-    assert not parser.parse("Ts}").success
-    assert not parser.parse("{s}").success
-    assert not parser.parse("x").success
-    assert not parser.parse("").success
+    assert not objects.atomic_parser.parse("T{s").success
+    assert not objects.atomic_parser.parse("T{}").success
+    assert not objects.atomic_parser.parse("Ts}").success
+    assert not objects.atomic_parser.parse("{s}").success
+    assert not objects.atomic_parser.parse("x").success
+    assert not objects.atomic_parser.parse("").success

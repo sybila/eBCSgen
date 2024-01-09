@@ -13,18 +13,14 @@ from eBCSgen.TS.TransitionSystem import TransitionSystem
 from eBCSgen.TS.VectorModel import VectorModel
 from eBCSgen.TS.VectorReaction import VectorReaction
 
+import Testing.objects_testing as objects
+from Testing.models.get_model_str import get_model_str
+
 
 class TestVectorModel(unittest.TestCase):
     def setUp(self):
-        self.s1 = StructureAgent("X", set())
-        self.s2 = StructureAgent("Y", set())
-        self.s3 = StructureAgent("Z", set())
 
-        self.c1 = Complex([self.s1], "rep")
-        self.c2 = Complex([self.s2], "rep")
-        self.c3 = Complex([self.s3], "rep")
-
-        ordering = (self.c1, self.c2, self.c3)
+        ordering = (objects.c27, objects.c28, objects.c29)
         params = {"k1": 0.05, "k2": 0.1}
 
         self.rate_parser = Parser("rate")
@@ -70,55 +66,14 @@ class TestVectorModel(unittest.TestCase):
 
         self.model_parser = Parser("model")
 
-        self.model_abstract = \
-            """#! rules
-            => X()::rep @ k2*[T{_}::rep]
-            T{a}::rep => T{i}::rep @ k1*[T{_}::rep]
-
-            #! inits
-            10 T{a}::rep
-
-            #! definitions
-            k1 = 0.05
-            k2 = 0.12
-            """
+        self.model_abstract = get_model_str("model_abstract")
 
         # test transition system generating
 
-        a1 = AtomicAgent("B", "a")
-        a2 = AtomicAgent("S", "u")
-        a3 = AtomicAgent("S", "p")
-        a4 = AtomicAgent("T", "i")
-
-        s1 = StructureAgent("K", {a3, a4})
-        s2 = StructureAgent("K", {a2, a4})
-
-        cx1 = Complex([a1], "cyt")
-        cx2 = Complex([s1], "cyt")
-        cx3 = Complex([s2], "cyt")
-        cx4 = Complex([s1, a1], "cyt")
-        cx5 = Complex([s2, a1], "cyt")
-
-        ordering = (cx5, cx4, cx3, cx2, cx1)
+        ordering = (objects.cx5, objects.cx4, objects.cx3, objects.cx2, objects.cx1)
         # (K(S{u},T{i}).B{a}::cyt, K(S{p},T{i}).B{a}::cyt, K(S{u},T{i})::cyt, K(S{p},T{i})::cyt, B{a}::cyt)
 
-        self.model_TS = \
-            """#! rules
-            => K(S{u},T{i})::cyt @ omega
-            K(S{u})::cyt => K(S{p})::cyt @ alpha*[K(S{u})::cyt]
-            K(S{p})::cyt + B{a}::cyt => K(S{p}).B{a}::cyt @ beta*[K(S{p})::cyt]*[B{a}::cyt]
-            B{_}::cyt => @ gamma*[B{_}::cyt]
-            K(S{u},T{i}).B{a}::cyt => @ 5
-
-            #! inits
-            1 B{a}::cyt
-
-            #! definitions
-            alpha = 10
-            beta = 5
-            gamma = 2
-            omega = 3
-            """
+        self.model_TS = get_model_str("model_TS")
 
         alpha = 10
         beta = 5
@@ -173,76 +128,15 @@ class TestVectorModel(unittest.TestCase):
 
         # bigger TS
 
-        self.model_bigger_TS = \
-            """#! rules
-            => 2 K(S{u},T{i})::cyt @ omega
-            K(S{u})::cyt => K(S{p})::cyt @ alpha*[K(S{u})::cyt]
-            K(S{p})::cyt + B{a}::cyt => K(S{p}).B{a}::cyt @ beta*[K(S{p})::cyt]*[B{a}::cyt]
-            B{_}::cyt => @ gamma*[B{_}::cyt]
-            K(S{u},T{i}).B{a}::cyt => @ 5
-
-            #! inits
-            6 B{a}::cyt
-
-            #! definitions
-            alpha = 10
-            beta = 5
-            gamma = 2
-            omega = 3
-            """
+        self.model_bigger_TS = get_model_str("model_bigger_TS")
 
         # even bigger TS
 
-        self.model_even_bigger_TS = \
-            """#! rules
-            => K(S{u},T{i})::cyt @ omega
-            K(S{u})::cyt => K(S{p})::cyt @ alpha*[K(S{u})::cyt]
-            K(S{p})::cyt + B{a}::cyt => K(S{p}).B{a}::cyt @ beta*[K(S{p})::cyt]*[B{a}::cyt]
-            B{_}::cyt => @ gamma*[B{_}::cyt]
-            K(S{u},T{i}).B{a}::cyt => @ 5
+        self.model_even_bigger_TS = get_model_str("model_even_bigger_TS")
 
-            #! inits
-            10 B{a}::cyt
+        self.model_parametrised = get_model_str("model_parametrised2")
 
-            #! definitions
-            alpha = 10
-            beta = 5
-            gamma = 2
-            omega = 3
-            """
-
-        self.model_parametrised = \
-            """#! rules
-            => K(S{u},T{i})::cyt @ omega
-            K(S{u})::cyt => K(S{p})::cyt @ alpha*[K(S{u})::cyt]
-            K(S{p})::cyt + B{a}::cyt => K(S{p}).B{a}::cyt @ beta*[K(S{p})::cyt]*[B{a}::cyt]
-            B{_}::cyt => @ gamma*[B{_}::cyt]
-            K(S{u},T{i}).B{a}::cyt => @ 5
-
-            #! inits
-            1 B{a}::cyt
-
-            #! definitions
-            alpha = 10
-            beta = 5
-            //gamma = 2
-            omega = 3
-            """
-
-        self.model_with_sinks = \
-            """#! rules
-            K(S{u})::cyt => K(S{p})::cyt @ alpha*[K(S{u})::cyt]
-            K(S{p})::cyt + B{a}::cyt => K(S{p}).B{a}::cyt @ beta*[K(S{p})::cyt]*[B{a}::cyt]
-            B{a}::cyt => B{i}::cyt @ alpha*[B{_}::cyt]
-
-            #! inits
-            1 B{a}::cyt
-            1 K(S{u})::cyt
-
-            #! definitions
-            alpha = 10
-            beta = 5
-            """
+        self.model_with_sinks = get_model_str("model_with_sinks")
 
     def test_compute_bound(self):
         self.assertEqual(self.vm_1.bound, 2)
