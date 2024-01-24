@@ -24,6 +24,7 @@ from eBCSgen.TS.TransitionSystem import TransitionSystem
 from eBCSgen.TS.Edge import edge_from_dict
 from eBCSgen.Core.Side import Side
 from eBCSgen.Core.Model import Model
+from eBCSgen.Errors.ComplexParsingError import ComplexParsingError
 
 
 def load_TS_from_json(json_file: str) -> TransitionSystem:
@@ -335,9 +336,14 @@ class TransformAbstractSyntax(Transformer):
         Adds or replaces atomic subtree in struct tree.
         """
         if len(struct.children) == 2:
+            for i in range(len(struct.children[1].children)):
+                if self.get_name(atomic) == self.get_name(
+                    struct.children[1].children[i]
+                ):
+                    raise ComplexParsingError("Matching agent was not found", struct)
             struct.children[1].children.append(atomic)
         else:
-            struct.children.append(Tree('composition', [atomic]))
+            struct.children.append(Tree("composition", [atomic]))
         return struct
 
     def insert_struct_to_complex(self, struct, complex):
@@ -346,9 +352,31 @@ class TransformAbstractSyntax(Transformer):
         """
         for i in range(len(complex.children)):
             if self.get_name(struct) == self.get_name(complex.children[i].children[0]):
-                complex.children[i] = Tree('agent', [struct])
-                break
-        return complex
+                struct_found = True
+                for j in range(len(struct.children[1].children)):
+                    for k in range(
+                        len(complex.children[i].children[0].children[1].children)
+                    ):
+                        if self.get_name(
+                            struct.children[1].children[j]
+                        ) == self.get_name(
+                            complex.children[i].children[0].children[1].children[k]
+                        ):
+                            struct_found = False
+                            break
+                    if not struct_found:
+                        break
+
+                if struct_found:
+                    if self.is_empty(complex.children[i]):
+                        complex.children[i] = Tree("agent", [struct])
+                    else:
+                        complex.children[i].children[0].children[
+                            1
+                        ].children += struct.children[1].children
+                    return complex
+
+        raise ComplexParsingError("Matching agent was not found", complex)
 
     def insert_atomic_to_complex(self, atomic, complex):
         """
@@ -356,9 +384,10 @@ class TransformAbstractSyntax(Transformer):
         """
         for i in range(len(complex.children)):
             if self.get_name(atomic) == self.get_name(complex.children[i].children[0]):
-                complex.children[i] = Tree('agent', [atomic])
-                break
-        return complex
+                if self.is_empty(complex.children[i].children[0]):
+                    complex.children[i] = Tree("agent", [atomic])
+                    return complex
+        raise ComplexParsingError("Matching agent was not found", complex)
 
     def get_name(self, agent):
         return str(agent.children[0].children[0])
@@ -370,7 +399,17 @@ class TransformAbstractSyntax(Transformer):
                 result += match.children
             else:
                 result.append(match)
-        return Tree('complex', [Tree('value', result)] + matches[1:])
+        return Tree("complex", [Tree("value", result)] + matches[1:])
+
+    def is_empty(self, agent):
+        """
+        Checks if the agent is empty.
+        """
+        if agent.data == "atomic":
+            return agent.children[1].children[0] == "_"
+        elif agent.data == "agent":
+            return len(agent.children[0].children[1].children) == 0
+        return False
 
 
 class TreeToComplex(Transformer):
