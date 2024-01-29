@@ -333,14 +333,26 @@ class TransformAbstractSyntax(Transformer):
 
     def insert_atomic_to_struct(self, atomic, struct):
         """
-        Adds or replaces atomic subtree in struct tree.
+        Adds an atomic subtree to a struct tree. If a non-empty atomic with the same name
+        already exists in the struct, it raises an error to prevent illegal nesting.
+
+        Args:
+            atomic: The atomic subtree to be added.
+            struct: The struct tree where the atomic will be added.
+
+        Returns:
+            The updated struct tree with the atomic added.
+
+        Raises:
+            ComplexParsingError: If a non-empty atomic with the same name is already present in the struct.
         """
         if len(struct.children) == 2:
             for i in range(len(struct.children[1].children)):
-                if self.get_name(atomic) == self.get_name(
-                    struct.children[1].children[i]
-                ):
-                    raise ComplexParsingError("Matching agent was not found", struct)
+                if self.get_name(atomic) == self.get_name(struct.children[1].children[i]):
+                    if self.is_empty(struct.children[1].children[i]):
+                        struct.children[1].children[i] = atomic
+                        return struct
+                    raise ComplexParsingError(f"Illegal nesting sequence: {atomic}:{struct}", struct)
             struct.children[1].children.append(atomic)
         else:
             struct.children.append(Tree("composition", [atomic]))
@@ -348,46 +360,69 @@ class TransformAbstractSyntax(Transformer):
 
     def insert_struct_to_complex(self, struct, complex):
         """
-        Adds or replaces struct subtree in complex tree.
+        Adds a struct subtree to a complex tree, or merges it with an existing struct subtree. This method first 
+        searches for a struct in the complex with the same name as the input struct. If found, it then checks for 
+        atomic incompatibility within the structs.
+
+        The method ensures that the struct being added does not contain atomics with names that match any atomics 
+        in the corresponding struct in the complex. This step is crucial to maintain the integrity of the complex 
+        by avoiding conflicting or duplicate atomic structures.
+
+        Args:
+            struct: The struct subtree to be added or merged.
+            complex: The complex tree where the struct will be added or merged.
+
+        Returns:
+            The updated complex tree with the struct added or merged.
+
+        Raises:
+            ComplexParsingError: If no matching struct is found in the complex.
         """
         for i in range(len(complex.children)):
             if self.get_name(struct) == self.get_name(complex.children[i].children[0]):
                 struct_found = True
+                # search same name structs - if they contain atomics with matching names, they are considered incompatible
                 for j in range(len(struct.children[1].children)):
-                    for k in range(
-                        len(complex.children[i].children[0].children[1].children)
-                    ):
-                        if self.get_name(
-                            struct.children[1].children[j]
-                        ) == self.get_name(
-                            complex.children[i].children[0].children[1].children[k]
-                        ):
+                    for k in range(len(complex.children[i].children[0].children[1].children)):
+                        if self.get_name(struct.children[1].children[j]) == self.get_name(complex.children[i].children[0].children[1].children[k]):
                             struct_found = False
                             break
+                    # if no same name atomic found in the struct, we found the suitable complex's struct
                     if not struct_found:
                         break
 
                 if struct_found:
+                    # if the complex's struct is empty, replace it with the struct
                     if self.is_empty(complex.children[i]):
                         complex.children[i] = Tree("agent", [struct])
                     else:
-                        complex.children[i].children[0].children[
-                            1
-                        ].children += struct.children[1].children
+                        # if the complex's struct is not empty merge the struct's children into the complex's struct
+                        complex.children[i].children[0].children[1].children += struct.children[1].children
                     return complex
 
-        raise ComplexParsingError("Matching agent was not found", complex)
+        raise ComplexParsingError(f"Illegal struct nesting or duplication: {struct}:{complex}", complex)
 
     def insert_atomic_to_complex(self, atomic, complex):
         """
-        Adds or replaces atomic subtree in complex tree.
+        Adds an atomic subtree to a complex tree. If a non-empty atomic with the same name
+        is already present in the complex, it raises an error to prevent illegal nesting.
+
+        Args:
+            atomic: The atomic subtree to be added.
+            complex: The complex tree where the atomic will be added.
+
+        Returns:
+            The updated complex tree with the atomic added.
+
+        Raises:
+            ComplexParsingError: If an atomic with the same name is already present in the complex.
         """
         for i in range(len(complex.children)):
             if self.get_name(atomic) == self.get_name(complex.children[i].children[0]):
                 if self.is_empty(complex.children[i].children[0]):
                     complex.children[i] = Tree("agent", [atomic])
                     return complex
-        raise ComplexParsingError("Matching agent was not found", complex)
+        raise ComplexParsingError(f"Illegal atomic nesting or duplication: {atomic}:{complex}", complex)
 
     def get_name(self, agent):
         return str(agent.children[0].children[0])
