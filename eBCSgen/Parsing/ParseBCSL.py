@@ -137,9 +137,9 @@ GRAMMAR = r"""
 
 EXTENDED_GRAMMAR = """
     abstract_sequence: atomic_complex | atomic_structure_complex | structure_complex
-    atomic_complex: atomic ":" (cmplx_name|VAR)
-    atomic_structure_complex: atomic ":" structure ":" (cmplx_name|VAR)
-    structure_complex: structure ":" (cmplx_name|VAR)
+    atomic_complex: atomic ":" (VAR | value)
+    atomic_structure_complex: atomic ":" structure ":" (VAR | value)
+    structure_complex: structure ":" (VAR | value)
 
     variable: VAR "=" "{" cmplx_name ("," cmplx_name)+ "}"
     VAR: "?"
