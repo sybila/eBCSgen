@@ -89,11 +89,11 @@ class SideHelper:
 GRAMMAR = r"""
     model: rules (inits)? (definitions)? (complexes)? (regulation)?
 
-    rules: RULES_START (rule|COMMENT)+
-    inits: INITS_START (init|COMMENT)+
-    definitions: DEFNS_START (definition|COMMENT)+
-    complexes: COMPLEXES_START (cmplx_dfn|COMMENT)+
-    regulation: REGULATION_START regulation_def
+    rules: RULES_START _NL+ ((rule|COMMENT) _NL+)* rule _NL*
+    inits: INITS_START _NL+ ((init|COMMENT) _NL+)* init _NL*
+    definitions: DEFNS_START _NL+ ((definition|COMMENT) _NL+)* definition _NL*
+    complexes: COMPLEXES_START _NL+ ((cmplx_dfn|COMMENT) _NL+)* cmplx_dfn _NL*
+    regulation: REGULATION_START _NL+ regulation_def _NL*
 
     init: const? rate_complex (COMMENT)?
     definition: def_param "=" number (COMMENT)?
@@ -118,6 +118,7 @@ GRAMMAR = r"""
     DEFNS_START: "#! definitions"
     COMPLEXES_START: "#! complexes"
     REGULATION_START: "#! regulation"
+    _NL: /(\r?\n[\t ]*)+/
 
     !label: CNAME "~"
 
@@ -131,8 +132,9 @@ GRAMMAR = r"""
     %import common.NUMBER
     %import common.INT
     %import common.DECIMAL
-    %import common.WS
-    %ignore WS
+    %import common.WS_INLINE
+    %import common.EOF
+    %ignore WS_INLINE
     %ignore COMMENT
 """
 
@@ -170,17 +172,17 @@ COMPLEX_GRAMMAR = """
 REGULATIONS_GRAMMAR = """
     regulation_def: "type" ( regular | programmed | ordered | concurrent_free | conditional ) 
 
-    !regular: "regular" (DIGIT|LETTER| "+" | "*" | "(" | ")" | "[" | "]" | "_" | "|" | "&")+
+    !regular: "regular" _NL+ (DIGIT|LETTER| "+" | "*" | "(" | ")" | "[" | "]" | "_" | "|" | "&")+ _NL+
 
-    programmed: "programmed" successors+
+    programmed: "programmed" _NL+ (successors _NL+)+
     successors: CNAME ":" "{" CNAME ("," CNAME)* "}"
 
-    ordered: "ordered" order ("," order)*
+    ordered: "ordered" _NL+ order ("," order)* _NL+
     order: ("(" CNAME "," CNAME ")")
 
-    concurrent_free: "concurrent-free" order ("," order)*
+    concurrent_free: "concurrent-free" _NL+ order ("," order)* _NL+
 
-    conditional: "conditional" context+
+    conditional: "conditional" _NL+ (context _NL+)+
     context: CNAME ":" "{" rate_complex ("," rate_complex)* "}"
 """
 
