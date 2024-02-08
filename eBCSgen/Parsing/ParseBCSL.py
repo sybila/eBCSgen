@@ -87,7 +87,8 @@ class SideHelper:
 
 
 GRAMMAR = r"""
-    model: rules (inits)? (definitions)? (complexes)? (regulation)?
+    model: (sections)* rules (sections | rules)*
+    sections: inits | definitions | complexes | regulation
 
     rules: RULES_START _NL+ ((rule|COMMENT) _NL+)* rule _NL*
     inits: INITS_START _NL+ ((init|COMMENT) _NL+)* init _NL*
@@ -174,15 +175,15 @@ REGULATIONS_GRAMMAR = """
 
     !regular: "regular" _NL+ (DIGIT|LETTER| "+" | "*" | "(" | ")" | "[" | "]" | "_" | "|" | "&")+ _NL+
 
-    programmed: "programmed" _NL+ (successors _NL+)+
+    programmed: "programmed" _NL+ (successors _NL+)* successors _NL*
     successors: CNAME ":" "{" CNAME ("," CNAME)* "}"
 
-    ordered: "ordered" _NL+ order ("," order)* _NL+
+    ordered: "ordered" _NL+ order ("," order)* _NL*
     order: ("(" CNAME "," CNAME ")")
 
-    concurrent_free: "concurrent-free" _NL+ order ("," order)* _NL+
+    concurrent_free: "concurrent-free" _NL+ order ("," order)* _NL*
 
-    conditional: "conditional" _NL+ (context _NL+)+
+    conditional: "conditional" _NL+ context (_NL+ context)* _NL*
     context: CNAME ":" "{" rate_complex ("," rate_complex)* "}"
 """
 
