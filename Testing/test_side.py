@@ -36,10 +36,12 @@ class TestSide(unittest.TestCase):
         results = set()
         with open("Testing/complexes_1.txt") as file:
             for complex in file.readlines():
+                complex = complex.strip()
                 results.add(objects.rate_complex_parser.parse(complex).data.children[0])
 
         with open("Testing/complexes_2.txt") as file:
             for complex in file.readlines():
+                complex = complex.strip()
                 results.add(objects.rate_complex_parser.parse(complex).data.children[0])
 
         side = "KaiC().KaiC().KaiC().KaiC().KaiC().KaiC()::cyt + 2 KaiB().KaiB().KaiB()::cyt"
