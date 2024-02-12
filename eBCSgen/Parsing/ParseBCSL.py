@@ -1,7 +1,6 @@
 import collections
 import json
 import numpy as np
-import os
 from numpy import inf
 from copy import deepcopy
 from lark import Lark, Transformer, Tree
@@ -629,8 +628,6 @@ class TreeToObjects(Transformer):
 
 class Parser:
     def __init__(self, start):
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "model_permutation.txt"), "r") as file:
-            model_grammar = file.read()
         grammar = "start: " + start + GRAMMAR + COMPLEX_GRAMMAR + EXTENDED_GRAMMAR + REGULATIONS_GRAMMAR
         self.parser = Lark(grammar, parser='lalr',
                            propagate_positions=False,
