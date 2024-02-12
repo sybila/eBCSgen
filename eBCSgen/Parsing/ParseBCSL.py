@@ -88,6 +88,9 @@ class SideHelper:
 
 
 GRAMMAR = r"""
+    model: (sections)* rules (sections | rules)*
+    sections: inits | definitions | complexes | regulation
+
     rules: RULES_START _NL+ ((rule|COMMENT) _NL+)* rule _NL*
     inits: INITS_START _NL+ ((init|COMMENT) _NL+)* init _NL*
     definitions: DEFNS_START _NL+ ((definition|COMMENT) _NL+)* definition _NL*
@@ -593,6 +596,7 @@ class TreeToObjects(Transformer):
         return Tree("param", matches)
 
     def model(self, matches):
+        rules = set()
         definitions = dict()
         regulation = None
         inits = collections.Counter()
@@ -600,7 +604,19 @@ class TreeToObjects(Transformer):
             if type(match) == dict:
                 key, value = list(match.items())[0]
                 if key == 'rules':
-                    rules = set(value)
+                    rules.update(value)
+                if key == 'inits':
+                    inits = value
+                if key == 'definitions':
+                    definitions = value
+                if key == 'regulation':
+                    regulation = value
+            elif isinstance(match, Tree) and match.data == 'sections':
+                if isinstance(match.children[0], Tree):
+                    continue
+                key, value = list(match.children[0].items())[0]
+                if key == 'rules':
+                    rules.update(value)
                 if key == 'inits':
                     inits = value
                 if key == 'definitions':
@@ -615,7 +631,7 @@ class Parser:
     def __init__(self, start):
         with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "model_permutation.txt"), "r") as file:
             model_grammar = file.read()
-        grammar = "start: " + start + model_grammar + GRAMMAR + COMPLEX_GRAMMAR + EXTENDED_GRAMMAR + REGULATIONS_GRAMMAR
+        grammar = "start: " + start + GRAMMAR + COMPLEX_GRAMMAR + EXTENDED_GRAMMAR + REGULATIONS_GRAMMAR
         self.parser = Lark(grammar, parser='lalr',
                            propagate_positions=False,
                            maybe_placeholders=False
