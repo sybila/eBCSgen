@@ -1,6 +1,7 @@
 import collections
 import json
 import numpy as np
+import os
 from numpy import inf
 from copy import deepcopy
 from lark import Lark, Transformer, Tree
@@ -87,9 +88,6 @@ class SideHelper:
 
 
 GRAMMAR = r"""
-    model: (sections)* rules (sections | rules)*
-    sections: inits | definitions | complexes | regulation
-
     rules: RULES_START _NL+ ((rule|COMMENT) _NL+)* rule _NL*
     inits: INITS_START _NL+ ((init|COMMENT) _NL+)* init _NL*
     definitions: DEFNS_START _NL+ ((definition|COMMENT) _NL+)* definition _NL*
@@ -134,7 +132,6 @@ GRAMMAR = r"""
     %import common.INT
     %import common.DECIMAL
     %import common.WS_INLINE
-    %import common.EOF
     %ignore WS_INLINE
     %ignore COMMENT
 """
@@ -616,7 +613,9 @@ class TreeToObjects(Transformer):
 
 class Parser:
     def __init__(self, start):
-        grammar = "start: " + start + GRAMMAR + COMPLEX_GRAMMAR + EXTENDED_GRAMMAR + REGULATIONS_GRAMMAR
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "model_permutation.txt"), "r") as file:
+            model_grammar = file.read()
+        grammar = "start: " + start + model_grammar + GRAMMAR + COMPLEX_GRAMMAR + EXTENDED_GRAMMAR + REGULATIONS_GRAMMAR
         self.parser = Lark(grammar, parser='lalr',
                            propagate_positions=False,
                            maybe_placeholders=False
