@@ -348,6 +348,10 @@ class TransformAbstractSyntax(Transformer):
             if self.get_name(struct) == self.get_name(complex.children[i].children[0]):
                 complex.children[i] = Tree('agent', [struct])
                 break
+            elif isinstance(complex.children[0].children[0].children[0].children[0], Tree):
+                complex.children[i].children[0] = Tree('agent', [struct])
+                break
+
         return complex
 
     def insert_atomic_to_complex(self, atomic, complex):
