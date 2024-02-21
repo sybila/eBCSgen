@@ -178,7 +178,7 @@ counter_c6 = Complex(collections.Counter({s45: 1}), "cell")
 
 cx1 = Complex([a20], "cyt")
 cx2 = Complex([s46], "cyt")
-cx3 = Complex([s47], "cyt") # K(S{u},T{i})::cyt
+cx3 = Complex([s47], "cyt")  # K(S{u},T{i})::cyt
 cx4 = Complex([s46, a20], "cyt")
 cx5 = Complex([s47, a20], "cyt")
 
@@ -261,7 +261,7 @@ complexes_5 = [(0, 1), (2, 2), (3, 3), (4, 4)]
 pairs_5 = [(0, 2), (1, 3), (None, 4)]
 rate_5 = Rate("3.0*[K()::cyt]/2.0*v_1")
 
-r5 = Rule(sequence_5, mid_5, compartments_5, complexes_5, pairs_2, rate_5)
+r5 = Rule(sequence_5, mid_5, compartments_5, complexes_5, pairs_5, rate_5)
 
 sequence_6 = (s39, s35, s38, s40, s37)
 mid_6 = 3
