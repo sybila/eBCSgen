@@ -665,7 +665,7 @@ class TreeToObjects(Transformer):
                 if key == "definitions":
                     definitions.update(value)
                 if key == "regulation":
-                    regulation.update(value)
+                    regulation = value
         params = self.params - set(definitions)
         return Model(rules, inits, definitions, params, regulation)
 
