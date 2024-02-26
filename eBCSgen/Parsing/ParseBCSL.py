@@ -24,7 +24,7 @@ from eBCSgen.TS.TransitionSystem import TransitionSystem
 from eBCSgen.TS.Edge import edge_from_dict
 from eBCSgen.Core.Side import Side
 from eBCSgen.Core.Model import Model
-from eBCSgen.Errors.ComplexParsingError import ComplexParsingError
+from eBCSgen.Errors import ComplexParsingError, UnspecifiedParsingError
 
 
 def load_TS_from_json(json_file: str) -> TransitionSystem:
@@ -653,6 +653,8 @@ class TreeToObjects(Transformer):
                 if key == "definitions":
                     definitions.update(value)
                 if key == "regulation":
+                    if regulation:
+                        raise UnspecifiedParsingError("Multiple regulations")
                     regulation = value
             elif isinstance(match, Tree) and match.data == "sections":
                 if isinstance(match.children[0], Tree):
@@ -665,6 +667,8 @@ class TreeToObjects(Transformer):
                 if key == "definitions":
                     definitions.update(value)
                 if key == "regulation":
+                    if regulation:
+                        raise UnspecifiedParsingError("Multiple regulations")
                     regulation = value
         params = self.params - set(definitions)
         return Model(rules, inits, definitions, params, regulation)
