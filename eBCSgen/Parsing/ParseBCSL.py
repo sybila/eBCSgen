@@ -156,9 +156,9 @@ GRAMMAR = r"""
 
 EXTENDED_GRAMMAR = """
     abstract_sequence: atomic_complex | atomic_structure_complex | structure_complex
-    atomic_complex: atomic ":" (cmplx_name|VAR)
-    atomic_structure_complex: atomic ":" structure ":" (cmplx_name|VAR)
-    structure_complex: structure ":" (cmplx_name|VAR)
+    atomic_complex: atomic ":" (VAR | value)
+    atomic_structure_complex: atomic ":" structure ":" (VAR | value)
+    structure_complex: structure ":" (VAR | value)
 
     variable: VAR "=" "{" cmplx_name ("," cmplx_name)+ "}"
     VAR: "?"
@@ -401,18 +401,23 @@ class TransformAbstractSyntax(Transformer):
         Raises:
             ComplexParsingError: If no matching struct is found in the complex.
         """
-        for i in range(len(complex.children)):
-            if self.get_name(struct) == self.get_name(complex.children[i].children[0]):
+        if isinstance(complex.children[0].children[0].children[0].children[0], Tree):
+            search = complex.children[0]
+        else:
+            search = complex
+
+        for i in range(len(search.children)):
+            if self.get_name(struct) == self.get_name(search.children[i].children[0]):
                 struct_found = True
                 # search same name structs - if they contain atomics with matching names, they are considered incompatible
                 for j in range(len(struct.children[1].children)):
                     for k in range(
-                        len(complex.children[i].children[0].children[1].children)
+                        len(search.children[i].children[0].children[1].children)
                     ):
                         if self.get_name(
                             struct.children[1].children[j]
                         ) == self.get_name(
-                            complex.children[i].children[0].children[1].children[k]
+                            search.children[i].children[0].children[1].children[k]
                         ):
                             struct_found = False
                             break
@@ -422,13 +427,11 @@ class TransformAbstractSyntax(Transformer):
 
                 if struct_found:
                     # if the complex's struct is empty, replace it with the struct
-                    if self.is_empty(complex.children[i]):
-                        complex.children[i] = Tree("agent", [struct])
+                    if self.is_empty(search.children[i]):
+                        search.children[i] = Tree("agent", [struct])
                     else:
                         # if the complex's struct is not empty merge the struct's children into the complex's struct
-                        complex.children[i].children[0].children[
-                            1
-                        ].children += struct.children[1].children
+                        search.children[i].children[0].children[1].children += struct.children[1].children
                     return complex
 
         raise ComplexParsingError(
@@ -450,10 +453,15 @@ class TransformAbstractSyntax(Transformer):
         Raises:
             ComplexParsingError: If an atomic with the same name is already present in the complex.
         """
-        for i in range(len(complex.children)):
-            if self.get_name(atomic) == self.get_name(complex.children[i].children[0]):
-                if self.is_empty(complex.children[i].children[0]):
-                    complex.children[i] = Tree("agent", [atomic])
+        if isinstance(complex.children[0].children[0].children[0].children[0], Tree):
+            search = complex.children[0]
+        else:
+            search = complex
+
+        for i in range(len(search.children)):
+            if self.get_name(atomic) == self.get_name(search.children[i].children[0]):
+                if self.is_empty(search.children[i].children[0]):
+                    search.children[i] = Tree("agent", [atomic])
                     return complex
         raise ComplexParsingError(
             f"Illegal atomic nesting or duplication: {atomic}:{complex}", complex
