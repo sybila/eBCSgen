@@ -37,6 +37,7 @@ class TestRule(unittest.TestCase):
         reactions = set()
         with open("Testing/reactions.txt") as file:
             for complex in file.readlines():
+                complex = complex.strip()
                 rule = objects.rule_parser.parse(complex).data[1]
                 reactions.add(rule.to_reaction())
 
