@@ -647,30 +647,24 @@ class TreeToObjects(Transformer):
         for match in matches:
             if type(match) == dict:
                 key, value = list(match.items())[0]
-                if key == "rules":
-                    rules.update(value)
-                if key == "inits":
-                    inits.update(value)
-                if key == "definitions":
-                    definitions.update(value)
-                if key == "regulation":
-                    if regulation:
-                        raise UnspecifiedParsingError("Multiple regulations")
-                    regulation = value
             elif isinstance(match, Tree) and match.data == "sections":
                 if isinstance(match.children[0], Tree):
                     continue
                 key, value = list(match.children[0].items())[0]
-                if key == "rules":
-                    rules.update(value)
-                if key == "inits":
-                    inits.update(value)
-                if key == "definitions":
-                    definitions.update(value)
-                if key == "regulation":
-                    if regulation:
-                        raise UnspecifiedParsingError("Multiple regulations")
-                    regulation = value
+            else:
+                continue
+
+            if key == "rules":
+                rules.update(value)
+            elif key == "inits":
+                inits.update(value)
+            elif key == "definitions":
+                definitions.update(value)
+            elif key == "regulation":
+                if regulation:
+                    raise UnspecifiedParsingError("Multiple regulations")
+                regulation = value
+
         params = self.params - set(definitions)
         return Model(rules, inits, definitions, params, regulation)
 
