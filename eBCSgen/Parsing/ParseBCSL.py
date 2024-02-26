@@ -412,12 +412,12 @@ class TransformAbstractSyntax(Transformer):
                 # search same name structs - if they contain atomics with matching names, they are considered incompatible
                 for j in range(len(struct.children[1].children)):
                     for k in range(
-                        len(complex.children[i].children[0].children[1].children)
+                        len(search.children[i].children[0].children[1].children)
                     ):
                         if self.get_name(
                             struct.children[1].children[j]
                         ) == self.get_name(
-                            complex.children[i].children[0].children[1].children[k]
+                            search.children[i].children[0].children[1].children[k]
                         ):
                             struct_found = False
                             break
