@@ -24,7 +24,8 @@ from eBCSgen.TS.TransitionSystem import TransitionSystem
 from eBCSgen.TS.Edge import edge_from_dict
 from eBCSgen.Core.Side import Side
 from eBCSgen.Core.Model import Model
-from eBCSgen.Errors import ComplexParsingError, UnspecifiedParsingError
+from eBCSgen.Errors.ComplexParsingError import ComplexParsingError
+from eBCSgen.Errors.UnspecifiedParsingError import UnspecifiedParsingError
 
 
 def load_TS_from_json(json_file: str) -> TransitionSystem:
