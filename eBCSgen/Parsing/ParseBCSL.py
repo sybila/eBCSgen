@@ -114,7 +114,7 @@ GRAMMAR = r"""
 
     init: const? rate_complex (COMMENT)?
     definition: def_param "=" number (COMMENT)?
-    rule: (label)? side ARROW side ("@" rate)? (";" variable)? (COMMENT)?
+    rule: (label)? side ARROW side ("@" (rate | (rate "|" rate)))? (";" variable)? (COMMENT)?
     cmplx_dfn: cmplx_name "=" value (COMMENT)?
 
     side: (const? complex "+")* (const? complex)?
@@ -567,14 +567,20 @@ class TreeToObjects(Transformer):
 
     def rule(self, matches):
         label = None  # TODO create implicit label
-        rate = None
+        rate1 = None
+        rate2 = None
+        if len(matches) == 6:
+            label, lhs, arrow, rhs, rate1, rate2 = matches
         if len(matches) == 5:
-            label, lhs, arrow, rhs, rate = matches
+            if type(matches[0]) == str:
+                label, lhs, arrow, rhs, rate1 = matches
+            else:
+                lhs, arrow, rhs, rate1, rate2 = matches
         elif len(matches) == 4:
             if type(matches[0]) == str:
                 label, lhs, arrow, rhs = matches
             else:
-                lhs, arrow, rhs, rate = matches
+                lhs, arrow, rhs, rate1 = matches
         else:
             lhs, arrow, rhs = matches
         agents = tuple(lhs.seq + rhs.seq)
@@ -603,21 +609,23 @@ class TreeToObjects(Transformer):
         reversible = False
         if arrow == "<=>":
             reversible = True
+        rate1 = Rate(rate1) if rate1 else None
+        rate2 = Rate(rate2) if rate2 else rate1
         return reversible, Rule(
             agents,
             mid,
             compartments,
             complexes,
             pairs,
-            Rate(rate) if rate else None,
+            rate1,
             label,
-        )
+        ), rate2
 
     def rules(self, matches):
         rules = []
-        for reversible, rule in matches[1:]:
+        for reversible, rule, new_rate in matches[1:]:
             if reversible:
-                reversible_rule = rule.create_reversible()
+                reversible_rule = rule.create_reversible(new_rate)
                 rules.append(rule)
                 rules.append(reversible_rule)
             else:

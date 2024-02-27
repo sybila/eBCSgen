@@ -333,7 +333,7 @@ class Rule:
             output_complexes.append(Complex(match[f:t + 1], self.compartments[f]))
         return Multiset(collections.Counter(output_complexes))
 
-    def create_reversible(self):
+    def create_reversible(self, rate: Rate = None):
         """
         Create a reversible version of the rule with _bw label.
 
@@ -355,7 +355,10 @@ class Rule:
             else:
                 pairs.append((l, r))
 
-        rate = self.rate
+        if rate is None:
+            rate = self.rate
+        else:
+            rate = deepcopy(rate)
         label = None
         if self.label:
             label = self.label + "_bw"
