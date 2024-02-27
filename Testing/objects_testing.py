@@ -254,7 +254,7 @@ complexes_4 = [(0, 1), (2, 2), (3, 3)]
 reversed_complexes_4 = [(0, 0), (1, 1), (2, 3)]
 pairs_4 = [(0, 2), (1, 3)]
 rate_4 = Rate("3.0*[K()::cyt]/2.0*v_1")
-reversed_rate4 = Rate("2.0*[K()::cyt]/3.0*v_1")
+reversed_rate_4 = Rate("2.0*[K()::cyt]/3.0*v_1")
 
 r4 = Rule(sequence_4, mid_4, compartments_4, complexes_4, pairs_4, rate_4)
 reversed_r4a = Rule(
@@ -266,8 +266,56 @@ reversed_r4b = Rule(
     compartments_4,
     reversed_complexes_4,
     pairs_4,
-    reversed_rate4,
+    reversed_rate_4,
 )
+sequence_one_side_bidirectional = (s36, s37)
+mid_one_side_bidirectional_a = 2
+mid_one_side_bidirectional_b = 0
+compartments_one_side_bidirectional = ["cyt"] * 2
+complexes_one_side_bidirectional = [(0, 0), (1, 1)]
+pairs_one_side_bidirectional_a = [(0, None), (1, None)]
+pairs_one_side_bidirectional_b = [(None, 0), (None, 1)]
+one_side_bidirectional_a = Rule(
+    sequence_one_side_bidirectional,
+    mid_one_side_bidirectional_a,
+    compartments_one_side_bidirectional,
+    complexes_one_side_bidirectional,
+    pairs_one_side_bidirectional_a,
+    rate_4,
+)
+one_side_bidirectional_b = Rule(
+    sequence_one_side_bidirectional,
+    mid_one_side_bidirectional_b,
+    compartments_one_side_bidirectional,
+    complexes_one_side_bidirectional,
+    pairs_one_side_bidirectional_b,
+    rate_4,
+)
+one_side_bidirectional_b_reversed_rate = Rule(
+    sequence_one_side_bidirectional,
+    mid_one_side_bidirectional_b,
+    compartments_one_side_bidirectional,
+    complexes_one_side_bidirectional,
+    pairs_one_side_bidirectional_b,
+    reversed_rate_4,
+)
+one_side_bidirectional_a_no_rate = Rule(
+    sequence_one_side_bidirectional,
+    mid_one_side_bidirectional_a,
+    compartments_one_side_bidirectional,
+    complexes_one_side_bidirectional,
+    pairs_one_side_bidirectional_a,
+    None,
+)
+one_side_bidirectional_b_no_rate = Rule(
+    sequence_one_side_bidirectional,
+    mid_one_side_bidirectional_b,
+    compartments_one_side_bidirectional,
+    complexes_one_side_bidirectional,
+    pairs_one_side_bidirectional_b,
+    None,
+)
+
 
 sequence_5 = (s34, s35, s36, s37, s38)
 mid_5 = 2
