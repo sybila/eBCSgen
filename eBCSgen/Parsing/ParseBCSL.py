@@ -114,7 +114,7 @@ GRAMMAR = r"""
 
     init: const? rate_complex (COMMENT)?
     definition: def_param "=" number (COMMENT)?
-    rule: ((label)? side ARROW side ("@" rate)? (";" variable)? (COMMENT)?) | ((label)? side BI_ARROW side ("@" (rate | (rate "|" rate)))? (";" variable)? (COMMENT)?)
+    rule: ((label)? side ARROW side ("@" rate)? (";" variable)? (COMMENT)?) | ((label)? side BI_ARROW side ("@" rate "|" rate)? (";" variable)? (COMMENT)?)
     cmplx_dfn: cmplx_name "=" value (COMMENT)?
 
     side: (const? complex "+")* (const? complex)?

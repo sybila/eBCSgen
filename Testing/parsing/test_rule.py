@@ -27,9 +27,7 @@ def test_bidirectional():
     assert objects.rule_no_rate in parsed.data["rules"]
     assert objects.reversed_no_rate in parsed.data["rules"]
 
-    rule_expr = (
-        "#! rules\nK(S{u}).B()::cyt <=> K(S{p})::cyt + B()::cyt @ 3*[K()::cyt]/2*v_1"
-    )
+    rule_expr = "#! rules\nK(S{u}).B()::cyt <=> K(S{p})::cyt + B()::cyt @ 3*[K()::cyt]/2*v_1 | 3*[K()::cyt]/2*v_1"
     parsed = objects.rules_parser.parse(rule_expr)
     assert parsed.success
     assert objects.r4 in parsed.data["rules"]
@@ -41,13 +39,13 @@ def test_bidirectional():
     assert objects.r4 in parsed.data["rules"]
     assert objects.reversed_r4b in parsed.data["rules"]
 
-    rule_expr = "#! rules\n <=> K(S{p})::cyt + B()::cyt @ 3*[K()::cyt]/2*v_1"
+    rule_expr = "#! rules\n <=> K(S{p})::cyt + B()::cyt @ 3*[K()::cyt]/2*v_1 | 3*[K()::cyt]/2*v_1"
     parsed = objects.rules_parser.parse(rule_expr)
     assert parsed.success
     assert objects.one_side_bidirectional_a in parsed.data["rules"]
     assert objects.one_side_bidirectional_b in parsed.data["rules"]
 
-    rule_expr = "#! rules\n K(S{p})::cyt + B()::cyt <=> @ 3*[K()::cyt]/2*v_1"
+    rule_expr = "#! rules\n K(S{p})::cyt + B()::cyt <=> @ 3*[K()::cyt]/2*v_1 | 3*[K()::cyt]/2*v_1"
     parsed = objects.rules_parser.parse(rule_expr)
     assert parsed.success
     assert objects.one_side_bidirectional_a in parsed.data["rules"]
@@ -64,6 +62,11 @@ def test_bidirectional():
     assert parsed.success
     assert objects.one_side_bidirectional_a_no_rate in parsed.data["rules"]
     assert objects.one_side_bidirectional_b_no_rate in parsed.data["rules"]
+
+    rule_expr = (
+        "#! rules\nK(S{u}).B()::cyt <=> K(S{p})::cyt + B()::cyt @ 3*[K()::cyt]/2*v_1"
+    )
+    assert not objects.rules_parser.parse(rule_expr).success
 
     rule_expr = "#! rules\nK(S{u}).B()::cyt => K(S{p})::cyt + B()::cyt @ 3*[K()::cyt]/2*v_1 | 2*[K()::cyt]/3*v_1"
     assert not objects.rules_parser.parse(rule_expr).success
