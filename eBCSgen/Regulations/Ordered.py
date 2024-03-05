@@ -38,3 +38,10 @@ class Ordered(BaseRegulation):
             return candidates
         last_rule = current_state.memory.history[-1]
         return {rule: values for rule, values in candidates.items() if not (last_rule, rule.label) in self.regulation}
+    
+    def check_labels(self, model_labels):
+        for tuple in self.regulation:
+            for label in tuple:
+                if label not in model_labels:
+                    return False
+        return True

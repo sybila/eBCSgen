@@ -24,3 +24,11 @@ class Programmed(BaseRegulation):
         if last_rule in self.regulation:
             return {rule: values for rule, values in candidates.items() if rule.label in self.regulation[last_rule]}
         return candidates
+    
+    def check_labels(self, model_labels):
+        for key, value in self.regulation.items():
+            if key not in model_labels:
+                return False
+            if value > model_labels:
+                return False
+        return True

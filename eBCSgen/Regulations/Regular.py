@@ -23,3 +23,17 @@ class Regular(BaseRegulation):
         path = "".join(current_state.memory.history)
         return {rule: values for rule, values in candidates.items()
                 if self.regulation.fullmatch(path + rule.label, partial=True) is not None}
+    
+    def check_labels(self, model_labels):
+        positions = [False] * len(self.regulation.pattern)
+        for label in model_labels:
+            match = regex.search(label, self.regulation.pattern)
+            while match is not None:
+                for i in range(match.start(), match.end()):
+                    positions[i] = True
+                match = regex.search(label, self.regulation.pattern, pos=match.end())
+
+        for i, position in enumerate(positions):
+            if not position and self.regulation.pattern[i] not in ".*+?^${}()[]|\\":
+                return False
+        return True

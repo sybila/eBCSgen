@@ -19,6 +19,12 @@ class Conditional(BaseRegulation):
     def filter(self, current_state, candidates):
         agents = set(current_state.content.value)
         return {rule: values for rule, values in candidates.items() if not self.check_intersection(rule.label, agents)}
+    
+    def check_labels(self, model_labels):
+        for label in self.regulation:
+            if label not in model_labels:
+                return False
+        return True
 
     def check_intersection(self, label, agents):
         if label not in self.regulation:

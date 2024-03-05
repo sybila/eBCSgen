@@ -22,3 +22,10 @@ class ConcurrentFree(BaseRegulation):
             if p_rule and non_p_rule:
                 del candidates[non_p_rule.pop()]
         return candidates
+
+    def check_labels(self, model_labels):
+        for tuple in self.regulation:
+            for label in tuple:
+                if label not in model_labels:
+                    return False
+        return True

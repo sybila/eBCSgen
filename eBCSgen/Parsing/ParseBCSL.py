@@ -26,6 +26,7 @@ from eBCSgen.Core.Side import Side
 from eBCSgen.Core.Model import Model
 from eBCSgen.Errors.ComplexParsingError import ComplexParsingError
 from eBCSgen.Errors.UnspecifiedParsingError import UnspecifiedParsingError
+from eBCSgen.Errors.RegulationParsingError import RegulationParsingError
 
 
 def load_TS_from_json(json_file: str) -> TransitionSystem:
@@ -213,7 +214,10 @@ class TransformRegulations(Transformer):
     def regular(self, matches):
         re = "".join(matches[1:])
         # might raise exception
-        regex.compile(re)
+        try:
+            regex.compile(re)
+        except regex.error as e:
+            raise RegulationParsingError(f"Invalid regular expression: {re}. Error: {e}")
         return Regular(re)
 
     def programmed(self, matches):
@@ -526,6 +530,7 @@ class TreeToObjects(Transformer):
     def __init__(self):
         super(TreeToObjects, self).__init__()
         self.params = set()
+        self.labels = set()
 
     """
     A transformer which is called on a tree in a bottom-up manner and transforms all subtrees/tokens it encounters.
@@ -577,6 +582,8 @@ class TreeToObjects(Transformer):
                 lhs, arrow, rhs, rate = matches
         else:
             lhs, arrow, rhs = matches
+        if label:
+            self.labels.add(label)
         agents = tuple(lhs.seq + rhs.seq)
         mid = lhs.counter
         compartments = lhs.comp + rhs.comp
@@ -671,6 +678,9 @@ class TreeToObjects(Transformer):
             elif key == "regulation":
                 if regulation:
                     raise UnspecifiedParsingError("Multiple regulations")
+                # check if regulation is in label
+                if not value.check_labels(self.labels):
+                    raise RegulationParsingError("Regulation label not found")
                 regulation = value
 
         params = self.params - set(definitions)
