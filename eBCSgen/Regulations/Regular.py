@@ -1,4 +1,5 @@
 import regex
+from itertools import permutations
 
 from eBCSgen.Regulations.Base import BaseRegulation
 
@@ -25,15 +26,13 @@ class Regular(BaseRegulation):
                 if self.regulation.fullmatch(path + rule.label, partial=True) is not None}
     
     def check_labels(self, model_labels):
-        positions = [False] * len(self.regulation.pattern)
-        for label in model_labels:
-            match = regex.search(label, self.regulation.pattern)
-            while match is not None:
-                for i in range(match.start(), match.end()):
-                    positions[i] = True
-                match = regex.search(label, self.regulation.pattern, pos=match.end())
-
-        for i, position in enumerate(positions):
-            if not position and self.regulation.pattern[i] not in ".*+?^${}()[]|\\":
-                return False
+        patterns = self.regulation.pattern[1:-1].split('|')
+        # Generate all permutations of the label in the set
+        all_permutations = [''.join(p) for i in range(len(model_labels)) for p in permutations(model_labels, i+1)]
+        # Check if the regex matches any permutation
+        for pattern in patterns:
+            subregex = regex.compile(pattern)
+            if any(subregex.search(p) for p in all_permutations):
+                continue
+            return False
         return True
