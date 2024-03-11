@@ -114,7 +114,7 @@ GRAMMAR = r"""
 
     init: const? rate_complex (COMMENT)?
     definition: def_param "=" number (COMMENT)?
-    rule: (label)? side ARROW side ("@" rate)? (";" variable)? (COMMENT)?
+    rule: ((label)? side ARROW side ("@" rate)? (";" variable)? (COMMENT)?) | ((label)? side BI_ARROW side ("@" rate "|" rate)? (";" variable)? (COMMENT)?)
     cmplx_dfn: cmplx_name "=" value (COMMENT)?
 
     side: (const? complex "+")* (const? complex)?
@@ -129,7 +129,8 @@ GRAMMAR = r"""
 
     COM: "//"
     POW: "**"
-    ARROW: "=>" | "<=>" 
+    ARROW: "=>"
+    BI_ARROW: "<=>"
     RULES_START: "#! rules"
     INITS_START: "#! inits"
     DEFNS_START: "#! definitions"
@@ -567,14 +568,20 @@ class TreeToObjects(Transformer):
 
     def rule(self, matches):
         label = None  # TODO create implicit label
-        rate = None
+        rate1 = None
+        rate2 = None
+        if len(matches) == 6:
+            label, lhs, arrow, rhs, rate1, rate2 = matches
         if len(matches) == 5:
-            label, lhs, arrow, rhs, rate = matches
+            if type(matches[0]) == str:
+                label, lhs, arrow, rhs, rate1 = matches
+            else:
+                lhs, arrow, rhs, rate1, rate2 = matches
         elif len(matches) == 4:
             if type(matches[0]) == str:
                 label, lhs, arrow, rhs = matches
             else:
-                lhs, arrow, rhs, rate = matches
+                lhs, arrow, rhs, rate1 = matches
         else:
             lhs, arrow, rhs = matches
         agents = tuple(lhs.seq + rhs.seq)
@@ -609,15 +616,15 @@ class TreeToObjects(Transformer):
             compartments,
             complexes,
             pairs,
-            Rate(rate) if rate else None,
+            Rate(rate1) if rate1 else None,
             label,
-        )
+        ), Rate(rate2) if rate2 else None
 
     def rules(self, matches):
         rules = []
-        for reversible, rule in matches[1:]:
+        for reversible, rule, new_rate in matches[1:]:
             if reversible:
-                reversible_rule = rule.create_reversible()
+                reversible_rule = rule.create_reversible(new_rate)
                 rules.append(rule)
                 rules.append(reversible_rule)
             else:
@@ -695,7 +702,8 @@ class Parser:
         self.terminals.update(
             {
                 "COM": "//",
-                "ARROW": "=>, <=>",
+                "ARROW": "=>",
+                "BI_ARROW": "<=>",
                 "POW": "**",
                 "DOUBLE_COLON": "::",
                 "RULES_START": "#! rules",

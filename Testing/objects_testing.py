@@ -20,6 +20,7 @@ state_parser = Parser("state")
 side_parser = Parser("side")
 rate_complex_parser = Parser("rate_complex")
 rule_parser = Parser("rule")
+rules_parser = Parser("rules")
 model_parser = Parser("model")
 
 # atomic
@@ -246,13 +247,75 @@ rate_3 = Rate("1.0/(1.0+([X()::rep])**4.0)")
 r3 = Rule(sequence_3, mid_3, compartments_3, complexes_3, pairs_3, rate_3)
 
 sequence_4 = (s34, s35, s36, s37)
+reversed_sequence_4 = (s36, s37, s34, s35)
 mid_4 = 2
 compartments_4 = ["cyt"] * 4
 complexes_4 = [(0, 1), (2, 2), (3, 3)]
+reversed_complexes_4 = [(0, 0), (1, 1), (2, 3)]
 pairs_4 = [(0, 2), (1, 3)]
 rate_4 = Rate("3.0*[K()::cyt]/2.0*v_1")
+reversed_rate_4 = Rate("2.0*[K()::cyt]/3.0*v_1")
 
 r4 = Rule(sequence_4, mid_4, compartments_4, complexes_4, pairs_4, rate_4)
+reversed_r4a = Rule(
+    reversed_sequence_4, mid_4, compartments_4, reversed_complexes_4, pairs_4, rate_4
+)
+reversed_r4b = Rule(
+    reversed_sequence_4,
+    mid_4,
+    compartments_4,
+    reversed_complexes_4,
+    pairs_4,
+    reversed_rate_4,
+)
+sequence_one_side_bidirectional = (s36, s37)
+mid_one_side_bidirectional_a = 2
+mid_one_side_bidirectional_b = 0
+compartments_one_side_bidirectional = ["cyt"] * 2
+complexes_one_side_bidirectional = [(0, 0), (1, 1)]
+pairs_one_side_bidirectional_a = [(0, None), (1, None)]
+pairs_one_side_bidirectional_b = [(None, 0), (None, 1)]
+one_side_bidirectional_a = Rule(
+    sequence_one_side_bidirectional,
+    mid_one_side_bidirectional_a,
+    compartments_one_side_bidirectional,
+    complexes_one_side_bidirectional,
+    pairs_one_side_bidirectional_a,
+    rate_4,
+)
+one_side_bidirectional_b = Rule(
+    sequence_one_side_bidirectional,
+    mid_one_side_bidirectional_b,
+    compartments_one_side_bidirectional,
+    complexes_one_side_bidirectional,
+    pairs_one_side_bidirectional_b,
+    rate_4,
+)
+one_side_bidirectional_b_reversed_rate = Rule(
+    sequence_one_side_bidirectional,
+    mid_one_side_bidirectional_b,
+    compartments_one_side_bidirectional,
+    complexes_one_side_bidirectional,
+    pairs_one_side_bidirectional_b,
+    reversed_rate_4,
+)
+one_side_bidirectional_a_no_rate = Rule(
+    sequence_one_side_bidirectional,
+    mid_one_side_bidirectional_a,
+    compartments_one_side_bidirectional,
+    complexes_one_side_bidirectional,
+    pairs_one_side_bidirectional_a,
+    None,
+)
+one_side_bidirectional_b_no_rate = Rule(
+    sequence_one_side_bidirectional,
+    mid_one_side_bidirectional_b,
+    compartments_one_side_bidirectional,
+    complexes_one_side_bidirectional,
+    pairs_one_side_bidirectional_b,
+    None,
+)
+
 
 sequence_5 = (s34, s35, s36, s37, s38)
 mid_5 = 2
@@ -272,6 +335,9 @@ rate_6 = Rate("3.0*[K(T{3+})::cyt]/2.0*v_1")
 
 r6 = Rule(sequence_6, mid_6, compartments_6, complexes_6, pairs_6, rate_6)
 rule_no_rate = Rule(sequence_4, mid_4, compartments_4, complexes_4, pairs_4, None)
+reversed_no_rate = Rule(
+    reversed_sequence_4, mid_4, compartments_4, reversed_complexes_4, pairs_4, None
+)
 
 sequence_c1 = (s34, s35, s36, s37, s2)
 mid_c1 = 2
