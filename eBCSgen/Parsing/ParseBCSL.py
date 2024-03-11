@@ -610,17 +610,15 @@ class TreeToObjects(Transformer):
         reversible = False
         if arrow == "<=>":
             reversible = True
-        rate1 = Rate(rate1) if rate1 else None
-        rate2 = Rate(rate2) if rate2 else rate1
         return reversible, Rule(
             agents,
             mid,
             compartments,
             complexes,
             pairs,
-            rate1,
+            Rate(rate1) if rate1 else None,
             label,
-        ), rate2
+        ), Rate(rate2) if rate2 else None
 
     def rules(self, matches):
         rules = []
