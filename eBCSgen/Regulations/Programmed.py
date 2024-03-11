@@ -26,9 +26,9 @@ class Programmed(BaseRegulation):
         return candidates
     
     def check_labels(self, model_labels):
-        for key, value in self.regulation.items():
-            if key not in model_labels:
+        for rule_label, successors_labels in self.regulation.items():
+            if rule_label not in model_labels:
                 return False
-            if value > model_labels:
+            if not successors_labels.issubset(model_labels):
                 return False
         return True
