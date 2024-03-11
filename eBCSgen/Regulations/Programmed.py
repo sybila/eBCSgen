@@ -1,3 +1,4 @@
+from eBCSgen.Errors.RegulationParsingError import RegulationParsingError
 from eBCSgen.Regulations.Base import BaseRegulation
 
 
@@ -28,7 +29,8 @@ class Programmed(BaseRegulation):
     def check_labels(self, model_labels):
         for rule_label, successors_labels in self.regulation.items():
             if rule_label not in model_labels:
-                return False
+                raise RegulationParsingError(f"Label {rule_label} in programmed regulation not present in model")
             if not successors_labels.issubset(model_labels):
-                return False
+                missing_labels = successors_labels - model_labels
+                raise RegulationParsingError(f"Label(s) {missing_labels} in programmed regulation not present in model")
         return True

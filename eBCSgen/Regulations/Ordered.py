@@ -1,3 +1,4 @@
+from eBCSgen.Errors.RegulationParsingError import RegulationParsingError
 from eBCSgen.Regulations.Base import BaseRegulation
 
 
@@ -43,5 +44,5 @@ class Ordered(BaseRegulation):
         for tuple in self.regulation:
             for label in tuple:
                 if label not in model_labels:
-                    return False
+                    raise RegulationParsingError(f"Label {label} in programmed regulation not present in model")
         return True

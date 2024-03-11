@@ -1,5 +1,6 @@
 import regex
 from itertools import permutations
+from eBCSgen.Errors.RegulationParsingError import RegulationParsingError
 
 from eBCSgen.Regulations.Base import BaseRegulation
 
@@ -34,5 +35,5 @@ class Regular(BaseRegulation):
             subregex = regex.compile(pattern)
             if any(subregex.search(p) for p in all_permutations):
                 continue
-            return False
+            raise RegulationParsingError(f"Label in programmed regulation not present in model")
         return True

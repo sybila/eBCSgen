@@ -679,9 +679,8 @@ class TreeToObjects(Transformer):
                 if regulation:
                     raise UnspecifiedParsingError("Multiple regulations")
                 # check if regulation is in label
-                if not value.check_labels(self.labels):
-                    raise RegulationParsingError("Regulation label not found")
-                regulation = value
+                if value.check_labels(self.labels):
+                    regulation = value
 
         params = self.params - set(definitions)
         return Model(rules, inits, definitions, params, regulation)
