@@ -1,5 +1,4 @@
 import regex
-from itertools import permutations
 from eBCSgen.Errors.RegulationParsingError import RegulationParsingError
 
 from eBCSgen.Regulations.Base import BaseRegulation
@@ -27,13 +26,16 @@ class Regular(BaseRegulation):
                 if self.regulation.fullmatch(path + rule.label, partial=True) is not None}
     
     def check_labels(self, model_labels):
-        patterns = self.regulation.pattern[1:-1].split('|')
-        # Generate all permutations of the label in the set
-        all_permutations = [''.join(p) for i in range(len(model_labels)) for p in permutations(model_labels, i+1)]
-        # Check if the regex matches any permutation
+        patterns = self.regulation.pattern[1:-1].split("|")
+        subpaterns_set = set()
         for pattern in patterns:
-            subregex = regex.compile(pattern)
-            if any(subregex.search(p) for p in all_permutations):
+            subpaterns_set = subpaterns_set.union(set(pattern.split(";")))
+
+        for subpattern in subpaterns_set:
+            subregex = regex.compile(subpattern)
+            if any(subregex.search(label) for label in model_labels):
                 continue
-            raise RegulationParsingError(f"Label in programmed regulation not present in model")
+            raise RegulationParsingError(
+                f"Label in programmed regulation not present in model"
+            )
         return True

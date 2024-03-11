@@ -189,7 +189,7 @@ COMPLEX_GRAMMAR = """
 REGULATIONS_GRAMMAR = """
     regulation_def: "type" ( regular | programmed | ordered | concurrent_free | conditional ) 
 
-    !regular: "regular" _NL+ (DIGIT|LETTER| "+" | "*" | "(" | ")" | "[" | "]" | "_" | "|" | "&")+ _NL*
+    !regular: "regular" _NL+ (DIGIT|LETTER| "+" | "*" | "(" | ")" | "[" | "]" | "_" | "|" | "&" | ";")+ _NL*
 
     programmed: "programmed" _NL+ (successors _NL+)* successors _NL*
     successors: CNAME ":" "{" CNAME ("," CNAME)* "}"
