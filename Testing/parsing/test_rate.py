@@ -64,3 +64,34 @@ def test_parser():
     # nested complexes
     ret = objects.rate_parser.parse("[K([L()::cell])::cyt]")
     assert not ret.success
+
+    # nested parenthesis
+    assert objects.rate_parser.parse("(2 * (3 + 4)) / (5 - (6 * 7))").success
+    assert objects.rate_parser.parse("((2 + 3) * (4 - 5)) / ((6 * 7) + 8)").success
+
+    # complex mathematical operations
+    assert objects.rate_parser.parse("2 * [A()::cyt] + 3 / [B(T{s})::cell]").success
+    assert objects.rate_parser.parse("[X()::cyt] ** 2 - (4 * [Y()::cell])").success
+
+    # multiple level nesting
+    assert objects.rate_parser.parse("((2 * [A()::cyt]) + (3 / [B(T{s})::cell])) / ((4 * [C()::cell]) - (2 * [D()::cyt]))").success
+    assert objects.rate_parser.parse("([X()::cyt] ** 2) / ([Y()::cell] + ([Z()::cyt] * 3))").success
+
+    # complex rate_agents
+    assert objects.rate_parser.parse("[A().B()::cyt] + [C().D()::nuc]").success
+    assert objects.rate_parser.parse("[X(Y{a}).Z(W{b})::cell]").success
+    assert objects.rate_parser.parse("2 * [A()::cyt] + [B(T{s})::cell] ** 3").success
+    assert objects.rate_parser.parse("[X()::cyt] / ([Y{a}::cell] + [Z{b}::cyt])").success
+
+    # invalid syntax
+    assert not objects.rate_parser.parse("2 * [A()::cyt] + 3 / [B(T{s})::cell] +").success # extra +
+    assert not objects.rate_parser.parse("[A().B()::cyt] + C().D()::nuc]").success # missing [
+    assert not objects.rate_parser.parse("[X(Y{a}).Z(W{b})::cell").success # missing ]
+    assert not objects.rate_parser.parse("2 * [A()::cyt] + [B(T{s})::cell * 3").success # missing ]
+    assert not objects.rate_parser.parse("[X()::cyt] ** 2 - (4 * [Y()::cell]))").success # extra )
+    assert not objects.rate_parser.parse("2 & [A()::cyt] + 3 | [B(T{s})::cell]").success # invalid operators
+    assert not objects.rate_parser.parse("2 ** [X()::cyt]").success # invalid operation - exponentiation
+    assert not objects.rate_parser.parse("2 * K()::cyt").success # missing required brackets for rate agent
+    assert not objects.rate_parser.parse("[X()::cyt] ** 2 - 4 * Y()::cell").success # missing required brackets for rate agent
+    assert not objects.rate_parser.parse("[X()::cyt] / {Y} + [Z()::cell]").success
+    assert not objects.rate_parser.parse("[K([L()::cell])::cyt] + [A(B(C{d})).D(E{e}::cyt)]").success # nested rate agents and incorrect syntax
