@@ -76,7 +76,7 @@ def test_parser():
     # multiple level nesting
     assert objects.rate_parser.parse("((2 * [A()::cyt]) + (3 / [B(T{s})::cell])) / ((4 * [C()::cell]) - (2 * [D()::cyt]))").success
     assert objects.rate_parser.parse("([X()::cyt] ** 2) / ([Y()::cell] + ([Z()::cyt] * 3))").success
-
+    assert objects.rate_parser.parse("1/([X()::cyt] ** 2) + ([Y()::cell] + ([Z()::cyt] * 3)/(5 + [KaiC()::cyt])").success
     # complex rate_agents
     assert objects.rate_parser.parse("[A().B()::cyt] + [C().D()::nuc]").success
     assert objects.rate_parser.parse("[X(Y{a}).Z(W{b})::cell]").success
