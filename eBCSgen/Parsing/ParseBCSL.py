@@ -4,7 +4,7 @@ import numpy as np
 from numpy import inf
 from copy import deepcopy
 from lark import Lark, Transformer, Tree
-from lark import UnexpectedCharacters, UnexpectedToken
+from lark import UnexpectedCharacters, UnexpectedToken, UnexpectedEOF
 from lark.load_grammar import _TERMINAL_NAMES
 import regex
 from sortedcontainers import SortedList
@@ -106,16 +106,16 @@ GRAMMAR = r"""
     model: (sections)* rules (sections | rules)*
     sections: inits | definitions | complexes | regulation
 
-    rules: RULES_START _NL+ ((rule|COMMENT) _NL+)* rule _NL*
-    inits: INITS_START _NL+ ((init|COMMENT) _NL+)* init _NL*
-    definitions: DEFNS_START _NL+ ((definition|COMMENT) _NL+)* definition _NL*
-    complexes: COMPLEXES_START _NL+ ((cmplx_dfn|COMMENT) _NL+)* cmplx_dfn _NL*
+    rules: RULES_START _NL+ (rule _NL+)* rule _NL*
+    inits: INITS_START _NL+ (init _NL+)* init _NL*
+    definitions: DEFNS_START _NL+ (definition _NL+)* definition _NL*
+    complexes: COMPLEXES_START _NL+ (cmplx_dfn _NL+)* cmplx_dfn _NL*
     regulation: REGULATION_START _NL+ regulation_def _NL*
 
-    init: const? rate_complex (COMMENT)?
-    definition: def_param "=" number (COMMENT)?
-    rule: ((label)? side ARROW side ("@" rate)? (";" variable)? (COMMENT)?) | ((label)? side BI_ARROW side ("@" rate "|" rate)? (";" variable)? (COMMENT)?)
-    cmplx_dfn: cmplx_name "=" value (COMMENT)?
+    init: const? rate_complex 
+    definition: def_param "=" number
+    rule: ((label)? side ARROW side ("@" rate)? (";" variable)?) | ((label)? side BI_ARROW side ("@" rate "|" rate )? (";" variable)?)
+    cmplx_dfn: cmplx_name "=" value
 
     side: (const? complex "+")* (const? complex)?
     complex: (abstract_sequence|value|cmplx_name) DOUBLE_COLON compartment
@@ -157,9 +157,9 @@ GRAMMAR = r"""
 
 EXTENDED_GRAMMAR = """
     abstract_sequence: atomic_complex | atomic_structure_complex | structure_complex
-    atomic_complex: atomic ":" (VAR | value)
-    atomic_structure_complex: atomic ":" structure ":" (VAR | value)
-    structure_complex: structure ":" (VAR | value)
+    atomic_complex: atomic "::" (VAR | value)
+    atomic_structure_complex: atomic "::" structure "::" (VAR | value)
+    structure_complex: structure "::" (VAR | value)
 
     variable: VAR "=" "{" cmplx_name ("," cmplx_name)+ "}"
     VAR: "?"
@@ -695,7 +695,7 @@ class Parser:
             + REGULATIONS_GRAMMAR
         )
         self.parser = Lark(
-            grammar, parser="lalr", propagate_positions=False, maybe_placeholders=False
+            grammar, parser="earley", propagate_positions=False, maybe_placeholders=False
         )
 
         self.terminals = dict((v, k) for k, v in _TERMINAL_NAMES.items())
@@ -791,6 +791,16 @@ class Parser:
                 False,
                 {
                     "unexpected": str(u.token),
+                    "expected": self.replace(u.expected),
+                    "line": u.line,
+                    "column": u.column,
+                },
+            )
+        except UnexpectedEOF as u:
+            return Result(
+                False,
+                {
+                    "unexpected": str(u.token), 
                     "expected": self.replace(u.expected),
                     "line": u.line,
                     "column": u.column,

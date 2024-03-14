@@ -1,8 +1,8 @@
- #! rules
+#! rules
 // commenting
-X(T{a}):XX::rep => X(T{o}):XX::rep @ k2*[X().X()::rep]
-K{i}:X():XYZ::rep => K{p}:X():XYZ::rep @ k1*[X().Y().Z()::rep] // also here
-=> P{f}:XP::rep @ 1/(1+([X().P{_}::rep])**4) // ** means power (^)
+X(T{a})::XX::rep => X(T{o})::XX::rep @ k2*[X().X()::rep]
+K{i}::X()::XYZ::rep => K{p}::X()::XYZ::rep @ k1*[X().Y().Z()::rep] // also here
+=> P{f}::XP::rep @ 1/(1+([X().P{_}::rep])**4) // ** means power (^)
 
 #! inits
 // here

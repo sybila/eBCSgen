@@ -1,7 +1,7 @@
 #! rules
 // commenting
-T{a}:X():?::rep => T{o}:X():?::rep @ k2*[X().X()::rep] ; ? = { XX, XY }
-K{i}:X():XY::rep => K{p}:X():XY::rep @ k1*[X().Y().Z().X()::rep] // also here
+T{a}::X()::?::rep => T{o}::X()::?::rep @ k2*[X().X()::rep] ; ? = { XX, XY }
+K{i}::X()::XY::rep => K{p}::X()::XY::rep @ k1*[X().Y().Z().X()::rep] // also here
 
 #! inits
 // here
