@@ -26,7 +26,7 @@ class Regular(BaseRegulation):
                 if self.regulation.fullmatch(path + rule.label, partial=True) is not None}
     
     def check_labels(self, model_labels):
-        patterns = self.regulation.pattern[1:-1].split("|")
+        patterns = self.regulation.pattern.replace("(", "").replace(")", "").split("|")
         subpaterns_set = set()
         for pattern in patterns:
             subpaterns_set = subpaterns_set.union(set(pattern.split(";")))
