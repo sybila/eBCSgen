@@ -3,7 +3,7 @@ import json
 import numpy as np
 from numpy import inf
 from copy import deepcopy
-from lark import Lark, Transformer, Tree
+from lark import Lark, Token, Transformer, Tree
 from lark import UnexpectedCharacters, UnexpectedToken
 from lark.load_grammar import _TERMINAL_NAMES
 import regex
@@ -189,7 +189,7 @@ COMPLEX_GRAMMAR = """
 REGULATIONS_GRAMMAR = """
     regulation_def: "type" ( regular | programmed | ordered | concurrent_free | conditional ) 
 
-    !regular: "regular" _NL+ (DIGIT|LETTER| "+" | "*" | "(" | ")" | "[" | "]" | "_" | "|" | "&" | ";")+ _NL*
+    !regular: "regular" _NL+ expression _NL*
 
     programmed: "programmed" _NL+ (successors _NL+)* successors _NL*
     successors: CNAME ":" "{" CNAME ("," CNAME)* "}"
@@ -203,6 +203,40 @@ REGULATIONS_GRAMMAR = """
     context: CNAME ":" "{" rate_complex ("," rate_complex)* "}"
 """
 
+REGEX_GRAMMAR = r"""
+    !?expression: term ("|" term)*
+
+    ?term: factor+
+
+    ?factor: primary quantifier?
+
+    !quantifier: "??"
+            | "*?"
+            | "+?"
+            | "*+"
+            | "++"
+            | "?+"
+            | "*"
+            | "+"
+            | "?"
+            | "{NUMBER,NUMBER}"
+            | "{NUMBER}"
+
+    !primary: "(" expression ")"
+        | "[" REGEX_CHAR "-" REGEX_CHAR "]"
+        | "[" REGEX_CHAR* "]"
+        | SPECIAL_CHAR
+        | ESCAPED_CHAR
+        | "." 
+        | REGEX_CHAR
+
+    SPECIAL_CHAR: "^" | "$" | "&"
+
+    ESCAPED_CHAR: "\\" ("w"|"W"|"d"|"D"|"s"|"S"|"b"|"B"|"A"|"Z"|"G"|"."|"^"|"["|"]"|"("|")"|"{"|"}"|"?"|"*"|"+"|"|"|"\\")
+
+    REGEX_CHAR: /[^\\^$().*+?{}\[\]|]/
+"""
+
 
 class TransformRegulations(Transformer):
     def regulation(self, matches):
@@ -212,13 +246,23 @@ class TransformRegulations(Transformer):
         return matches[0]
 
     def regular(self, matches):
-        re = "".join(matches[1:])
-        # might raise exception
+        re = self.tree_to_regex_string(matches[1])
         try:
             regex.compile(re)
         except regex.error as e:
             raise RegulationParsingError(f"Invalid regular expression: {re}. Error: {e}")
         return Regular(re)
+    
+    def tree_to_regex_string(self, tree):
+        regex_string = ""
+    
+        if isinstance(tree, Token):
+                return tree.value
+        elif isinstance(tree, Tree):
+            for child in tree.children:
+                regex_string += self.tree_to_regex_string(child)
+                
+        return regex_string
 
     def programmed(self, matches):
         successors = {k: v for x in matches for k, v in x.items()}
@@ -695,6 +739,7 @@ class Parser:
             + COMPLEX_GRAMMAR
             + EXTENDED_GRAMMAR
             + REGULATIONS_GRAMMAR
+            + REGEX_GRAMMAR
         )
         self.parser = Lark(
             grammar, parser="lalr", propagate_positions=False, maybe_placeholders=False
