@@ -15,7 +15,16 @@ def column(lst, index):
 
 
 class Rule:
-    def __init__(self, agents: tuple, mid: int, compartments: list, complexes: list, pairs: list, rate: Rate, label=None):
+    def __init__(
+        self,
+        agents: tuple,
+        mid: int,
+        compartments: list,
+        complexes: list,
+        pairs: list,
+        rate: Rate,
+        label=None,
+    ):
         """
         Class to represent BCSL rule
 
@@ -35,9 +44,15 @@ class Rule:
         self.label = label
         self.comment = (False, [])
 
-    def __eq__(self, other: 'Rule'):
-        return self.agents == other.agents and self.mid == other.mid and self.compartments == other.compartments and \
-               self.complexes == other.complexes and self.pairs == other.pairs and str(self.rate) == str(other.rate)
+    def __eq__(self, other: "Rule"):
+        return (
+            self.agents == other.agents
+            and self.mid == other.mid
+            and self.compartments == other.compartments
+            and self.complexes == other.complexes
+            and self.pairs == other.pairs
+            and str(self.rate) == str(other.rate)
+        )
 
     def __repr__(self):
         return str(self)
@@ -47,14 +62,23 @@ class Rule:
         rate = " @ " + str(self.rate) if self.rate else ""
         pre_comment, post_comment = "", ""
         if self.comment[1]:
-            comment = "// redundant #{" + ", ".join(list(map(str, self.comment[1]))) + "} "
+            comment = (
+                "// redundant #{" + ", ".join(list(map(str, self.comment[1]))) + "} "
+            )
             pre_comment = comment + "// " if self.comment[0] else ""
             post_comment = " " + comment if not self.comment[0] else ""
 
         label = str(self.label) + " ~ " if self.label else ""
 
-        return label + pre_comment + " + ".join(lhs.to_list_of_strings()) + \
-               " => " + " + ".join(rhs.to_list_of_strings()) + rate + post_comment
+        return (
+            label
+            + pre_comment
+            + " + ".join(lhs.to_list_of_strings())
+            + " => "
+            + " + ".join(rhs.to_list_of_strings())
+            + rate
+            + post_comment
+        )
 
     def __lt__(self, other):
         return str(self) < str(other)
@@ -70,10 +94,12 @@ class Rule:
         :return: dict of {Complexes:{SBML codes of all isomorphisms in set}}
         """
         unique_complexes_from_rule = dict()
-        for (f, t) in self.complexes:
-            c = Complex(self.agents[f:t + 1], self.compartments[f])
-            double =  (c, c.to_SBML_species_code())
-            unique_complexes_from_rule[c] = unique_complexes_from_rule.get(c, set()) | {double}
+        for f, t in self.complexes:
+            c = Complex(self.agents[f : t + 1], self.compartments[f])
+            double = (c, c.to_SBML_species_code())
+            unique_complexes_from_rule[c] = unique_complexes_from_rule.get(c, set()) | {
+                double
+            }
         return unique_complexes_from_rule
 
     def create_complexes(self):
@@ -83,8 +109,8 @@ class Rule:
         :return: two multisets of Complexes represented as object Side
         """
         lhs, rhs = [], []
-        for (f, t) in self.complexes:
-            c = Complex(self.agents[f:t + 1], self.compartments[f])
+        for f, t in self.complexes:
+            c = Complex(self.agents[f : t + 1], self.compartments[f])
             lhs.append(c) if t < self.mid else rhs.append(c)
         return Side(lhs), Side(rhs)
 
@@ -108,7 +134,9 @@ class Rule:
         if self.rate:
             self.rate.vectorize(ordering, definitions)
 
-    def create_reactions(self, atomic_signature: dict, structure_signature: dict) -> set:
+    def create_reactions(
+        self, atomic_signature: dict, structure_signature: dict
+    ) -> set:
         """
         Create all possible reactions.
         Decide if rule is of replication type and call corresponding lower level method.
@@ -118,13 +146,21 @@ class Rule:
         :return: set of created reactions
         """
         unique_lhs_indices = set(column(self.pairs, 0))
-        if len(self.pairs) > 1 and len(unique_lhs_indices) == 1 and None not in unique_lhs_indices:
+        if (
+            len(self.pairs) > 1
+            and len(unique_lhs_indices) == 1
+            and None not in unique_lhs_indices
+        ):
             # should be the replication rule
-            return self._create_replication_reactions(atomic_signature, structure_signature)
+            return self._create_replication_reactions(
+                atomic_signature, structure_signature
+            )
         else:
             return self._create_normal_reactions(atomic_signature, structure_signature)
 
-    def _create_replication_reactions(self, atomic_signature: dict, structure_signature: dict) -> set:
+    def _create_replication_reactions(
+        self, atomic_signature: dict, structure_signature: dict
+    ) -> set:
         """
         Create reaction from rule of special form for replication (A -> 2 A)
 
@@ -144,13 +180,22 @@ class Rule:
             # replicate RHS agent n times
             for _ in range(len(self.pairs)):
                 new_agents.append(deepcopy(new_agents[-1]))
-            new_rule = Rule(tuple(new_agents), self.mid, self.compartments,
-                            self.complexes, self.pairs, self.rate, self.label)
+            new_rule = Rule(
+                tuple(new_agents),
+                self.mid,
+                self.compartments,
+                self.complexes,
+                self.pairs,
+                self.rate,
+                self.label,
+            )
             reactions.add(new_rule.to_reaction())
 
         return reactions
 
-    def _create_normal_reactions(self, atomic_signature: dict, structure_signature: dict) -> set:
+    def _create_normal_reactions(
+        self, atomic_signature: dict, structure_signature: dict
+    ) -> set:
         """
         Adds context to all agents and generated all possible combinations.
         Then, new rules with these enhances agents are generated and converted to Reactions.
@@ -160,7 +205,7 @@ class Rule:
         :return: set of created reactions
         """
         results = []
-        for (l, r) in self.pairs:
+        for l, r in self.pairs:
             if l is None:
                 right = -1
                 left = self.agents[r]
@@ -170,17 +215,27 @@ class Rule:
             else:
                 left = self.agents[l]
                 right = self.agents[r]
-            results.append(left.add_context(right, atomic_signature, structure_signature))
+            results.append(
+                left.add_context(right, atomic_signature, structure_signature)
+            )
 
         reactions = set()
         for result in itertools.product(*results):
             new_agents = tuple(filter(None, column(result, 0) + column(result, 1)))
-            new_rule = Rule(new_agents, self.mid, self.compartments, self.complexes, self.pairs, self.rate, self.label)
+            new_rule = Rule(
+                new_agents,
+                self.mid,
+                self.compartments,
+                self.complexes,
+                self.pairs,
+                self.rate,
+                self.label,
+            )
             reactions.add(new_rule.to_reaction())
 
         return reactions
 
-    def compatible(self, other: 'Rule') -> bool:
+    def compatible(self, other: "Rule") -> bool:
         """
         Checks whether Rule is compatible (position-wise) with the other Rule.
         Is done by formaly translating to Reactions (just a better object handling).
@@ -201,7 +256,14 @@ class Rule:
         """
         new_agents = tuple([agent.reduce_context() for agent in self.agents])
         new_rate = self.rate.reduce_context() if self.rate else None
-        return Rule(new_agents, self.mid, self.compartments, self.complexes, self.pairs, new_rate)
+        return Rule(
+            new_agents,
+            self.mid,
+            self.compartments,
+            self.complexes,
+            self.pairs,
+            new_rate,
+        )
 
     def is_meaningful(self) -> bool:
         """
@@ -231,7 +293,9 @@ class Rule:
         :param structure_signature: given structure signature
         :return: set of all created Complexes
         """
-        return self.to_reaction().create_all_compatible(atomic_signature, structure_signature)
+        return self.to_reaction().create_all_compatible(
+            atomic_signature, structure_signature
+        )
 
     def evaluate_rate(self, state, params):
         """
@@ -242,7 +306,7 @@ class Rule:
         :return: a real number of the rate
         """
         values = dict()
-        for (state_complex, count) in state.content.value.items():
+        for state_complex, count in state.content.value.items():
             for agent in self.rate_agents:
                 if agent.compatible(state_complex):
                     values[agent] = values.get(agent, 0) + count
@@ -277,16 +341,24 @@ class Rule:
         # replace respective agents
 
         unique_lhs_indices = set(column(self.pairs, 0))
-        if len(self.pairs) > 1 and len(unique_lhs_indices) == 1 and \
-                None not in unique_lhs_indices and len(aligned_match) == 1:
+        if (
+            len(self.pairs) > 1
+            and len(unique_lhs_indices) == 1
+            and None not in unique_lhs_indices
+            and len(aligned_match) == 1
+        ):
             resulting_rhs = self._replace_replicated_rhs(aligned_match[0])
         else:
             resulting_rhs = self._replace_normal_rhs(aligned_match)
 
         # construct resulting complexes
         output_complexes = []
-        for (f, t) in list(filter(lambda item: item[0] >= self.mid, self.complexes)):
-            output_complexes.append(Complex(resulting_rhs[f - self.mid:t - self.mid + 1], self.compartments[f]))
+        for f, t in list(filter(lambda item: item[0] >= self.mid, self.complexes)):
+            output_complexes.append(
+                Complex(
+                    resulting_rhs[f - self.mid : t - self.mid + 1], self.compartments[f]
+                )
+            )
 
         return Multiset(collections.Counter(output_complexes))
 
@@ -298,7 +370,7 @@ class Rule:
         :return: RHS with replaced agents
         """
         resulting_rhs = []
-        for i, rhs_agent in enumerate(self.agents[self.mid:]):
+        for i, rhs_agent in enumerate(self.agents[self.mid :]):
             if len(aligned_match) <= i:
                 resulting_rhs.append(rhs_agent)
             else:
@@ -329,11 +401,11 @@ class Rule:
         :return: multiset of constructed agents
         """
         output_complexes = []
-        for (f, t) in list(filter(lambda item: item[1] < self.mid, self.complexes)):
-            output_complexes.append(Complex(match[f:t + 1], self.compartments[f]))
+        for f, t in list(filter(lambda item: item[1] < self.mid, self.complexes)):
+            output_complexes.append(Complex(match[f : t + 1], self.compartments[f]))
         return Multiset(collections.Counter(output_complexes))
 
-    def create_reversible(self):
+    def create_reversible(self, rate: Rate = None):
         """
         Create a reversible version of the rule with _bw label.
 
@@ -343,19 +415,22 @@ class Rule:
 
         :return: reversed Rule
         """
-        agents = self.agents[self.mid:] + self.agents[:self.mid]
+        agents = self.agents[self.mid :] + self.agents[: self.mid]
         mid = len(self.agents) - self.mid
-        compartments = self.compartments[self.mid:] + self.compartments[:self.mid]
-        complexes = sorted([((f - self.mid) % len(self.agents),
-                             (t - self.mid) % len(self.agents)) for (f, t) in self.complexes])
+        compartments = self.compartments[self.mid :] + self.compartments[: self.mid]
+        complexes = sorted(
+            [
+                ((f - self.mid) % len(self.agents), (t - self.mid) % len(self.agents))
+                for (f, t) in self.complexes
+            ]
+        )
         pairs = []
-        for (l, r) in self.pairs:
+        for l, r in self.pairs:
             if l is None or r is None:
                 pairs.append((r, l))
             else:
                 pairs.append((l, r))
 
-        rate = self.rate
         label = None
         if self.label:
             label = self.label + "_bw"

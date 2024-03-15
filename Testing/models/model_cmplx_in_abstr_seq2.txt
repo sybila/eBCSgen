@@ -1,2 +1,2 @@
 #! rules
-S{i}:A():A().A()::cell => A()::cell
+S{i}::A()::A().A()::cell => A()::cell
