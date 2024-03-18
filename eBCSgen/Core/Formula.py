@@ -1,7 +1,7 @@
 from lark import Transformer, Tree
 
 from eBCSgen.Errors.ComplexOutOfScope import ComplexOutOfScope
-from eBCSgen.Core.Rate import tree_to_string
+from eBCSgen.utils import tree_to_string
 
 
 class Formula:

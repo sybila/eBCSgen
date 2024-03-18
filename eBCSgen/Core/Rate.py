@@ -4,6 +4,7 @@ from lark import Transformer, Tree, Token
 from sortedcontainers import SortedList
 
 from eBCSgen.TS.State import Vector
+from eBCSgen.utils import tree_to_string
 
 STATIC_MATH = """<kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply>{}</apply></math></kineticLaw>"""
 
@@ -252,15 +253,3 @@ class MathMLtransformer(Transformer):
         operator = self.operators[matches[1].type]
         return Tree(node, [matches[0], Token(matches[1].type, operator), matches[2]])
 
-
-def tree_to_string(tree):
-    """
-    Recursively constructs a list form given lark tree.
-
-    :param tree: given lark tree
-    :return: list of components
-    """
-    if type(tree) == Tree:
-        return sum(list(map(tree_to_string, tree.children)), [])
-    else:
-        return [str(tree)]

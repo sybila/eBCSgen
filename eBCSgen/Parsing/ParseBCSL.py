@@ -27,6 +27,7 @@ from eBCSgen.Core.Model import Model
 from eBCSgen.Errors.ComplexParsingError import ComplexParsingError
 from eBCSgen.Errors.UnspecifiedParsingError import UnspecifiedParsingError
 from eBCSgen.Errors.RegulationParsingError import RegulationParsingError
+from eBCSgen.utils import tree_to_string
 
 
 def load_TS_from_json(json_file: str) -> TransitionSystem:
@@ -246,23 +247,12 @@ class TransformRegulations(Transformer):
         return matches[0]
 
     def regular(self, matches):
-        re = self.tree_to_regex_string(matches[1])
+        re = "".join(tree_to_string(matches[1]))
         try:
             regex.compile(re)
         except regex.error as e:
             raise RegulationParsingError(f"Invalid regular expression: {re}. Error: {e}")
         return Regular(re)
-    
-    def tree_to_regex_string(self, tree):
-        regex_string = ""
-    
-        if isinstance(tree, Token):
-                return tree.value
-        elif isinstance(tree, Tree):
-            for child in tree.children:
-                regex_string += self.tree_to_regex_string(child)
-                
-        return regex_string
 
     def programmed(self, matches):
         successors = {k: v for x in matches for k, v in x.items()}
