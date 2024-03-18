@@ -1,8 +1,8 @@
 #! rules
-S{u}:KaiC():KaiC6::cyt => S{p}:KaiC():KaiC6::cyt @ (kcat1*[KaiA2()::cyt]*[KaiC6::cyt])/(Km + [KaiC6::cyt])
-S{p}:KaiC():KaiC6::cyt => S{u}:KaiC():KaiC6::cyt @ (kcat2*[KaiB4{a}.KaiA2()::cyt]*[KaiC6::cyt])/(Km + [KaiC6::cyt])
-T{u}:KaiC():KaiC6::cyt => T{p}:KaiC():KaiC6::cyt @ (kcat3*[KaiA2()::cyt]*[KaiC6::cyt])/(Km + [KaiC6::cyt])
-T{p}:KaiC():KaiC6::cyt => T{u}:KaiC():KaiC6::cyt @ (kcat4*[KaiB4{a}.KaiA2()::cyt]*[KaiC6::cyt])/(Km + [KaiC6::cyt])
+S{u}::KaiC()::KaiC6::cyt => S{p}::KaiC()::KaiC6::cyt @ (kcat1*[KaiA2()::cyt]*[KaiC6::cyt])/(Km + [KaiC6::cyt])
+S{p}::KaiC()::KaiC6::cyt => S{u}::KaiC()::KaiC6::cyt @ (kcat2*[KaiB4{a}.KaiA2()::cyt]*[KaiC6::cyt])/(Km + [KaiC6::cyt])
+T{u}::KaiC()::KaiC6::cyt => T{p}::KaiC()::KaiC6::cyt @ (kcat3*[KaiA2()::cyt]*[KaiC6::cyt])/(Km + [KaiC6::cyt])
+T{p}::KaiC()::KaiC6::cyt => T{u}::KaiC()::KaiC6::cyt @ (kcat4*[KaiB4{a}.KaiA2()::cyt]*[KaiC6::cyt])/(Km + [KaiC6::cyt])
 KaiB4{i}::cyt => KaiB4{a}::cyt @ (kcatb2*[KaiB4{i}::cyt])/(Kmb2 + [KaiB4{i}::cyt])
 KaiB4{a}::cyt => KaiB4{i}::cyt @ (kcatb1*[KaiB4{a}::cyt])/(Kmb1 + [KaiB4{a}::cyt])
 KaiB4{a}.KaiA2()::cyt => KaiB4{a}::cyt + KaiA2()::cyt @ k12*[KaiB4{a}.KaiA2()::cyt]
