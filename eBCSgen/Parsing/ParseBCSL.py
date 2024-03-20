@@ -544,11 +544,19 @@ class TreeToComplex(Transformer):
 
     def structure(self, matches):
         name = str(matches[0].children[0])
-        if len(matches) > 1:
-            composition = set(matches[1].children)
-            return StructureAgent(name, composition)
-        else:
+        if len(matches) <= 1:
             return StructureAgent(name, set())
+        atomic_names = set()
+        composition = set()
+        for atomic in matches[1].children:
+            if atomic.name in atomic_names:
+                raise ComplexParsingError(
+                    f"Duplicate atomic agent in structure: {atomic.name}", matches
+                )
+            atomic_names.add(atomic.name)
+            composition.add(atomic)
+
+        return StructureAgent(name, composition)
 
     def rate_complex(self, matches):
         sequence = []
