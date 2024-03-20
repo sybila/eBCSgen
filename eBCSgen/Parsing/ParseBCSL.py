@@ -3,7 +3,7 @@ import json
 import numpy as np
 from numpy import inf
 from copy import deepcopy
-from lark import Lark, Transformer, Tree
+from lark import Lark, Token, Transformer, Tree
 from lark import UnexpectedCharacters, UnexpectedToken, UnexpectedEOF
 from lark.load_grammar import _TERMINAL_NAMES
 import regex
@@ -26,6 +26,8 @@ from eBCSgen.Core.Side import Side
 from eBCSgen.Core.Model import Model
 from eBCSgen.Errors.ComplexParsingError import ComplexParsingError
 from eBCSgen.Errors.UnspecifiedParsingError import UnspecifiedParsingError
+from eBCSgen.Errors.RegulationParsingError import RegulationParsingError
+from eBCSgen.utils import tree_to_string
 
 
 def load_TS_from_json(json_file: str) -> TransitionSystem:
@@ -189,7 +191,7 @@ COMPLEX_GRAMMAR = """
 REGULATIONS_GRAMMAR = """
     regulation_def: "type" ( regular | programmed | ordered | concurrent_free | conditional ) 
 
-    !regular: "regular" _NL+ (DIGIT|LETTER| "+" | "*" | "(" | ")" | "[" | "]" | "_" | "|" | "&")+ _NL*
+    !regular: "regular" _NL+ expression _NL*
 
     programmed: "programmed" _NL+ (successors _NL+)* successors _NL*
     successors: CNAME ":" "{" CNAME ("," CNAME)* "}"
@@ -203,6 +205,40 @@ REGULATIONS_GRAMMAR = """
     context: CNAME ":" "{" rate_complex ("," rate_complex)* "}"
 """
 
+REGEX_GRAMMAR = r"""
+    !?expression: term ("|" term)*
+
+    ?term: factor+
+
+    ?factor: primary quantifier?
+
+    !quantifier: "??"
+            | "*?"
+            | "+?"
+            | "*+"
+            | "++"
+            | "?+"
+            | "*"
+            | "+"
+            | "?"
+            | "{NUMBER,NUMBER}"
+            | "{NUMBER}"
+
+    !primary: "(" expression ")"
+        | "[" REGEX_CHAR "-" REGEX_CHAR "]"
+        | "[" REGEX_CHAR* "]"
+        | SPECIAL_CHAR
+        | ESCAPED_CHAR
+        | "." 
+        | REGEX_CHAR
+
+    SPECIAL_CHAR: "^" | "$" | "&"
+
+    ESCAPED_CHAR: "\\" ("w"|"W"|"d"|"D"|"s"|"S"|"b"|"B"|"A"|"Z"|"G"|"."|"^"|"["|"]"|"("|")"|"{"|"}"|"?"|"*"|"+"|"|"|"\\")
+
+    REGEX_CHAR: /[^\\^$().*+?{}\[\]|]/
+"""
+
 
 class TransformRegulations(Transformer):
     def regulation(self, matches):
@@ -212,9 +248,11 @@ class TransformRegulations(Transformer):
         return matches[0]
 
     def regular(self, matches):
-        re = "".join(matches[1:])
-        # might raise exception
-        regex.compile(re)
+        re = "".join(tree_to_string(matches[1]))
+        try:
+            regex.compile(re)
+        except regex.error as e:
+            raise RegulationParsingError(f"Invalid regular expression: {re}. Error: {e}")
         return Regular(re)
 
     def programmed(self, matches):
@@ -527,6 +565,7 @@ class TreeToObjects(Transformer):
     def __init__(self):
         super(TreeToObjects, self).__init__()
         self.params = set()
+        self.labels = set()
 
     """
     A transformer which is called on a tree in a bottom-up manner and transforms all subtrees/tokens it encounters.
@@ -584,6 +623,8 @@ class TreeToObjects(Transformer):
                 lhs, arrow, rhs, rate1 = matches
         else:
             lhs, arrow, rhs = matches
+        if label:
+            self.labels.add(label)
         agents = tuple(lhs.seq + rhs.seq)
         mid = lhs.counter
         compartments = lhs.comp + rhs.comp
@@ -678,7 +719,9 @@ class TreeToObjects(Transformer):
             elif key == "regulation":
                 if regulation:
                     raise UnspecifiedParsingError("Multiple regulations")
-                regulation = value
+                # check if regulation is in label
+                if value.check_labels(self.labels):
+                    regulation = value
 
         params = self.params - set(definitions)
         return Model(rules, inits, definitions, params, regulation)
@@ -693,6 +736,7 @@ class Parser:
             + COMPLEX_GRAMMAR
             + EXTENDED_GRAMMAR
             + REGULATIONS_GRAMMAR
+            + REGEX_GRAMMAR
         )
         self.parser = Lark(
             grammar, parser="earley", propagate_positions=False, maybe_placeholders=False
