@@ -58,7 +58,7 @@ u2_c1_u = AtomicAgent("U", "u")
 # structure
 s1 = StructureAgent("B", {a1})
 s2 = StructureAgent("D", set())
-s3 = StructureAgent("K", {a1, a3, a5})
+s3 = StructureAgent("K", {a1, a3, a11})
 s4 = StructureAgent("B", {a4})
 s5 = StructureAgent("D", {a5, a6})
 s6 = StructureAgent("K", set())
