@@ -18,3 +18,6 @@ def test_parser():
     assert not objects.structure_parser.parse("[B(T{s})]").success
     assert not objects.structure_parser.parse("").success
     assert not objects.structure_parser.parse("B({s})").success
+    assert not objects.structure_parser.parse("B(S{s}, S{a})").success
+    assert not objects.structure_parser.parse("B(S{a}, S{a})").success
+    assert not objects.structure_parser.parse("B(S{_}, S{a})").success

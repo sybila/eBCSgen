@@ -58,3 +58,12 @@ def test_parser():
 
     ret = objects.rate_complex_parser.parse("B(T{s})::")
     assert not ret.success
+
+    ret = objects.rate_complex_parser.parse("B(T{s}, T{_})::cell")
+    assert not ret.success
+
+    ret = objects.rate_complex_parser.parse("B(T{s}, T{s})::cell")
+    assert not ret.success
+
+    ret = objects.rate_complex_parser.parse("B(T{s}, T{a})::cell")
+    assert not ret.success
