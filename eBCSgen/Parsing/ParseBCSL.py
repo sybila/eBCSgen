@@ -362,6 +362,10 @@ class TransformAbstractSyntax(Transformer):
         self.complex_defns = complex_defns
 
     def cmplx_name(self, matches):
+        if str(matches[0]) not in self.complex_defns:
+            raise ComplexParsingError(
+                f"Complex alias {matches[0]} not found in defined complexes: {list(self.complex_defns.keys())}", matches
+            )
         return deepcopy(self.complex_defns[str(matches[0])])
 
     def abstract_sequence(self, matches):
