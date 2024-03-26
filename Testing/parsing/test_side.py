@@ -13,13 +13,13 @@ def test_parser():
     assert ret.data.to_side() == objects.side2
 
     ret = objects.side_parser.parse(
-        "B(T{s})::cell + B(T{s}).D().K(T{s},S{s},S{_})::cell + B(T{s}).D().K(T{s},S{s},S{_})::cell"
+        "B(T{s})::cell + B(T{s}).D().K(T{s},S{s},U{a})::cell + B(T{s}).D().K(T{s},S{s},U{a})::cell"
     )
     assert ret.success
     assert ret.data.to_side() == objects.side3
 
     ret = objects.side_parser.parse(
-        "B(T{s})::cell + 2 B(T{s}).D().K(T{s},S{s},S{_})::cell"
+        "B(T{s})::cell + 2 B(T{s}).D().K(T{s},S{s},U{a})::cell"
     )
     assert ret.success
     assert ret.data.to_side() == objects.side3
@@ -47,4 +47,10 @@ def test_parser():
     assert not ret.success
 
     ret = objects.side_parser.parse("B(T{s}")
+    assert not ret.success
+
+    # not unique atomics in structure
+    ret = objects.side_parser.parse(
+        "B(T{s})::cell + B(T{s}).D().K(T{s},S{s},S{_})::cell + B(T{s}).D().K(T{s},S{s},S{_})::cell"
+    )
     assert not ret.success
