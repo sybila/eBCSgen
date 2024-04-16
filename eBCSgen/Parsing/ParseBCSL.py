@@ -106,13 +106,14 @@ class SideHelper:
 
 GRAMMAR = r"""
     model: (sections)* rules (sections | rules)*
-    sections: inits | definitions | complexes | regulation
+    sections: inits | definitions | complexes | regulation | observables
 
     rules: RULES_START _NL+ (rule _NL+)* rule _NL*
     inits: INITS_START _NL+ (init _NL+)* init _NL*
     definitions: DEFNS_START _NL+ (definition _NL+)* definition _NL*
     complexes: COMPLEXES_START _NL+ (cmplx_dfn _NL+)* cmplx_dfn _NL*
     regulation: REGULATION_START _NL+ regulation_def _NL*
+    observables: OBSERVABLES_START _NL+ (observable _NL+)* observable _NL*
 
     init: const? rate_complex 
     definition: def_param "=" number
@@ -138,6 +139,7 @@ GRAMMAR = r"""
     DEFNS_START: "#! definitions"
     COMPLEXES_START: "#! complexes"
     REGULATION_START: "#! regulation"
+    OBSERVABLES_START: "#! observables"
     _NL: /(\r?\n[\t ]*)+/
 
     !label: CNAME "~"
@@ -237,6 +239,13 @@ REGEX_GRAMMAR = r"""
     ESCAPED_CHAR: "\\" ("w"|"W"|"d"|"D"|"s"|"S"|"b"|"B"|"A"|"Z"|"G"|"."|"^"|"["|"]"|"("|")"|"{"|"}"|"?"|"*"|"+"|"|"|"\\")
 
     REGEX_CHAR: /[^\\^$().*+?{}\[\]|]/
+"""
+
+OBSERVABLES_GRAMMAR = """
+    observable: CNAME ":" ("0" | basic_observable)
+    basic_observable: pattern_mod? (rate_complex | value) pattern_quantified?
+    !pattern_quantified: (">" | "<" | ">=" | "<=" | "==" | "!=") INT
+    !pattern_mod: "$" | "{matchOnce}"
 """
 
 
@@ -702,6 +711,15 @@ class TreeToObjects(Transformer):
             else:
                 result[init[0].children[0]] = 1
         return {"inits": result}
+    
+    def observable(self, matches):
+        return {str(matches[0]): matches[1].children}
+    
+    def observables(self, matches):
+        result = dict()
+        for observable in matches[1:]:
+            result.update(observable)
+        return {"observables": result}
 
     def param(self, matches):
         self.params.add(str(matches[0]))
@@ -712,6 +730,7 @@ class TreeToObjects(Transformer):
         definitions = dict()
         regulation = None
         inits = collections.Counter()
+        observables = dict()
         for match in matches:
             if type(match) == dict:
                 key, value = list(match.items())[0]
@@ -728,6 +747,8 @@ class TreeToObjects(Transformer):
                 inits.update(value)
             elif key == "definitions":
                 definitions.update(value)
+            elif key == "observables":
+                observables.update(value)
             elif key == "regulation":
                 if regulation:
                     raise UnspecifiedParsingError("Multiple regulations")
@@ -749,6 +770,7 @@ class Parser:
             + EXTENDED_GRAMMAR
             + REGULATIONS_GRAMMAR
             + REGEX_GRAMMAR
+            + OBSERVABLES_GRAMMAR
         )
         self.parser = Lark(
             grammar, parser="earley", propagate_positions=False, maybe_placeholders=False
