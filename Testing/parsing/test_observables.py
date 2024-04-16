@@ -7,7 +7,7 @@ def test_parser():
     observable_expr1 = "abc: A()::cell"
     assert objects.observable_parser.parse(observable_expr1)
 
-    observable_expr2 = "efg: E()"
+    observable_expr2 = "efg: E(F{_})"
     assert objects.observable_parser.parse(observable_expr2)
 
     observable_expr3 = "hij: $H()::cell"
@@ -47,3 +47,4 @@ def test_parser():
     assert not objects.observable_parser.parse("a: b: A():cell > 2").success
     assert not objects.observable_parser.parse("a: 2 > A():cell").success
     assert not objects.observable_parser.parse("a: A()::cell$").success
+    assert not objects.observable_parser.parse("a: A{}::cell").success
