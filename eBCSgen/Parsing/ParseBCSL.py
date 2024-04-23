@@ -116,7 +116,7 @@ GRAMMAR = r"""
 
     init: const? rate_complex 
     definition: def_param "=" number
-    rule: ((label)? side ARROW side ("@" rate)? (";" variable)?) | ((label)? side BI_ARROW side ("@" rate "|" rate )? (";" variable)?) | ((label)? side REPLICATION_ARROW side ("@" rate)? (";" variable)?)
+    rule: ((label)? side arrow side ("@" rate)? (";" variable)?) | ((label)? side BI_ARROW side ("@" rate "|" rate )? (";" variable)?)
     cmplx_dfn: cmplx_name "=" value
 
     side: (const? complex "+")* (const? complex)?
@@ -131,7 +131,8 @@ GRAMMAR = r"""
 
     COM: "//"
     POW: "**"
-    ARROW: "=>"
+    arrow: SINGLE_ARROW | REPLICATION_ARROW
+    SINGLE_ARROW: "=>"
     BI_ARROW: "<=>"
     REPLICATION_ARROW: "=*>"
     RULES_START: "#! rules"
@@ -648,7 +649,7 @@ class TreeToObjects(Transformer):
             )
         )
         pairs = [(i, i + lhs.counter) for i in range(min(lhs.counter, rhs.counter))]
-        if arrow == "=*>":
+        if type(arrow) is Tree and arrow.children[0].value == "=*>":
             if lhs.counter >= rhs.counter or lhs.counter != 1 or rhs.counter <= 1:
                 raise UnspecifiedParsingError("Rule does not contain replication")
             
