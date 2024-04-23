@@ -1,6 +1,7 @@
 import pytest
 
 import Testing.objects_testing as objects
+from eBCSgen.Core.Rate import Rate
 
 
 def test_parser():
@@ -74,15 +75,20 @@ def test_bidirectional():
 
 def test_replication():
     rule_expr = "X()::rep =*> X()::rep + X()::rep"
-    assert objects.rule_parser.parse(rule_expr).success
-    # assert objects.rule_parser.parse(rule_expr).data[1] == objects.r1
+    result = objects.rule_parser.parse(rule_expr)
+    assert result.success
+    assert result.data[1] == objects.rule_repl1
 
     rule_expr = "X()::rep =*> X()::rep + X()::rep @ 3*[X()::rep]/2*v_1"
-    assert objects.rule_parser.parse(rule_expr).success
+    result = objects.rule_parser.parse(rule_expr)
+    assert result.success
+    rate_repl1 = Rate("3.0*[X()::rep]/2*v_1")
+    assert result.data[1] == objects.rule_repl1_rate
 
     rule_expr = "X()::rep =*> X()::rep + X()::rep + X()::rep"
-    output = objects.rule_parser.parse(rule_expr)
-    assert output.success
+    result = objects.rule_parser.parse(rule_expr)
+    assert result.success
+    assert result.data[1] == objects.rule_repl2
 
     rule_expr = "X()::rep + Y()::rep =*> X()::rep + X()::rep"
     assert not objects.rule_parser.parse(rule_expr).success

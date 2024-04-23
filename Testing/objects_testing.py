@@ -352,6 +352,35 @@ rule_no_change = Rule(
     sequence_no_change, mid_c1, compartments_c1, complexes_c1, pairs_c1, rate_c1
 )
 
+sequence_repl1 = (s31, s31, s31)
+mid_repl1 = 1
+compartments_repl1 = ["rep"] * 3
+complexes_repl1 = [(0, 0), (1, 1), (2, 2)]
+pairs_repl1 = [(0, 1), (0, 2)]
+rate_repl1 = Rate("3.0*[X()::rep]/2.0*v_1")
+
+rule_repl1 = Rule(
+    sequence_repl1, mid_repl1, compartments_repl1, complexes_repl1, pairs_repl1, None
+)
+rule_repl1_rate = Rule(
+    sequence_repl1,
+    mid_repl1,
+    compartments_repl1,
+    complexes_repl1,
+    pairs_repl1,
+    rate_repl1,
+)
+
+repl_sequence2 = (s31, s31, s31, s31)
+mid_repl2 = 1
+compartments_repl2 = ["rep"] * 4
+complexes_repl2 = [(0, 0), (1, 1), (2, 2), (3, 3)]
+pairs_repl2 = [(0, 1), (0, 2), (0, 3)]
+
+rule_repl2 = Rule(
+    repl_sequence2, mid_repl2, compartments_repl2, complexes_repl2, pairs_repl2, None
+)
+
 # reactions
 
 reaction1 = Reaction(lhs, rhs, rate_5)
