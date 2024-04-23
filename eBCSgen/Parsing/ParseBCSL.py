@@ -243,11 +243,10 @@ REGEX_GRAMMAR = r"""
 
 OBSERVABLES_GRAMMAR = """
     observable: CNAME ":" pattern_mod? (basic_observable | scaled_observable) pattern_quantified?
-    basic_observable: side | (const? observable_complex "+")* (const? observable_complex)?
-    !scaled_observable: const | observable_complex | scaled_observable "+" scaled_observable | scaled_observable "-" scaled_observable | scaled_observable "*" scaled_observable | scaled_observable "/" scaled_observable | scaled_observable POW const | "(" scaled_observable ")"
+    basic_observable: const? (value | abstract_sequence) (DOUBLE_COLON compartment)?
+    !scaled_observable: const | basic_observable | scaled_observable "+" scaled_observable | scaled_observable "-" scaled_observable | scaled_observable "*" scaled_observable | scaled_observable "/" scaled_observable | scaled_observable POW const | "(" scaled_observable ")"
     !pattern_quantified: (">" | "<" | ">=" | "<=" | "==" | "!=") INT
     !pattern_mod: "$" | "{matchOnce}"
-    observable_complex: (abstract_sequence|value|cmplx_name)
 """
 
 
@@ -674,15 +673,19 @@ class TreeToObjects(Transformer):
         reversible = False
         if arrow == "<=>":
             reversible = True
-        return reversible, Rule(
-            agents,
-            mid,
-            compartments,
-            complexes,
-            pairs,
-            Rate(rate1) if rate1 else None,
-            label,
-        ), Rate(rate2) if rate2 else None
+        return (
+            reversible,
+            Rule(
+                agents,
+                mid,
+                compartments,
+                complexes,
+                pairs,
+                Rate(rate1) if rate1 else None,
+                label,
+            ),
+            Rate(rate2) if rate2 else None,
+        )
 
     def rules(self, matches):
         rules = []
@@ -713,10 +716,10 @@ class TreeToObjects(Transformer):
             else:
                 result[init[0].children[0]] = 1
         return {"inits": result}
-    
+
     def observable(self, matches):
         return {str(matches[0]): matches[1].children}
-    
+
     def observables(self, matches):
         result = dict()
         for observable in matches[1:]:
@@ -775,7 +778,10 @@ class Parser:
             + OBSERVABLES_GRAMMAR
         )
         self.parser = Lark(
-            grammar, parser="earley", propagate_positions=False, maybe_placeholders=False
+            grammar,
+            parser="earley",
+            propagate_positions=False,
+            maybe_placeholders=False,
         )
 
         self.terminals = dict((v, k) for k, v in _TERMINAL_NAMES.items())
@@ -880,7 +886,7 @@ class Parser:
             return Result(
                 False,
                 {
-                    "unexpected": str(u.token), 
+                    "unexpected": str(u.token),
                     "expected": self.replace(u.expected),
                     "line": u.line,
                     "column": u.column,

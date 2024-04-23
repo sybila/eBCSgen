@@ -25,7 +25,7 @@ def test_parser():
     observable_expr7 = "tuv: T(U{v})"
     assert objects.observable_parser.parse(observable_expr7).success
 
-    observable_expr8 = "wx: 2W{x}"
+    observable_expr8 = "wx: 2 W{x}"
     assert objects.observable_parser.parse(observable_expr8).success
 
     observable_expr9 = "z: Y{z} + Z{y}"
@@ -34,8 +34,14 @@ def test_parser():
     observable_expr10 = "z: 2 * Y{z} + Z{y}"
     assert objects.observable_parser.parse(observable_expr10).success
 
-    observable_expr10 = "z: Y{z} + Z{y} / 2.1 ** 10"
+    observable_expr10 = "z: (Y{z} + Z{y}) / 2.1 ** 10"
     assert objects.observable_parser.parse(observable_expr10).success
+
+    observable_expr11 = "scaled_A: 1000 * A{i}::cell"
+    assert objects.observable_parser.parse(observable_expr11).success
+
+    observable_expr12 = "obs_A_all: A{i}::cell + A{a}::cell"
+    assert objects.observable_parser.parse(observable_expr12).success
 
     observables_expr = (
         "#! observables\n"
