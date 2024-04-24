@@ -3,7 +3,7 @@ import json
 import numpy as np
 from numpy import inf
 from copy import deepcopy
-from lark import Lark, Token, Transformer, Tree
+from lark import Lark, Transformer, Tree
 from lark import UnexpectedCharacters, UnexpectedToken, UnexpectedEOF
 from lark.load_grammar import _TERMINAL_NAMES
 import regex
@@ -116,7 +116,7 @@ GRAMMAR = r"""
 
     init: const? rate_complex 
     definition: def_param "=" number
-    rule: ((label)? side ARROW side ("@" rate)? (";" variable)?) | ((label)? side BI_ARROW side ("@" rate "|" rate )? (";" variable)?)
+    rule: ((label)? side arrow side ("@" rate)? (";" variable)?) | ((label)? side BI_ARROW side ("@" rate "|" rate )? (";" variable)?)
     cmplx_dfn: cmplx_name "=" value
 
     side: (const? complex "+")* (const? complex)?
@@ -131,8 +131,10 @@ GRAMMAR = r"""
 
     COM: "//"
     POW: "**"
-    ARROW: "=>"
+    arrow: SINGLE_ARROW | REPLICATION_ARROW
+    SINGLE_ARROW: "=>"
     BI_ARROW: "<=>"
+    REPLICATION_ARROW: "=*>"
     RULES_START: "#! rules"
     INITS_START: "#! inits"
     DEFNS_START: "#! definitions"
@@ -647,18 +649,21 @@ class TreeToObjects(Transformer):
             )
         )
         pairs = [(i, i + lhs.counter) for i in range(min(lhs.counter, rhs.counter))]
-        if lhs.counter > rhs.counter:
+        if type(arrow) is Tree and arrow.children[0].value == "=*>":
+            if lhs.counter >= rhs.counter or lhs.counter != 1 or rhs.counter <= 1:
+                raise UnspecifiedParsingError("Rule does not contain replication")
+            
+            for i in range(lhs.counter, rhs.counter):
+                if lhs.seq[pairs[-1][0]] == rhs.seq[pairs[-1][1] - lhs.counter]:
+                    if rhs.seq[pairs[-1][1] - lhs.counter] == rhs.seq[i]:
+                        pairs += [(pairs[-1][0], i + lhs.counter)]
+                    else:
+                        raise UnspecifiedParsingError("Rule does not contain replication")
+
+        elif lhs.counter > rhs.counter:
             pairs += [(i, None) for i in range(rhs.counter, lhs.counter)]
         elif lhs.counter < rhs.counter:
-            for i in range(lhs.counter, rhs.counter):
-                replication = False
-                if lhs.counter == 1 and rhs.counter > 1:
-                    if lhs.seq[pairs[-1][0]] == rhs.seq[pairs[-1][1] - lhs.counter]:
-                        if rhs.seq[pairs[-1][1] - lhs.counter] == rhs.seq[i]:
-                            pairs += [(pairs[-1][0], i + lhs.counter)]
-                            replication = True
-                if not replication:
-                    pairs += [(None, i + lhs.counter)]
+            pairs += [(None, i + lhs.counter) for i in range(lhs.counter, rhs.counter)]
 
         reversible = False
         if arrow == "<=>":
