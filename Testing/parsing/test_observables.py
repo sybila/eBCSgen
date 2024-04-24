@@ -7,34 +7,34 @@ def test_parser():
     observable_expr1 = "abc: A()::cell"
     assert objects.observable_parser.parse(observable_expr1)
 
-    observable_expr2 = "efg: E(F{_})"
+    observable_expr2 = "efg: E(F{_})::cell"
     assert objects.observable_parser.parse(observable_expr2)
 
-    observable_expr3 = "hij: $H()::cell"
+    observable_expr3 = "hij: H()::cell"
     assert objects.observable_parser.parse(observable_expr3)
 
-    observable_expr4 = "klm: {matchOnce}K()"
+    observable_expr4 = "klm: K()::cyt * L()::cell + M()::cell"
     assert objects.observable_parser.parse(observable_expr4)
 
-    observable_expr5 = "nop: N()::cell > 2"
+    observable_expr5 = "nop: N()::cell"
     assert objects.observable_parser.parse(observable_expr5).success
 
-    observable_expr6 = "qrs: Q().R().S()::cell > 2"
+    observable_expr6 = "qrs: Q().R().S()::cell"
     assert objects.observable_parser.parse(observable_expr6).success
 
-    observable_expr7 = "tuv: T(U{v})"
+    observable_expr7 = "tuv: T(U{v})::cell "
     assert objects.observable_parser.parse(observable_expr7).success
 
-    observable_expr8 = "wx: 2 W{x}"
+    observable_expr8 = "wx: 2 * W{x}::cell"
     assert objects.observable_parser.parse(observable_expr8).success
 
-    observable_expr9 = "z: Y{z} + Z{y}"
+    observable_expr9 = "z: Y{z}::cyt + Z{y}::ext"
     assert objects.observable_parser.parse(observable_expr9).success
 
-    observable_expr10 = "z: 2 * Y{z} + Z{y}"
+    observable_expr10 = "z: 2 * Y{z}::cyt + Z{y}::ext ** 2"
     assert objects.observable_parser.parse(observable_expr10).success
 
-    observable_expr10 = "z: (Y{z} + Z{y}) / 2.1 ** 10"
+    observable_expr10 = "z: (Y{z}::cell + Z{y}::cyt) / 2.1 ** 10"
     assert objects.observable_parser.parse(observable_expr10).success
 
     observable_expr11 = "scaled_A: 1000 * A{i}::cell"

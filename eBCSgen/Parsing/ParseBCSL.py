@@ -242,11 +242,8 @@ REGEX_GRAMMAR = r"""
 """
 
 OBSERVABLES_GRAMMAR = """
-    observable: CNAME ":" pattern_mod? (basic_observable | scaled_observable) pattern_quantified?
-    basic_observable: const? (value | abstract_sequence) (DOUBLE_COLON compartment)?
-    !scaled_observable: const | basic_observable | scaled_observable "+" scaled_observable | scaled_observable "-" scaled_observable | scaled_observable "*" scaled_observable | scaled_observable "/" scaled_observable | scaled_observable POW const | "(" scaled_observable ")"
-    !pattern_quantified: (">" | "<" | ">=" | "<=" | "==" | "!=") INT
-    !pattern_mod: "$" | "{matchOnce}"
+    observable: CNAME ":" observable_pattern
+    !observable_pattern: const | complex | observable_pattern "+" observable_pattern | observable_pattern "-" observable_pattern | observable_pattern "*" observable_pattern | observable_pattern "/" observable_pattern | observable_pattern POW const | "(" observable_pattern ")"
 """
 
 
