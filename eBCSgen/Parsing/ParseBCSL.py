@@ -106,13 +106,14 @@ class SideHelper:
 
 GRAMMAR = r"""
     model: (sections)* rules (sections | rules)*
-    sections: inits | definitions | complexes | regulation
+    sections: inits | definitions | complexes | regulation | observables
 
     rules: RULES_START _NL+ (rule _NL+)* rule _NL*
     inits: INITS_START _NL+ (init _NL+)* init _NL*
     definitions: DEFNS_START _NL+ (definition _NL+)* definition _NL*
     complexes: COMPLEXES_START _NL+ (cmplx_dfn _NL+)* cmplx_dfn _NL*
     regulation: REGULATION_START _NL+ regulation_def _NL*
+    observables: OBSERVABLES_START _NL+ (observable _NL+)* observable _NL*
 
     init: const? rate_complex 
     definition: def_param "=" number
@@ -140,6 +141,7 @@ GRAMMAR = r"""
     DEFNS_START: "#! definitions"
     COMPLEXES_START: "#! complexes"
     REGULATION_START: "#! regulation"
+    OBSERVABLES_START: "#! observables"
     _NL: /(\r?\n[\t ]*)+/
 
     !label: CNAME "~"
@@ -239,6 +241,11 @@ REGEX_GRAMMAR = r"""
     ESCAPED_CHAR: "\\" ("w"|"W"|"d"|"D"|"s"|"S"|"b"|"B"|"A"|"Z"|"G"|"."|"^"|"["|"]"|"("|")"|"{"|"}"|"?"|"*"|"+"|"|"|"\\")
 
     REGEX_CHAR: /[^\\^$().*+?{}\[\]|]/
+"""
+
+OBSERVABLES_GRAMMAR = """
+    observable: CNAME ":" observable_pattern
+    !observable_pattern: const | complex | observable_pattern "+" observable_pattern | observable_pattern "-" observable_pattern | observable_pattern "*" observable_pattern | observable_pattern "/" observable_pattern | observable_pattern POW const | "(" observable_pattern ")"
 """
 
 
@@ -668,15 +675,19 @@ class TreeToObjects(Transformer):
         reversible = False
         if arrow == "<=>":
             reversible = True
-        return reversible, Rule(
-            agents,
-            mid,
-            compartments,
-            complexes,
-            pairs,
-            Rate(rate1) if rate1 else None,
-            label,
-        ), Rate(rate2) if rate2 else None
+        return (
+            reversible,
+            Rule(
+                agents,
+                mid,
+                compartments,
+                complexes,
+                pairs,
+                Rate(rate1) if rate1 else None,
+                label,
+            ),
+            Rate(rate2) if rate2 else None,
+        )
 
     def rules(self, matches):
         rules = []
@@ -708,6 +719,15 @@ class TreeToObjects(Transformer):
                 result[init[0].children[0]] = 1
         return {"inits": result}
 
+    def observable(self, matches):
+        return {str(matches[0]): matches[1].children}
+
+    def observables(self, matches):
+        result = dict()
+        for observable in matches[1:]:
+            result.update(observable)
+        return {"observables": result}
+
     def param(self, matches):
         self.params.add(str(matches[0]))
         return Tree("param", matches)
@@ -717,6 +737,7 @@ class TreeToObjects(Transformer):
         definitions = dict()
         regulation = None
         inits = collections.Counter()
+        observables = dict()
         for match in matches:
             if type(match) == dict:
                 key, value = list(match.items())[0]
@@ -733,6 +754,8 @@ class TreeToObjects(Transformer):
                 inits.update(value)
             elif key == "definitions":
                 definitions.update(value)
+            elif key == "observables":
+                observables.update(value)
             elif key == "regulation":
                 if regulation:
                     raise UnspecifiedParsingError("Multiple regulations")
@@ -754,9 +777,13 @@ class Parser:
             + EXTENDED_GRAMMAR
             + REGULATIONS_GRAMMAR
             + REGEX_GRAMMAR
+            + OBSERVABLES_GRAMMAR
         )
         self.parser = Lark(
-            grammar, parser="earley", propagate_positions=False, maybe_placeholders=False
+            grammar,
+            parser="earley",
+            propagate_positions=False,
+            maybe_placeholders=False,
         )
 
         self.terminals = dict((v, k) for k, v in _TERMINAL_NAMES.items())
@@ -861,7 +888,7 @@ class Parser:
             return Result(
                 False,
                 {
-                    "unexpected": str(u.token), 
+                    "unexpected": str(u.token),
                     "expected": self.replace(u.expected),
                     "line": u.line,
                     "column": u.column,

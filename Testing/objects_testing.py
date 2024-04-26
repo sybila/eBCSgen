@@ -22,6 +22,8 @@ rate_complex_parser = Parser("rate_complex")
 rule_parser = Parser("rule")
 rules_parser = Parser("rules")
 model_parser = Parser("model")
+observables_parser = Parser("observables")
+observable_parser = Parser("observable")
 
 # atomic
 a1 = AtomicAgent("T", "s")
