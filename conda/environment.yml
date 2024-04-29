@@ -12,7 +12,7 @@ dependencies:
   - scipy
   - sortedcontainers
   - sympy
-  - python-libsbml
+  - python-libsbml==5.20.1
   - lark
   - lark-parser
   - pytest
