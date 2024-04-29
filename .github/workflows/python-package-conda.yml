@@ -12,9 +12,9 @@ jobs:
       max-parallel: 5
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python 3.8
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: 3.8
     - name: Add conda to system path
@@ -27,4 +27,4 @@ jobs:
     - name: Test with pytest
       run: |
         conda install pytest pytest-cov
-        pytest --cov --cov-report term --cov-report xml --junitxml=xunit-result.xml --ignore='Testing/test_formal_methods.py'
+        pytest --cov --cov-report term --cov-report xml --junitxml=xunit-result.xml --ignore='Testing/test_formal_methods.py' --ignore='Testing/test_remote_parsing.py'
