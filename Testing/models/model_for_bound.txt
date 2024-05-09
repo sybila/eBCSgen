@@ -1,0 +1,9 @@
+#! rules
+=> A{i}::cyt @ k
+=> C{i}::cyt @ k
+
+#! inits
+2 B{i}::cyt
+
+#! definitions
+k = 1

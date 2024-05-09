@@ -4,7 +4,7 @@ import numpy as np
 from numpy import inf
 from copy import deepcopy
 from lark import Lark, Transformer, Tree
-from lark import UnexpectedCharacters, UnexpectedToken
+from lark import UnexpectedCharacters, UnexpectedToken, UnexpectedEOF
 from lark.load_grammar import _TERMINAL_NAMES
 import regex
 from sortedcontainers import SortedList
@@ -24,6 +24,10 @@ from eBCSgen.TS.TransitionSystem import TransitionSystem
 from eBCSgen.TS.Edge import edge_from_dict
 from eBCSgen.Core.Side import Side
 from eBCSgen.Core.Model import Model
+from eBCSgen.Errors.ComplexParsingError import ComplexParsingError
+from eBCSgen.Errors.UnspecifiedParsingError import UnspecifiedParsingError
+from eBCSgen.Errors.RegulationParsingError import RegulationParsingError
+from eBCSgen.utils import tree_to_string
 
 
 def load_TS_from_json(json_file: str) -> TransitionSystem:
@@ -37,19 +41,27 @@ def load_TS_from_json(json_file: str) -> TransitionSystem:
     with open(json_file) as json_file:
         data = json.load(json_file)
 
-        ordering = SortedList(map(lambda agent: complex_parser.parse(agent).data.children[0], data['ordering']))
-        ts = TransitionSystem(ordering, data['bound'])
+        ordering = SortedList(
+            map(
+                lambda agent: complex_parser.parse(agent).data.children[0],
+                data["ordering"],
+            )
+        )
+        ts = TransitionSystem(ordering, data["bound"])
         ts.states_encoding = dict()
-        for node_id in data['nodes']:
-            vector = np.array(eval(data['nodes'][node_id]))
+        for node_id in data["nodes"]:
+            vector = np.array(eval(data["nodes"][node_id]))
             is_hell = True if vector[0] == inf else False
             ts.states_encoding[int(node_id)] = State(Vector(vector), Memory(0), is_hell)
-        ts.edges = {edge_from_dict(edge) for edge in data['edges']}
-        ts.init = data['initial']
-        if 'parameters' in data:
-            ts.params = data['parameters']
+        ts.edges = {edge_from_dict(edge) for edge in data["edges"]}
+        ts.init = data["initial"]
+        if "parameters" in data:
+            ts.params = data["parameters"]
 
-        ts.unprocessed = {State(Vector(np.array(eval(state))), Memory(0)) for state in data.get('unprocessed', list())}
+        ts.unprocessed = {
+            State(Vector(np.array(eval(state))), Memory(0))
+            for state in data.get("unprocessed", list())
+        }
         ts.states = set(ts.states_encoding.values()) - ts.unprocessed
         return ts
 
@@ -76,34 +88,43 @@ class SideHelper:
         self.counter = 0
 
     def __str__(self):
-        return " | ".join([str(self.seq), str(self.comp), str(self.complexes), str(self.counter)])
+        return " | ".join(
+            [str(self.seq), str(self.comp), str(self.complexes), str(self.counter)]
+        )
 
     def __repr__(self):
         return str(self)
 
     def to_side(self):
-        return Side([Complex(self.seq[c[0]:c[1] + 1], self.comp[c[0]]) for c in self.complexes])
+        return Side(
+            [
+                Complex(self.seq[c[0] : c[1] + 1], self.comp[c[0]])
+                for c in self.complexes
+            ]
+        )
 
 
 GRAMMAR = r"""
-    model: rules (inits)? (definitions)? (complexes)? (regulation)?
+    model: (sections)* rules (sections | rules)*
+    sections: inits | definitions | complexes | regulation | observables
 
-    rules: RULES_START (rule|COMMENT)+
-    inits: INITS_START (init|COMMENT)+
-    definitions: DEFNS_START (definition|COMMENT)+
-    complexes: COMPLEXES_START (cmplx_dfn|COMMENT)+
-    regulation: REGULATION_START regulation_def
+    rules: RULES_START _NL+ (rule _NL+)* rule _NL*
+    inits: INITS_START _NL+ (init _NL+)* init _NL*
+    definitions: DEFNS_START _NL+ (definition _NL+)* definition _NL*
+    complexes: COMPLEXES_START _NL+ (cmplx_dfn _NL+)* cmplx_dfn _NL*
+    regulation: REGULATION_START _NL+ regulation_def _NL*
+    observables: OBSERVABLES_START _NL+ (observable _NL+)* observable _NL*
 
-    init: const? rate_complex (COMMENT)?
-    definition: def_param "=" number (COMMENT)?
-    rule: (label)? side ARROW side ("@" rate)? (";" variable)? (COMMENT)?
-    cmplx_dfn: cmplx_name "=" value (COMMENT)?
+    init: const? rate_complex 
+    definition: def_param "=" number
+    rule: ((label)? side arrow side ("@" rate)? (";" variable)?) | ((label)? side BI_ARROW side ("@" rate "|" rate )? (";" variable)?)
+    cmplx_dfn: cmplx_name "=" value
 
     side: (const? complex "+")* (const? complex)?
     complex: (abstract_sequence|value|cmplx_name) DOUBLE_COLON compartment
 
-    !rate : fun "/" fun | fun
-    !fun: const | param | rate_agent | fun "+" fun | fun "-" fun | fun "*" fun | fun POW const | "(" fun ")"
+    !rate : fun
+    !fun: const | param | rate_agent | fun "+" fun | fun "-" fun | fun "*" fun | fun POW const | "(" fun ")" | fun "/" fun
 
     !rate_agent: "[" rate_complex "]"
 
@@ -111,12 +132,17 @@ GRAMMAR = r"""
 
     COM: "//"
     POW: "**"
-    ARROW: "=>" | "<=>" 
+    arrow: SINGLE_ARROW | REPLICATION_ARROW
+    SINGLE_ARROW: "=>"
+    BI_ARROW: "<=>"
+    REPLICATION_ARROW: "=*>"
     RULES_START: "#! rules"
     INITS_START: "#! inits"
     DEFNS_START: "#! definitions"
     COMPLEXES_START: "#! complexes"
     REGULATION_START: "#! regulation"
+    OBSERVABLES_START: "#! observables"
+    _NL: /(\r?\n[\t ]*)+/
 
     !label: CNAME "~"
 
@@ -130,16 +156,16 @@ GRAMMAR = r"""
     %import common.NUMBER
     %import common.INT
     %import common.DECIMAL
-    %import common.WS
-    %ignore WS
+    %import common.WS_INLINE
+    %ignore WS_INLINE
     %ignore COMMENT
 """
 
 EXTENDED_GRAMMAR = """
     abstract_sequence: atomic_complex | atomic_structure_complex | structure_complex
-    atomic_complex: atomic ":" (cmplx_name|VAR)
-    atomic_structure_complex: atomic ":" structure ":" (cmplx_name|VAR)
-    structure_complex: structure ":" (cmplx_name|VAR)
+    atomic_complex: atomic "::" (VAR | value)
+    atomic_structure_complex: atomic "::" structure "::" (VAR | value)
+    structure_complex: structure "::" (VAR | value)
 
     variable: VAR "=" "{" cmplx_name ("," cmplx_name)+ "}"
     VAR: "?"
@@ -169,32 +195,73 @@ COMPLEX_GRAMMAR = """
 REGULATIONS_GRAMMAR = """
     regulation_def: "type" ( regular | programmed | ordered | concurrent_free | conditional ) 
 
-    !regular: "regular" (DIGIT|LETTER| "+" | "*" | "(" | ")" | "[" | "]" | "_" | "|" | "&")+
+    !regular: "regular" _NL+ expression _NL*
 
-    programmed: "programmed" successors+
+    programmed: "programmed" _NL+ (successors _NL+)* successors _NL*
     successors: CNAME ":" "{" CNAME ("," CNAME)* "}"
 
-    ordered: "ordered" order ("," order)*
+    ordered: "ordered" _NL+ order ("," order)* _NL*
     order: ("(" CNAME "," CNAME ")")
 
-    concurrent_free: "concurrent-free" order ("," order)*
+    concurrent_free: "concurrent-free" _NL+ order ("," order)* _NL*
 
-    conditional: "conditional" context+
+    conditional: "conditional" _NL+ context (_NL+ context)* _NL*
     context: CNAME ":" "{" rate_complex ("," rate_complex)* "}"
+"""
+
+REGEX_GRAMMAR = r"""
+    !?expression: term ("|" term)*
+
+    ?term: factor+
+
+    ?factor: primary quantifier?
+
+    !quantifier: "??"
+            | "*?"
+            | "+?"
+            | "*+"
+            | "++"
+            | "?+"
+            | "*"
+            | "+"
+            | "?"
+            | "{NUMBER,NUMBER}"
+            | "{NUMBER}"
+
+    !primary: "(" expression ")"
+        | "[" REGEX_CHAR "-" REGEX_CHAR "]"
+        | "[" REGEX_CHAR* "]"
+        | SPECIAL_CHAR
+        | ESCAPED_CHAR
+        | "." 
+        | REGEX_CHAR
+
+    SPECIAL_CHAR: "^" | "$" | "&"
+
+    ESCAPED_CHAR: "\\" ("w"|"W"|"d"|"D"|"s"|"S"|"b"|"B"|"A"|"Z"|"G"|"."|"^"|"["|"]"|"("|")"|"{"|"}"|"?"|"*"|"+"|"|"|"\\")
+
+    REGEX_CHAR: /[^\\^$().*+?{}\[\]|]/
+"""
+
+OBSERVABLES_GRAMMAR = """
+    observable: CNAME ":" observable_pattern
+    !observable_pattern: const | complex | observable_pattern "+" observable_pattern | observable_pattern "-" observable_pattern | observable_pattern "*" observable_pattern | observable_pattern "/" observable_pattern | observable_pattern POW const | "(" observable_pattern ")"
 """
 
 
 class TransformRegulations(Transformer):
     def regulation(self, matches):
-        return {'regulation': matches[1]}
+        return {"regulation": matches[1]}
 
     def regulation_def(self, matches):
         return matches[0]
 
     def regular(self, matches):
-        re = "".join(matches[1:])
-        # might raise exception
-        regex.compile(re)
+        re = "".join(tree_to_string(matches[1]))
+        try:
+            regex.compile(re)
+        except regex.error as e:
+            raise RegulationParsingError(f"Invalid regular expression: {re}. Error: {e}")
         return Regular(re)
 
     def programmed(self, matches):
@@ -252,27 +319,28 @@ class ExtractComplexNames(Transformer):
     def rules(self, matches):
         new_rules = [matches[0]]
         for rule in matches[1:]:
-            if rule.children[-1].data == 'variable':
+            if rule.children[-1].data == "variable":
                 variables = rule.children[-1].children[1:]
                 for variable in variables:
                     replacer = ReplaceVariables(variable)
-                    new_rule = Tree('rule', deepcopy(rule.children[:-1]))
+                    new_rule = Tree("rule", deepcopy(rule.children[:-1]))
                     new_rules.append(replacer.transform(new_rule))
             else:
                 new_rules.append(rule)
-        return Tree('rules', new_rules)
+        return Tree("rules", new_rules)
 
 
 def remove_nested_complex_aliases(complex_defns):
     """
     Removes nested complex aliases from their definitions.
     """
+
     def replace_aliases(complex_defns):
         new_definitions = dict()
         for defn in complex_defns:
             result = []
             for child in complex_defns[defn]:
-                if child.data == 'cmplx_name':
+                if child.data == "cmplx_name":
                     result += complex_defns[str(child.children[0])]
                 else:
                     result.append(child)
@@ -286,7 +354,7 @@ def remove_nested_complex_aliases(complex_defns):
         complex_defns = new_defns
         new_defns = replace_aliases(complex_defns)
 
-    complex_defns = {key: Tree('value', complex_defns[key]) for key in complex_defns}
+    complex_defns = {key: Tree("value", complex_defns[key]) for key in complex_defns}
     return complex_defns
 
 
@@ -303,6 +371,10 @@ class TransformAbstractSyntax(Transformer):
         self.complex_defns = complex_defns
 
     def cmplx_name(self, matches):
+        if str(matches[0]) not in self.complex_defns:
+            raise ComplexParsingError(
+                f"Complex alias {matches[0]} not found in defined complexes: {list(self.complex_defns.keys())}", matches
+            )
         return deepcopy(self.complex_defns[str(matches[0])])
 
     def abstract_sequence(self, matches):
@@ -332,33 +404,120 @@ class TransformAbstractSyntax(Transformer):
 
     def insert_atomic_to_struct(self, atomic, struct):
         """
-        Adds or replaces atomic subtree in struct tree.
+        Adds an atomic subtree to a struct tree. If a non-empty atomic with the same name
+        already exists in the struct, it raises an error to prevent illegal nesting.
+
+        Args:
+            atomic: The atomic subtree to be added.
+            struct: The struct tree where the atomic will be added.
+
+        Returns:
+            The updated struct tree with the atomic added.
+
+        Raises:
+            ComplexParsingError: If a non-empty atomic with the same name is already present in the struct.
         """
         if len(struct.children) == 2:
+            for i in range(len(struct.children[1].children)):
+                if self.get_name(atomic) == self.get_name(
+                    struct.children[1].children[i]
+                ):
+                    if self.is_empty(struct.children[1].children[i]):
+                        struct.children[1].children[i] = atomic
+                        return struct
+                    raise ComplexParsingError(
+                        f"Illegal nesting sequence: {atomic}:{struct}", struct
+                    )
             struct.children[1].children.append(atomic)
         else:
-            struct.children.append(Tree('composition', [atomic]))
+            struct.children.append(Tree("composition", [atomic]))
         return struct
 
     def insert_struct_to_complex(self, struct, complex):
         """
-        Adds or replaces struct subtree in complex tree.
+        Adds a struct subtree to a complex tree, or merges it with an existing struct subtree. This method first
+        searches for a struct in the complex with the same name as the input struct. If found, it then checks for
+        atomic incompatibility within the structs.
+
+        The method ensures that the struct being added does not contain atomics with names that match any atomics
+        in the corresponding struct in the complex. This step is crucial to maintain the integrity of the complex
+        by avoiding conflicting or duplicate atomic structures.
+
+        Args:
+            struct: The struct subtree to be added or merged.
+            complex: The complex tree where the struct will be added or merged.
+
+        Returns:
+            The updated complex tree with the struct added or merged.
+
+        Raises:
+            ComplexParsingError: If no matching struct is found in the complex.
         """
-        for i in range(len(complex.children)):
-            if self.get_name(struct) == self.get_name(complex.children[i].children[0]):
-                complex.children[i] = Tree('agent', [struct])
-                break
-        return complex
+        if isinstance(complex.children[0].children[0].children[0].children[0], Tree):
+            search = complex.children[0]
+        else:
+            search = complex
+
+        for i in range(len(search.children)):
+            if self.get_name(struct) == self.get_name(search.children[i].children[0]):
+                struct_found = True
+                # search same name structs - if they contain atomics with matching names, they are considered incompatible
+                for j in range(len(struct.children[1].children)):
+                    for k in range(
+                        len(search.children[i].children[0].children[1].children)
+                    ):
+                        if self.get_name(
+                            struct.children[1].children[j]
+                        ) == self.get_name(
+                            search.children[i].children[0].children[1].children[k]
+                        ):
+                            struct_found = False
+                            break
+                    # if no same name atomic found in the struct, we found the suitable complex's struct
+                    if not struct_found:
+                        break
+
+                if struct_found:
+                    # if the complex's struct is empty, replace it with the struct
+                    if self.is_empty(search.children[i]):
+                        search.children[i] = Tree("agent", [struct])
+                    else:
+                        # if the complex's struct is not empty merge the struct's children into the complex's struct
+                        search.children[i].children[0].children[1].children += struct.children[1].children
+                    return complex
+
+        raise ComplexParsingError(
+            f"Illegal struct nesting or duplication: {struct}:{complex}", complex
+        )
 
     def insert_atomic_to_complex(self, atomic, complex):
         """
-        Adds or replaces atomic subtree in complex tree.
+        Adds an atomic subtree to a complex tree. If a non-empty atomic with the same name
+        is already present in the complex, it raises an error to prevent illegal nesting.
+
+        Args:
+            atomic: The atomic subtree to be added.
+            complex: The complex tree where the atomic will be added.
+
+        Returns:
+            The updated complex tree with the atomic added.
+
+        Raises:
+            ComplexParsingError: If an atomic with the same name is already present in the complex.
         """
-        for i in range(len(complex.children)):
-            if self.get_name(atomic) == self.get_name(complex.children[i].children[0]):
-                complex.children[i] = Tree('agent', [atomic])
-                break
-        return complex
+        if isinstance(complex.children[0].children[0].children[0].children[0], Tree):
+            search = complex.children[0]
+        else:
+            search = complex
+
+        for i in range(len(search.children)):
+            if self.get_name(atomic) == self.get_name(search.children[i].children[0]):
+                if self.is_empty(search.children[i].children[0]):
+                    search.children[i] = Tree("agent", [atomic])
+                    return complex
+        raise ComplexParsingError(
+            f"Illegal atomic nesting or duplication: {atomic}:{complex}", complex
+        )
 
     def get_name(self, agent):
         return str(agent.children[0].children[0])
@@ -366,11 +525,21 @@ class TransformAbstractSyntax(Transformer):
     def complex(self, matches):
         result = []
         for match in matches[0].children:
-            if match.data == 'value':
+            if match.data == "value":
                 result += match.children
             else:
                 result.append(match)
-        return Tree('complex', [Tree('value', result)] + matches[1:])
+        return Tree("complex", [Tree("value", result)] + matches[1:])
+
+    def is_empty(self, agent):
+        """
+        Checks if the agent is empty.
+        """
+        if agent.data == "atomic":
+            return agent.children[1].children[0] == "_"
+        elif agent.data == "agent":
+            return len(agent.children[0].children[1].children) == 0
+        return False
 
 
 class TreeToComplex(Transformer):
@@ -388,11 +557,19 @@ class TreeToComplex(Transformer):
 
     def structure(self, matches):
         name = str(matches[0].children[0])
-        if len(matches) > 1:
-            composition = set(matches[1].children)
-            return StructureAgent(name, composition)
-        else:
+        if len(matches) <= 1:
             return StructureAgent(name, set())
+        atomic_names = set()
+        composition = set()
+        for atomic in matches[1].children:
+            if atomic.name in atomic_names:
+                raise ComplexParsingError(
+                    f"Duplicate atomic agent in structure: {atomic.name}", matches
+                )
+            atomic_names.add(atomic.name)
+            composition.add(atomic)
+
+        return StructureAgent(name, composition)
 
     def rate_complex(self, matches):
         sequence = []
@@ -409,6 +586,7 @@ class TreeToObjects(Transformer):
     def __init__(self):
         super(TreeToObjects, self).__init__()
         self.params = set()
+        self.labels = set()
 
     """
     A transformer which is called on a tree in a bottom-up manner and transforms all subtrees/tokens it encounters.
@@ -450,57 +628,84 @@ class TreeToObjects(Transformer):
 
     def rule(self, matches):
         label = None  # TODO create implicit label
-        rate = None
+        rate1 = None
+        rate2 = None
+        if len(matches) == 6:
+            label, lhs, arrow, rhs, rate1, rate2 = matches
         if len(matches) == 5:
-            label, lhs, arrow, rhs, rate = matches
+            if type(matches[0]) == str:
+                label, lhs, arrow, rhs, rate1 = matches
+            else:
+                lhs, arrow, rhs, rate1, rate2 = matches
         elif len(matches) == 4:
             if type(matches[0]) == str:
                 label, lhs, arrow, rhs = matches
             else:
-                lhs, arrow, rhs, rate = matches
+                lhs, arrow, rhs, rate1 = matches
         else:
             lhs, arrow, rhs = matches
+        if label:
+            self.labels.add(label)
         agents = tuple(lhs.seq + rhs.seq)
         mid = lhs.counter
         compartments = lhs.comp + rhs.comp
         complexes = lhs.complexes + list(
-            map(lambda item: (item[0] + lhs.counter, item[1] + lhs.counter), rhs.complexes))
+            map(
+                lambda item: (item[0] + lhs.counter, item[1] + lhs.counter),
+                rhs.complexes,
+            )
+        )
         pairs = [(i, i + lhs.counter) for i in range(min(lhs.counter, rhs.counter))]
-        if lhs.counter > rhs.counter:
+        if type(arrow) is Tree and arrow.children[0].value == "=*>":
+            if lhs.counter >= rhs.counter or lhs.counter != 1 or rhs.counter <= 1:
+                raise UnspecifiedParsingError("Rule does not contain replication")
+            
+            for i in range(lhs.counter, rhs.counter):
+                if lhs.seq[pairs[-1][0]] == rhs.seq[pairs[-1][1] - lhs.counter]:
+                    if rhs.seq[pairs[-1][1] - lhs.counter] == rhs.seq[i]:
+                        pairs += [(pairs[-1][0], i + lhs.counter)]
+                    else:
+                        raise UnspecifiedParsingError("Rule does not contain replication")
+
+        elif lhs.counter > rhs.counter:
             pairs += [(i, None) for i in range(rhs.counter, lhs.counter)]
         elif lhs.counter < rhs.counter:
-            for i in range(lhs.counter, rhs.counter):
-                replication = False
-                if lhs.counter == 1 and rhs.counter > 1:
-                    if lhs.seq[pairs[-1][0]] == rhs.seq[pairs[-1][1] - lhs.counter]:
-                        if rhs.seq[pairs[-1][1] - lhs.counter] == rhs.seq[i]:
-                            pairs += [(pairs[-1][0], i + lhs.counter)]
-                            replication = True
-                if not replication:
-                    pairs += [(None, i + lhs.counter)]
+            pairs += [(None, i + lhs.counter) for i in range(lhs.counter, rhs.counter)]
 
         reversible = False
-        if arrow == '<=>':
+        if arrow == "<=>":
             reversible = True
-        return reversible, Rule(agents, mid, compartments, complexes, pairs, Rate(rate) if rate else None, label)
+        return (
+            reversible,
+            Rule(
+                agents,
+                mid,
+                compartments,
+                complexes,
+                pairs,
+                Rate(rate1) if rate1 else None,
+                label,
+            ),
+            Rate(rate2) if rate2 else None,
+        )
 
     def rules(self, matches):
         rules = []
-        for reversible, rule in matches[1:]:
+        for reversible, rule, new_rate in matches[1:]:
             if reversible:
-                reversible_rule = rule.create_reversible()
+                reversible_rule = rule.create_reversible(new_rate)
                 rules.append(rule)
                 rules.append(reversible_rule)
             else:
                 rules.append(rule)
-        return {'rules': rules}
+        return {"rules": rules}
 
     def definitions(self, matches):
         result = dict()
         for definition in matches[1:]:
             pair = definition.children
             result[pair[0]] = pair[1]
-        return {'definitions': result}
+        return {"definitions": result}
 
     def init(self, matches):
         return matches
@@ -512,53 +717,93 @@ class TreeToObjects(Transformer):
                 result[init[1].children[0]] = int(init[0])
             else:
                 result[init[0].children[0]] = 1
-        return {'inits': result}
+        return {"inits": result}
+
+    def observable(self, matches):
+        return {str(matches[0]): matches[1].children}
+
+    def observables(self, matches):
+        result = dict()
+        for observable in matches[1:]:
+            result.update(observable)
+        return {"observables": result}
 
     def param(self, matches):
         self.params.add(str(matches[0]))
         return Tree("param", matches)
 
     def model(self, matches):
+        rules = set()
         definitions = dict()
         regulation = None
         inits = collections.Counter()
+        observables = dict()
         for match in matches:
             if type(match) == dict:
                 key, value = list(match.items())[0]
-                if key == 'rules':
-                    rules = set(value)
-                if key == 'inits':
-                    inits = value
-                if key == 'definitions':
-                    definitions = value
-                if key == 'regulation':
+            elif isinstance(match, Tree) and match.data == "sections":
+                if isinstance(match.children[0], Tree):
+                    continue
+                key, value = list(match.children[0].items())[0]
+            else:
+                continue
+
+            if key == "rules":
+                rules.update(value)
+            elif key == "inits":
+                inits.update(value)
+            elif key == "definitions":
+                definitions.update(value)
+            elif key == "observables":
+                observables.update(value)
+            elif key == "regulation":
+                if regulation:
+                    raise UnspecifiedParsingError("Multiple regulations")
+                # check if regulation is in label
+                if value.check_labels(self.labels):
                     regulation = value
+
         params = self.params - set(definitions)
         return Model(rules, inits, definitions, params, regulation)
 
 
 class Parser:
     def __init__(self, start):
-        grammar = "start: " + start + GRAMMAR + COMPLEX_GRAMMAR + EXTENDED_GRAMMAR + REGULATIONS_GRAMMAR
-        self.parser = Lark(grammar, parser='lalr',
-                           propagate_positions=False,
-                           maybe_placeholders=False
-                           )
+        grammar = (
+            "start: "
+            + start
+            + GRAMMAR
+            + COMPLEX_GRAMMAR
+            + EXTENDED_GRAMMAR
+            + REGULATIONS_GRAMMAR
+            + REGEX_GRAMMAR
+            + OBSERVABLES_GRAMMAR
+        )
+        self.parser = Lark(
+            grammar,
+            parser="earley",
+            propagate_positions=False,
+            maybe_placeholders=False,
+        )
 
         self.terminals = dict((v, k) for k, v in _TERMINAL_NAMES.items())
-        self.terminals.update({"COM": "//",
-                               "ARROW": "=>, <=>",
-                               "POW": "**",
-                               "DOUBLE_COLON": "::",
-                               "RULES_START": "#! rules",
-                               "INITS_START": "#! inits",
-                               "DEFNS_START": "#! definitions",
-                               "COMPLEXES_START": "#! complexes",
-                               "REGULATION_START": "#! regulation",
-                               "CNAME": "name",
-                               "NAME": "agent_name",
-                               "VAR": "?"
-                               })
+        self.terminals.update(
+            {
+                "COM": "//",
+                "ARROW": "=>",
+                "BI_ARROW": "<=>",
+                "POW": "**",
+                "DOUBLE_COLON": "::",
+                "RULES_START": "#! rules",
+                "INITS_START": "#! inits",
+                "DEFNS_START": "#! definitions",
+                "COMPLEXES_START": "#! complexes",
+                "REGULATION_START": "#! regulation",
+                "CNAME": "name",
+                "NAME": "agent_name",
+                "VAR": "?",
+            }
+        )
         self.terminals.pop("$END", None)
 
     def replace(self, expected: set) -> set:
@@ -596,7 +841,9 @@ class Parser:
         try:
             complexer = ExtractComplexNames()
             tree = complexer.transform(tree)
-            complexer.complex_defns = remove_nested_complex_aliases(complexer.complex_defns)
+            complexer.complex_defns = remove_nested_complex_aliases(
+                complexer.complex_defns
+            )
             de_abstracter = TransformAbstractSyntax(complexer.complex_defns)
             tree = de_abstracter.transform(tree)
             tree = TreeToComplex().transform(tree)
@@ -618,11 +865,33 @@ class Parser:
         try:
             tree = self.parser.parse(expression)
         except UnexpectedCharacters as u:
-            return Result(False, {"unexpected": expression[u.pos_in_stream],
-                                  "expected": self.replace(u.allowed),
-                                  "line": u.line, "column": u.column})
+            return Result(
+                False,
+                {
+                    "unexpected": expression[u.pos_in_stream],
+                    "expected": self.replace(u.allowed),
+                    "line": u.line,
+                    "column": u.column,
+                },
+            )
         except UnexpectedToken as u:
-            return Result(False, {"unexpected": str(u.token),
-                                  "expected": self.replace(u.expected),
-                                  "line": u.line, "column": u.column})
+            return Result(
+                False,
+                {
+                    "unexpected": str(u.token),
+                    "expected": self.replace(u.expected),
+                    "line": u.line,
+                    "column": u.column,
+                },
+            )
+        except UnexpectedEOF as u:
+            return Result(
+                False,
+                {
+                    "unexpected": str(u.token),
+                    "expected": self.replace(u.expected),
+                    "line": u.line,
+                    "column": u.column,
+                },
+            )
         return Result(True, tree)

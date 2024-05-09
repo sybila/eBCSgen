@@ -1,0 +1,12 @@
+#! rules
+K(S{i}).B(T{a})::cyt => K(S{i})::cyt + B(T{a})::cyt @ 3*[K(S{i}).B(T{a})::cyt]/2*v_1
+A{p}.K(S{i},T{i})::cyt => A{i}::cyt + K(S{a},T{a})::cyt
+K(S{i},T{i})::cyt => K(S{a},T{i})::cyt
+
+#! inits
+2 K(S{i}).B(T{a})::cyt
+1 A{p}.K(S{i},T{i})::cyt
+
+#! definitions
+v_1 = 0.05
+k2 = 0.12

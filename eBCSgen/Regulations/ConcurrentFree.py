@@ -1,3 +1,4 @@
+from eBCSgen.Errors.RegulationParsingError import RegulationParsingError
 from eBCSgen.Regulations.Base import BaseRegulation
 
 
@@ -22,3 +23,10 @@ class ConcurrentFree(BaseRegulation):
             if p_rule and non_p_rule:
                 del candidates[non_p_rule.pop()]
         return candidates
+
+    def check_labels(self, model_labels):
+        for tuple in self.regulation:
+            for label in tuple:
+                if label not in model_labels:
+                    raise RegulationParsingError(f"Label {label} in concurrent-free regulation not present in model")
+        return True

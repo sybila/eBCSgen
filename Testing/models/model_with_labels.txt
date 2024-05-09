@@ -1,0 +1,12 @@
+#! rules
+r1_S ~ A(S{i})::cell => A(S{a})::cell @ k1*[A(S{i})::cell]
+r1_T ~ A(T{i})::cell => A(T{a})::cell @ k2*[A(T{i})::cell]
+r2 ~ A()::cell => A()::out @ k3*[A()::cell]
+
+#! inits
+1 A(S{i},T{i})::cell
+
+#! definitions
+k1 = 0.3
+k2 = 0.5
+k3 = 0.1

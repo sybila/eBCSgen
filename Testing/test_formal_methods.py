@@ -8,60 +8,18 @@ from eBCSgen.Parsing.ParseBCSL import Parser, load_TS_from_json
 from eBCSgen.Parsing.ParsePCTLformula import PCTLparser
 from eBCSgen.Parsing.ParseCTLformula import CTLparser
 
+from Testing.models.get_model_str import get_model_str
+
 
 class TestFormalMethods(unittest.TestCase):
     def setUp(self):
         self.parser = PCTLparser()
         self.model_parser = Parser("model")
-        self.model = """
-            #! rules
-            Y{i}::rep => Y{a}::rep @ p*[Y{i}::rep]
-            Y{i}::rep => Y{-}::rep @ (1-p)*[Y{i}::rep]
-            X()::rep + Y{a}::rep => X().Y{a}::rep @ q*[X()::rep]*[Y{a}::rep]
-            X(K{i}).Y{_}::rep => X(K{p}).Y{_}::rep @ p*[X(K{i}).Y{_}::rep] // also here
+        self.model = get_model_str("model3")
 
-            #! inits
-            2 X(K{i})::rep
-            1 Y{i}::rep
+        self.tumor = get_model_str("tumor_model")
 
-            #! definitions
-            p = 0.3
-        """
-
-        self.tumor = """
-            #! rules
-            T(P{i})::x => T(P{m})::x @ a1*[T(P{i})::x]
-            T(P{m})::x => T(P{i})::x + T(P{i})::x @ a2*[T(P{m})::x]
-            T(P{i})::x => @ d1*[T(P{i})::x]
-            T(P{m})::x => @ d2*[T(P{m})::x]
-
-            #! inits
-            2 T(P{m})::x
-            1 T(P{i})::x
-
-            #! definitions
-            a1 = 1.2
-            a2 = 2
-            d1 = 0.8
-            d2 = 0.5
-        """
-
-        self.tumor_parametric = """
-            #! rules
-            T(P{i})::x => T(P{m})::x @ a1*[T(P{i})::x]
-            T(P{m})::x => T(P{i})::x + T(P{i})::x @ a2*[T(P{m})::x]
-            T(P{i})::x => @ d1*[T(P{i})::x]
-            T(P{m})::x => @ d2*[T(P{m})::x]
-
-            #! inits
-            2 T(P{m})::x
-            1 T(P{i})::x
-
-            #! definitions
-            a1 = 1.2
-            a2 = 2
-            d1 = 0.8
-        """
+        self.tumor_parametric = get_model_str("tumor_parametric_model")
 
     def test_tumor_model_checking(self):
         model_parsed = self.model_parser.parse(self.tumor).data
@@ -109,19 +67,7 @@ class TestFormalMethods(unittest.TestCase):
         self.assertTrue("Result (initial states)" in str(result))
 
     def test_synthesis_out_of_scope(self):
-        model_str = """
-        #! rules
-        X()::rep => @ k1*[X()::rep]
-        Z()::rep => X()::rep @ k2
-        => Y()::rep @ 1/(1+([X()::rep])**4)
-
-        #! inits
-        2 X()::rep
-        Y()::rep
-
-        #! definitions
-        k2 = 5
-        """
+        model_str = get_model_str("model4")
         model = self.model_parser.parse(model_str).data
         formula = self.parser.parse('P <= 0.5[F X()::out = 1]')
         ts = model.generate_direct_transition_system()
@@ -131,19 +77,7 @@ class TestFormalMethods(unittest.TestCase):
         self.assertRaises(ComplexOutOfScope, PCTL.parameter_synthesis, ts, formula, '0<=k1<=1')
 
     def test_synthesis_simple(self):
-        model_str = """
-        #! rules
-        X()::rep => @ k1*[X()::rep]
-        Z()::rep => X()::rep @ k2
-        => Y()::rep @ 1/(1+([X()::rep])**4)
-
-        #! inits
-        2 X()::rep
-        Y()::rep
-
-        #! definitions
-        k2 = 5
-        """
+        model_str = get_model_str("model4")
         model = self.model_parser.parse(model_str).data
         ts = model.generate_direct_transition_system()
         ts.change_to_vector_backend()
@@ -159,20 +93,7 @@ class TestFormalMethods(unittest.TestCase):
         self.assertTrue("Result (initial states)" in str(output))
 
     def test_synthesis_advanced(self):
-        model_str = """
-        #! rules
-        // commenting
-        X(K{i})::rep => X(K{p})::rep @ k1*[X()::rep] // also here
-        X(T{a})::rep => X(T{o})::rep @ k2*[Z()::rep]
-        => Y(P{f})::rep @ 1/(1+([X()::rep])**4) // ** means power (^)
-
-        #! inits
-        2 X(K{c}, T{e})::rep
-        Y(P{g}, N{l})::rep
-
-        #! definitions
-        k2 = 0.05 // also comment
-        """
+        model_str = get_model_str("model5")
         model = self.model_parser.parse(model_str).data
         ts = model.generate_direct_transition_system()
         ts.change_to_vector_backend()
@@ -188,20 +109,7 @@ class TestFormalMethods(unittest.TestCase):
         self.assertTrue("Result (initial states)" in str(output))
 
     def test_model_checking_simple(self):
-        model_str = """
-        #! rules
-        X()::rep => @ k1*[X()::rep]
-        Z()::rep => X()::rep @ k2
-        => Y()::rep @ 1/(1+([X()::rep])**4)
-
-        #! inits
-        2 X()::rep
-        Y()::rep
-
-        #! definitions
-        k2 = 5
-        k1 = 2
-        """
+        model_str = get_model_str("model6")
         model = self.model_parser.parse(model_str).data
         ts = model.generate_direct_transition_system()
         ts.change_to_vector_backend()
@@ -217,21 +125,7 @@ class TestFormalMethods(unittest.TestCase):
         self.assertTrue("Result (for initial states)" in str(output))
 
     def test_model_checking_advanced(self):
-        model_str = """
-        #! rules
-        // commenting
-        X(K{i})::rep => X(K{p})::rep @ k1*[X()::rep] // also here
-        X(T{a})::rep => X(T{o})::rep @ k2*[Z()::rep]
-        => Y(P{f})::rep @ 1/(1+([X()::rep])**4) // ** means power (^)
-
-        #! inits
-        2 X(K{c}, T{e}).X(K{c}, T{j})::rep
-        Y(P{g}, N{l})::rep
-
-        #! definitions
-        k2 = 0.05 // also comment
-        k1 = 2
-        """
+        model_str = get_model_str("model7")
         model = self.model_parser.parse(model_str).data
         ts = model.generate_direct_transition_system()
         ts.change_to_vector_backend()
@@ -247,20 +141,7 @@ class TestFormalMethods(unittest.TestCase):
         self.assertTrue("Result (for initial states)" in str(output))
 
     def test_CTL_model_checking(self):
-        model_str = """
-        #! rules
-        X()::rep => @ k1*[X()::rep]
-        Z()::rep => X()::rep @ k2
-        => Y()::rep @ 1/(1+([X()::rep])**4)
-
-        #! inits
-        2 X()::rep
-        Y()::rep
-
-        #! definitions
-        k2 = 5
-        k1 = 2
-        """
+        model_str = get_model_str("model6")
         model = self.model_parser.parse(model_str).data
         ts = model.generate_direct_transition_system()
         ts.change_to_vector_backend()

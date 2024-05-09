@@ -1,0 +1,12 @@
+#! rules
+X()::rep => @ k1*[X()::rep]
+Z()::rep => X()::rep @ k2
+=> Y()::rep @ 1/(1+([X()::rep])**4)
+
+#! inits
+2 X()::rep
+Y()::rep
+
+#! definitions
+k2 = 5
+k1 = 2

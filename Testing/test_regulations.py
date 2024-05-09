@@ -1,6 +1,7 @@
 import unittest
 
 from eBCSgen.Parsing.ParseBCSL import Parser
+from Testing.models.get_model_str import get_model_str
 
 
 class TestRegulations(unittest.TestCase):
@@ -8,29 +9,10 @@ class TestRegulations(unittest.TestCase):
         self.model_parser = Parser("model")
         self.complex_parser = Parser("rate_complex")
 
-        self.model_with_labels = """
-            #! rules
-            r1_S ~ A(S{i})::cell => A(S{a})::cell @ k1*[A(S{i})::cell]
-            r1_T ~ A(T{i})::cell => A(T{a})::cell @ k2*[A(T{i})::cell]
-            r2 ~ A()::cell => A()::out @ k3*[A()::cell]
-
-            #! inits
-            1 A(S{i},T{i})::cell
-
-            #! definitions
-            k1 = 0.3
-            k2 = 0.5
-            k3 = 0.1
-            """
+        self.model_with_labels = get_model_str("model_with_labels")
 
     def test_programmed(self):
-        regulation = """
-
-        #! regulation
-        type programmed
-        r1_S: {r1_T, r2}
-        r1_T: {r1_S}
-        """
+        regulation = get_model_str("regulation1")
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
         direct_ts = model.generate_direct_transition_system()
@@ -42,12 +24,7 @@ class TestRegulations(unittest.TestCase):
         self.assertEqual(direct_ts, indirect_ts)
 
     def test_ordered(self):
-        regulation = """
-
-        #! regulation
-        type ordered
-        (r1_S, r2), (r1_T, r2)
-        """
+        regulation = get_model_str("regulation2")
 
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
@@ -60,12 +37,7 @@ class TestRegulations(unittest.TestCase):
         self.assertEqual(direct_ts, indirect_ts)
 
     def test_conditional(self):
-        regulation = """
-
-        #! regulation
-        type conditional
-        r2: {A(S{a},T{i})::cell}
-        """
+        regulation = get_model_str("regulation3")
 
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
@@ -78,12 +50,7 @@ class TestRegulations(unittest.TestCase):
         self.assertEqual(direct_ts, indirect_ts)
 
     def test_concurrent_free(self):
-        regulation = """
-
-        #! regulation
-        type concurrent-free
-        (r1_S, r2), (r1_T, r2)
-        """
+        regulation = get_model_str("regulation4")
 
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
@@ -96,12 +63,7 @@ class TestRegulations(unittest.TestCase):
         self.assertEqual(direct_ts, indirect_ts)
 
     def test_regular(self):
-        regulation = """
-
-        #! regulation
-        type regular
-        (r1_Sr1_Tr2|r1_Tr1_Sr2)
-        """
+        regulation = get_model_str("regulation5")
 
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
@@ -125,13 +87,7 @@ class TestRegulations(unittest.TestCase):
         self.assertEqual(direct_ts, indirect_ts)
 
     def test_network_free_simulation_regulated(self):
-        regulation = """
-
-        #! regulation
-        type programmed
-        r1_S: {r1_T, r2}
-        r1_T: {r1_S}
-        """
+        regulation = get_model_str("regulation1")
         model = self.model_parser.parse(self.model_with_labels + regulation).data
 
         result = model.network_free_simulation(5)

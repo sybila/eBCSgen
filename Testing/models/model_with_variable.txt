@@ -1,0 +1,17 @@
+#! rules
+// commenting
+T{a}::X()::?::rep => T{o}::X()::?::rep @ k2*[X().X()::rep] ; ? = { XX, XY }
+K{i}::X()::XY::rep => K{p}::X()::XY::rep @ k1*[X().Y().Z().X()::rep] // also here
+
+#! inits
+// here
+2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+
+#! definitions
+// and
+k1 = 0.05 // also
+k2 = 0.12
+
+#! complexes
+XX = X().X()
+XY = X().Y()

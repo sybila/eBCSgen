@@ -1,0 +1,20 @@
+#! rules
+// commenting
+X(T{a})::XX::rep => X(T{o})::XX::rep @ k2*[X().X()::rep]
+K{i}::X()::XYZ::rep => K{p}::X()::XYZ::rep @ k1*[X().Y().Z()::rep] // also here
+=> P{f}::XP::rep @ 1/(1+([X().P{_}::rep])**4) // ** means power (^)
+
+#! inits
+// here
+2 X(K{c}, T{e}).X(K{c}, T{j})::rep
+Y(P{g}, N{l})::rep // comment just 1 item
+
+#! definitions
+// and
+k1 = 0.05 // also
+k2 = 0.12
+
+#! complexes
+XYZ = X().Y().Z() // a big complex
+XX = X().X()
+XP = X().P{_}

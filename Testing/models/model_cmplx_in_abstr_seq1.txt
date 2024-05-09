@@ -1,0 +1,5 @@
+#! rules
+S{i}::A()::A2::cell  => A()::cell
+
+#! complexes
+A2 = A().A()
